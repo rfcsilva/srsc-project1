@@ -71,7 +71,6 @@ public class SecureDatagramSocket implements java.io.Closeable {
 
 		// Load Ciphersuit
 		cipher = Cipher.getInstance(ciphersuit_properties.getProperty("session-ciphersuite"));
-		cipher.init(Cipher.DECRYPT_MODE, readKey(ks, AES_256_KEY_ALIAS), new IvParameterSpec(ivBytes));
 
 		// Load HMAC
 		hMac = Mac.getInstance(ciphersuit_properties.getProperty("mac-key"));
@@ -134,6 +133,8 @@ public class SecureDatagramSocket implements java.io.Closeable {
 	}
 	
 	private void decryptSecurePacket(DatagramPacket p) throws ShortBufferException, IllegalBlockSizeException, BadPaddingException {
+		
+		cipher.init(Cipher.DECRYPT_MODE, readKey(ks, AES_256_KEY_ALIAS), new IvParameterSpec(ivBytes));
 		
 		byte[] ciphertext = Arrays.copyOfRange(p.getData(), 0 , p.getLength());
 	    byte[] plainText= new byte[cipher.getOutputSize(ciphertext.length)];
