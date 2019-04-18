@@ -61,6 +61,7 @@ public class SecureDatagramSocket implements java.io.Closeable {
 
 		loadCipherSuitConfig();
 		loadCipherSuit();
+		cipher.init(Cipher.DECRYPT_MODE, readKey(ks, AES_256_KEY_ALIAS), new IvParameterSpec(ivBytes));
 	}
 
 	private void loadCipherSuit() throws InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, FileNotFoundException, IOException {
@@ -133,9 +134,7 @@ public class SecureDatagramSocket implements java.io.Closeable {
 	}
 	
 	private void decryptSecurePacket(DatagramPacket p) throws ShortBufferException, IllegalBlockSizeException, BadPaddingException {
-		
-		cipher.init(Cipher.DECRYPT_MODE, readKey(ks, AES_256_KEY_ALIAS), new IvParameterSpec(ivBytes));
-		
+				
 		byte[] ciphertext = Arrays.copyOfRange(p.getData(), 0 , p.getLength());
 	    byte[] plainText= new byte[cipher.getOutputSize(ciphertext.length)];
 	    int ptLength=cipher.update(ciphertext,0, ciphertext.length, plainText,0);
