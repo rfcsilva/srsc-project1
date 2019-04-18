@@ -151,7 +151,7 @@ public class SecureDatagramSocket implements java.io.Closeable {
 	    ptLength += cipher.doFinal(plainText, ptLength);
 	
 	    p.setData(plainText);
-	    p.setLength(plainText.length);
+	    p.setLength(ptLength);
 
 	}
 }
