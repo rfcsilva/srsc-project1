@@ -20,27 +20,31 @@ import java.security.cert.CertificateException;
 import java.util.Properties;
 
 import javax.crypto.Cipher;
+import javax.crypto.Mac;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 
 public class SecureDatagramSocket implements java.io.Closeable {
 
+	private static final String CIPHERSUITE_CONFIG_PATH = "configs/server/ciphersuite.conf";
 	private static final String TYPE_OF_KEYSTORE = "PKCS12";
 	private static final String PATH_TO_KEYSTORE = "configs/keystore.p12";
 	private static final String AES_256_KEY_ALIAS = "aes256-key";
-	private static final char[] PASSWORD = "SRSC1819".toCharArray();
-	private static final String CIPHERSUITE_CONFIG_PATH = "configs/server/ciphersuite.conf";
+	private static final String AES_256_MAC_KEY_ALIAS = "mac256-key";
+	private static final String AES_128_MAC_KEY_ALIAS = "mac128-key";
+	private static final String PASSWORD = "SRSC1819";
     
-	private static final byte[] ivBytes= new byte[] {
+	private static final byte[] ivBytes = new byte[] {
 	0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
 	0x08, 0x09, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15
     };
    	
-	
 	private DatagramSocket socket;
 	private Properties ciphersuit_properties;
 	private Cipher cipher;
+	private Mac hMac;
+	private Mac hMacDoS;
 	
 	public SecureDatagramSocket(int port, InetAddress laddr) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException {
 		if( laddr.isMulticastAddress() ) {
@@ -52,27 +56,31 @@ public class SecureDatagramSocket implements java.io.Closeable {
 		}
 		
 		loadCipherSuitConfig();
-		loadCipher();
+		loadCipherSuit();
 	}
 
-	private void loadCipher() throws InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, FileNotFoundException, IOException {
+	private void loadCipherSuit() throws InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, FileNotFoundException, IOException {
 		
-		//load keystore and key
-		SecretKey key = readKey();
-		
-		cipher = Cipher.getInstance(ciphersuit_properties.getProperty("session-ciphersuite"));
-		cipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(ivBytes));
-		
-	}
-
-	private SecretKey readKey() throws NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, CertificateException, FileNotFoundException, IOException {
-		
+		// Load keystore
 		KeyStore ks  = KeyStore.getInstance(TYPE_OF_KEYSTORE);
-		ks.load(new FileInputStream(PATH_TO_KEYSTORE), PASSWORD);
+		ks.load(new FileInputStream(PATH_TO_KEYSTORE), PASSWORD.toCharArray());
 		
-		SecretKeyEntry entry = (KeyStore.SecretKeyEntry)ks.getEntry(AES_256_KEY_ALIAS, new KeyStore.PasswordProtection(PASSWORD));
+		// Load Ciphersuit
+		cipher = Cipher.getInstance(ciphersuit_properties.getProperty("session-ciphersuite"));
+		cipher.init(Cipher.DECRYPT_MODE, readKey(ks, AES_256_KEY_ALIAS), new IvParameterSpec(ivBytes));
+		
+		// Load HMAC
+		hMac = Mac.getInstance(ciphersuit_properties.getProperty("mac-key"));
+		hMac.init(readKey(ks, AES_256_MAC_KEY_ALIAS));
+		
+		// Load HMAC for DoS
+		hMacDoS = Mac.getInstance(ciphersuit_properties.getProperty("dos-mac-key"));
+		hMacDoS.init(readKey(ks, AES_128_MAC_KEY_ALIAS));
+	}
+
+	private SecretKey readKey(KeyStore ks, String alias) throws NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, CertificateException, FileNotFoundException, IOException {
+		SecretKeyEntry entry = (KeyStore.SecretKeyEntry)ks.getEntry(alias, new KeyStore.PasswordProtection(PASSWORD.toCharArray()));
 		return entry.getSecretKey();
-		
 	}
 
 	public SecureDatagramSocket(InetSocketAddress addr) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException {
