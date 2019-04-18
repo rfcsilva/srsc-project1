@@ -26,6 +26,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.Mac;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import javax.crypto.ShortBufferException;
 import javax.crypto.spec.IvParameterSpec;
 
 public class SecureDatagramSocket implements java.io.Closeable {
@@ -63,6 +64,7 @@ public class SecureDatagramSocket implements java.io.Closeable {
 
 		loadCipherSuitConfig();
 		loadCipherSuit();
+		cipher.init(Cipher.DECRYPT_MODE, ks, new IvParameterSpec(ivBytes));
 	}
 
 	private void loadCipherSuit() throws InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, FileNotFoundException, IOException {
@@ -73,7 +75,6 @@ public class SecureDatagramSocket implements java.io.Closeable {
 
 		// Load Ciphersuit
 		cipher = Cipher.getInstance(ciphersuit_properties.getProperty("session-ciphersuite"));
-		cipher.init(Cipher.DECRYPT_MODE, readKey(key_store, AES_256_KEY_ALIAS), new IvParameterSpec(ivBytes));
 		
 		ks = readKey(key_store, AES_256_KEY_ALIAS);
 
@@ -108,7 +109,7 @@ public class SecureDatagramSocket implements java.io.Closeable {
 		socket.close();
 	}
 
-	public void receive(DatagramPacket p) throws IOException {
+	public void receive(DatagramPacket p) throws IOException, ShortBufferException, IllegalBlockSizeException, BadPaddingException {
 		socket.receive(p);
 		decryptSecurePacket(p);
 	}
@@ -140,9 +141,17 @@ public class SecureDatagramSocket implements java.io.Closeable {
 		p.setData(ciphertext);
 		p.setLength(ciphertext.length);
 	}
-
-	private void decryptSecurePacket(DatagramPacket p) {
-		// TODO
+	
+	private void decryptSecurePacket(DatagramPacket p) throws ShortBufferException, IllegalBlockSizeException, BadPaddingException {
+				
+		byte[] ciphertext = Arrays.copyOfRange(p.getData(), 0 , p.getLength());
+	    byte[] plainText= new byte[cipher.getOutputSize(ciphertext.length)];
+	    int ptLength=cipher.update(ciphertext,0, ciphertext.length, plainText,0);
+	    
+	    ptLength += cipher.doFinal(plainText, ptLength);
+	
+	    p.setData(plainText);
+	    p.setLength(plainText.length);
 
 	}
 }
