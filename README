@@ -1,0 +1,114 @@
+
+TP1 (Work Assignment #1): hjUDPProxy
+
+hjUDPproxy is an implementation of a simple and transparent UDP proxy.
+It can be used for UDP and IP Multicast proxyig.
+The parameterization for the hjUDPproxy operation must be in the
+configuration file: config.properties.
+
+hjUDPproxy is provided for students of the SRSC course as a starting
+component for the requirements of the Work-Assignmet #1 (WA#1).
+
+hjUDPproxy can be used as a proxym providing address-port translation
+(as a very simple NAT facility).
+
+Compilation
+-----------
+hjUDPproxy is ready for compilation and for testing.
+The revised code was tested for Java 8 (but I believe it is ready for
+the more recent versions). In this code distribution we are not using 
+packaging, but students are free to re-organize the code in their
+WA#1 project packages. Anyway, it must be used as a standalone program.
+
+Runtime
+-------
+According to the configuration, and depending of the use of unicast or
+multicast addresses, the program must be started with the required
+runtime options to use the IPv4 Stack - particularly for the case of
+proxying involving IPv4 multicast addresses in the configuration and
+for computers that support the dual IP stack (IPv4 and IPv6).
+This is not relevant when used for IP unicast addresses.
+
+This can be done by using the program in the following way:
+
+Option 1: use the -D flag (properties) in the following way 
+to execute the program:
+java -Djava.net.preferIPv4Stack=true hjUDPproxy
+
+This forces java (and JVM) to use the IPv4 Stack.
+
+Option 2: we can also force the above property by adding the
+property in the program (compile time):
+
+See:
+https://docs.oracle.com/javase/8/docs/api/java/util/Properties.html
+
+
+Configuration
+--------------
+The configuration of endpoints for the proxy is established by
+the config.properties in a very simlpe way. Addresses and ports 
+are configured in the following way (the minimum configuration to
+use the proxy for the requirements of WA#1:
+
+<endpoint>: <ip-address>:<port>
+
+<endpoint> can be: 
+   remote: the endpoint where the proxy receives outbound traffic
+   localdelivery: the endpoint where the proxy delivers inbound traffic
+
+For WA#1 the proxy will be used to proxy traffic sent from the outbound
+environment (ex., Internet) to be forwared to an inbound environment
+(ex., a LAN using IP proivate adderssing).
+
+for ip-addresses is possible to use IP-Unicast or IP-Multicast addresses.
+
+Configuration Examples:
+-----------------------
+
+Example 1:
+
+IP forwarding of UDP traffic (IP unicast) received in localhost 
+(or 127.0.0.1) port 9999, to be translated and delivered as IP multicast
+traffic to the multicast group 224.2.2.2 o port 7777. 
+This works as network translation from a public enviornment to
+local Multicast groups (for example running in a private LAN)
+
+localdelivery:224.2.2.2:7777
+remote:localhost:9999
+
+
+Example 2:
+
+Local transparent port translation of UDP (IP unicast) traffic
+
+localdelivery:localhost:7777
+remote:localhost:9999
+
+Example 3:
+
+IP forwarding of UDP traffic (IP mtulticast) received in localhost 
+and sent from a multicast sender using the group 238.24.24.10 and port 9999,
+to be translated and delivered as IP multicast
+traffic to a local multicast group 224.10.10.10, port 9876. 
+This works as multicast and port translation, used for example as a gateway
+between two multicast groups.
+
+localdelivery:224.10.10.10:9876
+remote:238.24.24.10:9999
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
