@@ -1,3 +1,0 @@
-# srsc-project1
-
-In this work assignment we will develop a secure protocol for a real-time streaming system, allowing that movies encoded in a given format will be transmitted by a server to users, in a datagram (or UDP) oriented secure channel. The streaming channel will provide confidentiality, integrity and authentication properties, protecting from an adversary model and attack-types as defined in the X.800 security framework. In the system model the streaming server sends the media streams to a client-proxy using a secure unicast or multicast addressing. The proxy receives the real-time streaming emissions, sending the final plaintext contents to a client-player tool. The VLC tool will be used to play the received real-time streams from the proxy.
