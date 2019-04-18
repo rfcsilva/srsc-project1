@@ -48,10 +48,9 @@ public class SecureDatagramSocket implements java.io.Closeable {
 	private Properties ciphersuit_properties;
 	private Cipher cipher;
 	private Mac hMac;
-	private Mac hMacDoS;
 	private SecretKey ks;
-	//private SecretKey km;
-	//private SecretKey ka;
+	private SecretKey km;
+	private SecretKey ka;
 
 	public SecureDatagramSocket(int port, InetAddress laddr) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException {
 		if( laddr.isMulticastAddress() ) {
@@ -72,19 +71,16 @@ public class SecureDatagramSocket implements java.io.Closeable {
 		// Load keystore
 		KeyStore key_store = KeyStore.getInstance(TYPE_OF_KEYSTORE);
 		key_store.load(new FileInputStream(PATH_TO_KEYSTORE), PASSWORD.toCharArray());
+		
+		ks = readKey(key_store, AES_256_KEY_ALIAS);
+		km = readKey(key_store, AES_256_MAC_KEY_ALIAS);
+		ka = readKey(key_store, AES_128_MAC_KEY_ALIAS);
 
 		// Load Ciphersuit
 		cipher = Cipher.getInstance(ciphersuit_properties.getProperty("session-ciphersuite"));
 		
-		ks = readKey(key_store, AES_256_KEY_ALIAS);
-
 		// Load HMAC
-		hMac = Mac.getInstance(ciphersuit_properties.getProperty("mac-key"));
-		hMac.init(readKey(key_store, AES_256_MAC_KEY_ALIAS));
-
-		// Load HMAC for DoS
-		hMacDoS = Mac.getInstance(ciphersuit_properties.getProperty("dos-mac-key"));
-		hMacDoS.init(readKey(key_store, AES_128_MAC_KEY_ALIAS));
+		hMac = Mac.getInstance(ciphersuit_properties.getProperty("mac-ciphersuite"));
 	}
 
 	private SecretKey readKey(KeyStore ks, String alias) throws NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, CertificateException, FileNotFoundException, IOException {
@@ -96,10 +92,10 @@ public class SecureDatagramSocket implements java.io.Closeable {
 		this(addr.getPort(), addr.getAddress());
 	}
 
-	public SecureDatagramSocket() throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException {
+	public SecureDatagramSocket() throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException {
 		socket = new DatagramSocket();
 		loadCipherSuitConfig();
-		cipher = Cipher.getInstance(ciphersuit_properties.getProperty("session-ciphersuite"));
+		loadCipherSuit();
 		
 		cipher.init(Cipher.ENCRYPT_MODE, ks, new IvParameterSpec(ivBytes));
 	}
@@ -133,8 +129,6 @@ public class SecureDatagramSocket implements java.io.Closeable {
 	}
 
 	private void encryptSecurePacket(DatagramPacket p) throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException {
-		//cipher.init(Cipher.ENCRYPT_MODE, ks, new IvParameterSpec(ivBytes));
-		
 		byte[] plaintext = Arrays.copyOfRange(p.getData(), 0 , p.getLength());
 		byte[] ciphertext = cipher.doFinal(plaintext);
 		
@@ -143,15 +137,13 @@ public class SecureDatagramSocket implements java.io.Closeable {
 	}
 	
 	private void decryptSecurePacket(DatagramPacket p) throws ShortBufferException, IllegalBlockSizeException, BadPaddingException {
-				
 		byte[] ciphertext = Arrays.copyOfRange(p.getData(), 0 , p.getLength());
-	    byte[] plainText= new byte[cipher.getOutputSize(ciphertext.length)];
+	    byte[] plainText = new byte[cipher.getOutputSize(ciphertext.length)];
 	    int ptLength=cipher.update(ciphertext,0, ciphertext.length, plainText,0);
 	    
 	    ptLength += cipher.doFinal(plainText, ptLength);
 	
 	    p.setData(plainText);
-	    p.setLength(plainText.length);
-
+	    p.setLength(ptLength);
 	}
 }
