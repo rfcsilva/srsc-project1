@@ -9,16 +9,40 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyStore;
+import java.security.KeyStore.SecretKeyEntry;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableEntryException;
+import java.security.cert.CertificateException;
 import java.util.Properties;
+
+import javax.crypto.Cipher;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 
 public class SecureDatagramSocket implements java.io.Closeable {
 
+	private static final String TYPE_OF_KEYSTORE = "PKCS12";
+	private static final String PATH_TO_KEYSTORE = "configs/keystore.p12";
+	private static final String AES_256_KEY_ALIAS = "aes256-key";
+	private static final char[] PASSWORD = "SRSC1819".toCharArray();
 	private static final String CIPHERSUITE_CONFIG_PATH = "configs/server/ciphersuite.conf";
-
+    
+	private static final byte[] ivBytes= new byte[] {
+	0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+	0x08, 0x09, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15
+    };
+   	
+	
 	private DatagramSocket socket;
 	private Properties ciphersuit_properties;
+	private Cipher cipher;
 	
-	public SecureDatagramSocket(int port, InetAddress laddr) throws IOException {
+	public SecureDatagramSocket(int port, InetAddress laddr) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException {
 		if( laddr.isMulticastAddress() ) {
 			MulticastSocket ms = new MulticastSocket(port);
 			ms.joinGroup(laddr);
@@ -26,16 +50,39 @@ public class SecureDatagramSocket implements java.io.Closeable {
 		} else {
 			socket = new DatagramSocket(port, laddr);
 		}
+		
 		loadCipherSuitConfig();
+		loadCipher();
 	}
 
-	public SecureDatagramSocket(InetSocketAddress addr) throws IOException {
+	private void loadCipher() throws InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, FileNotFoundException, IOException {
+		
+		//load keystore and key
+		SecretKey key = readKey();
+		
+		cipher = Cipher.getInstance(ciphersuit_properties.getProperty("session-ciphersuite"));
+		cipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(ivBytes));
+		
+	}
+
+	private SecretKey readKey() throws NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, CertificateException, FileNotFoundException, IOException {
+		
+		KeyStore ks  = KeyStore.getInstance(TYPE_OF_KEYSTORE);
+		ks.load(new FileInputStream(PATH_TO_KEYSTORE), PASSWORD);
+		
+		SecretKeyEntry entry = (KeyStore.SecretKeyEntry)ks.getEntry(AES_256_KEY_ALIAS, new KeyStore.PasswordProtection(PASSWORD));
+		return entry.getSecretKey();
+		
+	}
+
+	public SecureDatagramSocket(InetSocketAddress addr) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException {
 		this(addr.getPort(), addr.getAddress());
 	}
 
-	public SecureDatagramSocket() throws IOException {
+	public SecureDatagramSocket() throws IOException, NoSuchAlgorithmException, NoSuchPaddingException {
 		socket = new DatagramSocket();
 		loadCipherSuitConfig();
+		cipher = Cipher.getInstance(ciphersuit_properties.getProperty("session-ciphersuite"));
 	}
 
 	@Override
@@ -72,5 +119,6 @@ public class SecureDatagramSocket implements java.io.Closeable {
 	
 	private void decryptSecurePacket(DatagramPacket p) {
 		// TODO
+		
 	}
 }
