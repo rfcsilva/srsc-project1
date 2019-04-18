@@ -10,6 +10,8 @@ package server;
 import java.io.*;
 import java.net.*;
 
+import secureSocket.SecureDatagramSocket;
+
 class hjStreamServer {
 
 	static public void main( String []args ) throws Exception {
@@ -26,7 +28,8 @@ class hjStreamServer {
 		DataInputStream g = new DataInputStream( new FileInputStream(args[0]) );
 		byte[] buff = new byte[65000];
 		//MulticastSocket s = new MulticastSocket();
-		DatagramSocket s = new DatagramSocket();
+		//DatagramSocket s = new DatagramSocket();
+		SecureDatagramSocket socket = new SecureDatagramSocket();
 		InetSocketAddress addr = new InetSocketAddress( args[1], Integer.parseInt(args[2]));
 		DatagramPacket p = new DatagramPacket(buff, buff.length, addr );
 		long t0 = System.nanoTime(); // tempo de referencia para este processo
@@ -42,9 +45,12 @@ class hjStreamServer {
 			p.setSocketAddress( addr );
 			long t = System.nanoTime();
 			Thread.sleep( Math.max(0, ((time-q0)-(t-t0))/1000000) );
-			s.send( p );
+			socket.send( p );
 			System.out.print( "." );
 		}
+		
+		g.close();
+		socket.close();
 
 		System.out.println("DONE! packets sent: "+count);
 	}

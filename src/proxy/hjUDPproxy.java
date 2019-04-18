@@ -30,6 +30,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import secureSocket.SecureDatagramSocket;
+
 class hjUDPproxy {
 	public static void main(String[] args) throws Exception {
 		InputStream inputStream = new FileInputStream("configs/proxy/config.properties");
@@ -46,43 +48,17 @@ class hjUDPproxy {
 		InetSocketAddress inSocketAddress = parseSocketAddress(remote);
 		Set<SocketAddress> outSocketAddressSet = Arrays.stream(destinations.split(",")).map(s -> parseSocketAddress(s)).collect(Collectors.toSet());
 
+		// Create inSocket 
+		SecureDatagramSocket inSocket = new SecureDatagramSocket(inSocketAddress);
+		
 		DatagramSocket outSocket = new DatagramSocket();
 		byte[] buffer = new byte[4 * 1024];
 
-		DatagramSocket inSocket = null;
-
-		if( inSocketAddress.getAddress().isMulticastAddress() ) {
-			MulticastSocket ms = new MulticastSocket(inSocketAddress.getPort());
-			ms.joinGroup(inSocketAddress.getAddress());
-			inSocket = ms;
-		} else {
-			inSocket = new DatagramSocket(inSocketAddress);
-		}
-
-		/* If listen a remote unicast server taje the remote config
-		 * uncomment the following line
-		 */
-		// DatagramSocket inSocket = new DatagramSocket(inSocketAddress); 
-
-		/* If listen a remote multicast server in 239.9.9.9 port 9999
-		 * uncomment the following two lines
-		 */
-		//MulticastSocket ms = new MulticastSocket(9999);
-		//ms.joinGroup(InetAddress.getByName("239.9.9.9"));
-
-		//DatagramSocket outSocket = new DatagramSocket();
-		//byte[] buffer = new byte[4 * 1024];
+		// main loop
 		while (true) {
 			DatagramPacket inPacket = new DatagramPacket(buffer, buffer.length);
-			/* If listen a remote unicast server
-			 * uncomment the following line
-			 */
-			//inSocket.receive(inPacket);  // if remote is unicast
 
-			/* If listen a remote multcast server
-			 * uncomment the following line
-			 */
-			inSocket.receive(inPacket);          // if remote is multicast
+			inSocket.receive(inPacket);
 
 			System.out.print("*");
 			for (SocketAddress outSocketAddress : outSocketAddressSet) {
