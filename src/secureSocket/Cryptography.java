@@ -92,13 +92,13 @@ public class Cryptography {
 		return entry.getSecretKey();
 	}	
 	
-	public byte[] encryptSecurePacket(byte[] plaintext) throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException {
+	public byte[] encrypt(byte[] plaintext) throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException {
 		
 		return cipher.doFinal(plaintext);
 
 	}
 	
-	public byte[] decryptSecurePacket(byte[] payload) throws ShortBufferException, IllegalBlockSizeException, BadPaddingException {
+	public byte[] decrypt(byte[] payload) throws ShortBufferException, IllegalBlockSizeException, BadPaddingException {
 		
 	    byte[] plainText = new byte[cipher.getOutputSize(payload.length)];
 	    int ptLength = cipher.update(payload, 0, payload.length, plainText, 0);
