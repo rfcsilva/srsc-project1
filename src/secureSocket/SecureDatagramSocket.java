@@ -121,4 +121,31 @@ public class SecureDatagramSocket implements java.io.Closeable {
 		return m;
 	}
 	
+	private static final byte HEADER_SEPARATOR = 0x00;
+	
+	private static byte[] appendHeader(byte version_release, byte payload_type, short payload_size, byte[] payload) {
+		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+		DataOutputStream dataOut = new DataOutputStream(byteOut);
+		
+		dataOut.write(version_release);
+		dataOut.write(HEADER_SEPARATOR);
+		dataOut.write(payload_type);
+		dataOut.write(HEADER_SEPARATOR);
+		dataOut.writeShort(payload_size);
+		dataOut.write(payload, 0, payload.length);
+		
+		dataOut.flush();
+		byteOut.flush();
+		
+		//cipher MP
+		byte[] msg = byteOut.toByteArray();
+		
+		dataOut.close();
+		byteOut.close();
+		
+		return msg;
+	}
+	
+	// não sei como ler
+	
 }
