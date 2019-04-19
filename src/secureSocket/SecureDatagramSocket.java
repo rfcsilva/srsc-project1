@@ -123,7 +123,7 @@ public class SecureDatagramSocket implements java.io.Closeable {
 	
 	private static final byte HEADER_SEPARATOR = 0x00;
 	
-	private static byte[] appendHeader(byte version_release, byte payload_type, short payload_size, byte[] payload) {
+	private static byte[] appendHeader(byte version_release, byte payload_type, short payload_size, byte[] payload) throws IOException {
 		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
 		DataOutputStream dataOut = new DataOutputStream(byteOut);
 		
