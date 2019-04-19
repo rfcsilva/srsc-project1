@@ -1,6 +1,9 @@
 package secureSocket;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -24,6 +27,7 @@ public class SecureDatagramSocket implements java.io.Closeable {
 
 	private DatagramSocket socket;
 	private Cryptography criptoService;
+	private int nonce;
 	
 	public SecureDatagramSocket(int port, InetAddress laddr) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException {
 		if( laddr.isMulticastAddress() ) {
@@ -69,7 +73,14 @@ public class SecureDatagramSocket implements java.io.Closeable {
 		socket.send(p);
 	}
 	
-	private static byte[] buildMp(int id, int nonce, byte[] message ) {
+	private static byte[] buildMp(int id, int nonce, byte[] message ) throws IOException {
+		
+		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+		ObjectOutputStream dataOut = new ObjectOutputStream(byteOut);
+		
+		objOut.flush();
+		byteOut.flush();
+		reply = byteOut.toByteArray();
 		
 		return new byte[100];
 	}
