@@ -1,6 +1,10 @@
+package secureSocket.secureMessages;
+
 public interface Payload {
 	
-	public static byte payloadType();
+	public byte payloadType();
+	
+	//public Payload deserialize();
 	
 	public byte[] serialize();
 	
