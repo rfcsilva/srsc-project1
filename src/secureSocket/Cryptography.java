@@ -61,12 +61,13 @@ public class Cryptography {
 	public byte[] encrypt(byte[] plaintext) throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, ShortBufferException {
 		
 		byte[] cipherText = new byte[cipher.getOutputSize(plaintext.length + hMac.getMacLength())];
-		byte[] mac = computeMac(hMac ,plaintext);
+		byte[] mac = computeMac(hMac, plaintext);
 		int ctLength = cipher.update(plaintext, 0, plaintext.length, cipherText, 0);
 		cipher.doFinal(mac, 0, mac.length, cipherText, ctLength);
 		return cipherText;
 
 	}
+	
 	
 	//TODO: What to do when mac is invalid
 	public byte[] decrypt(byte[] cipherText) throws ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
@@ -76,22 +77,35 @@ public class Cryptography {
 	    ptLength += cipher.doFinal(plainText, ptLength);
 	    
 	    byte[][] messageParts = getMessageParts(hMac, plainText);
-	    if(validateMac(hMac, messageParts[0], messageParts[1]) )
+	    if(validateMac( hMac ,messageParts[0], messageParts[1]) )
 	    	return messageParts[0];
 	    
 	    return null;
-	}	
+	}
 	
-	public byte[] computeMac(Mac mac, byte[] payload) throws InvalidKeyException {
+	public byte[] computeMacDoS(byte[] payload ) throws InvalidKeyException {
+		
+		
+		return computeMac(macDoS, payload);
+	}
+	
+	public boolean validateMacDos(byte[] payload, byte[] expectedMac ) throws InvalidKeyException {
+        
+		byte[] inboundCipherMac = computeMac(macDoS , payload);
+        return MessageDigest.isEqual(inboundCipherMac, expectedMac);		
+		
+	}
+	
+	private byte[] computeMac(Mac mac, byte[] payload) throws InvalidKeyException {
 		
 		mac.update(payload);
 		return mac.doFinal();
 	}
 	
 
-	public boolean validateMac(Mac mac, byte[] message, byte[] expectedMac ) throws InvalidKeyException {
+	private boolean validateMac(Mac mac, byte[] message, byte[] expectedMac ) throws InvalidKeyException {
 
-        byte[] inboundMessageMac = computeMac(mac ,message);
+        byte[] inboundMessageMac = computeMac(mac, message);
         return MessageDigest.isEqual(inboundMessageMac, expectedMac);
        
 	}	

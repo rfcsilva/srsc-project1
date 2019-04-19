@@ -25,6 +25,8 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
+import Utils.ArrayUtils;
+
 public class SecureDatagramSocket implements java.io.Closeable {
 
 	private DatagramSocket socket;
@@ -95,14 +97,12 @@ public class SecureDatagramSocket implements java.io.Closeable {
 		byte[] cipheredMp = criptoService.encrypt(Mp);
 		
 		//Append MacDoS
-		byte[] macDos = criptoService.computeMac(mac, key, payload)
-		
-		
+		byte[] macDos = criptoService.computeMacDoS(cipheredMp);
 		
 		dataOut.close();
 		byteOut.close();
 		
-		return cipheredMp;
+		return ArrayUtils.concat(cipheredMp, macDos);
 	}
 	
 	private static byte[] retrieveM(byte[] Mp) throws IOException {
