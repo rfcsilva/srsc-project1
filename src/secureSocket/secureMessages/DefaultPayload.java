@@ -1,5 +1,5 @@
 // TODO : find better name for the class
-public class CipheredMessage implements Payload {
+public class DefaultPayload implements Payload {
 	
 	// TODO
 	
