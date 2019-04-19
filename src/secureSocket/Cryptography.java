@@ -9,6 +9,7 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableEntryException;
 import java.security.KeyStore.SecretKeyEntry;
@@ -38,7 +39,8 @@ public class Cryptography {
 	private static final byte[] ivBytes = new byte[] {
 			0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
 			0x08, 0x09, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15
-	};	
+	};
+	private static final String MESSAGE_KEY = null;	
 	
 	private Properties ciphersuit_properties;
 	private Cipher cipher;
@@ -53,8 +55,23 @@ public class Cryptography {
 		loadCipherSuitConfig();
 		loadCipherSuit();
 		cipher.init(cypherMode, ks, new IvParameterSpec(ivBytes));
-		
+		hMac.init(km);
 	}
+	
+	public byte[] encrypt(byte[] plaintext) throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException {
+		
+		return cipher.doFinal(plaintext);
+
+	}
+	
+	public byte[] decrypt(byte[] payload) throws ShortBufferException, IllegalBlockSizeException, BadPaddingException {
+		
+	    byte[] plainText = new byte[cipher.getOutputSize(payload.length)];
+	    int ptLength = cipher.update(payload, 0, payload.length, plainText, 0);
+	    ptLength += cipher.doFinal(plainText, ptLength);
+	
+	    return plainText;
+	}	
 	
 	
 	// Porque estás a retornar bool?
@@ -70,7 +87,10 @@ public class Cryptography {
 		}
 	}
 
-	private void loadCipherSuit() throws InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, FileNotFoundException, IOException {
+	private void loadCipherSuit() throws
+		InvalidKeyException, InvalidAlgorithmParameterException,
+			NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException,
+				KeyStoreException, CertificateException, FileNotFoundException, IOException {
 
 		// Load keystore
 		KeyStore key_store = KeyStore.getInstance(TYPE_OF_KEYSTORE);
@@ -87,24 +107,35 @@ public class Cryptography {
 		hMac = Mac.getInstance(ciphersuit_properties.getProperty("mac-ciphersuite"));
 	}
 
-	private SecretKey readKey(KeyStore ks, String alias) throws NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, CertificateException, FileNotFoundException, IOException {
+	private SecretKey readKey(KeyStore ks, String alias) throws
+		NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException,
+			CertificateException, FileNotFoundException, IOException {
 		SecretKeyEntry entry = (KeyStore.SecretKeyEntry)ks.getEntry(alias, new KeyStore.PasswordProtection(PASSWORD.toCharArray()));
 		return entry.getSecretKey();
 	}	
 	
-	public byte[] encrypt(byte[] plaintext) throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException {
-		
-		return cipher.doFinal(plaintext);
-
+	private byte[] computeMac(Mac mac, byte[] payload) throws InvalidKeyException {
+		mac.init(km);
+		mac.update(payload);
+		return mac.doFinal();
 	}
 	
-	public byte[] decrypt(byte[] payload) throws ShortBufferException, IllegalBlockSizeException, BadPaddingException {
-		
-	    byte[] plainText = new byte[cipher.getOutputSize(payload.length)];
-	    int ptLength = cipher.update(payload, 0, payload.length, plainText, 0);
-	    ptLength += cipher.doFinal(plainText, ptLength);
-	
-	    return plainText;
-	}	
 
+	private byte[] validateMac(Mac mac, byte[] plainText ) throws InvalidKeyException {
+	
+		int  messageLength = plainText.length - mac.getMacLength();
+		
+		byte[] message = new byte[messageLength];
+        System.arraycopy(plainText, 0, message, 0, messageLength);
+		
+		byte[] expectedMessageHash = new byte[mac.getMacLength()];
+        System.arraycopy(plainText, messageLength, expectedMessageHash, 0, expectedMessageHash.length);
+		
+        byte[] inboundMessageMac = computeMac(mac, message);
+		
+        if(MessageDigest.isEqual(inboundMessageMac, expectedMessageHash))
+        	return message;
+        else 
+        	return null;
+	}
 }

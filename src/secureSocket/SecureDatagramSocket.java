@@ -77,5 +77,12 @@ public class SecureDatagramSocket implements java.io.Closeable {
 		p.setLength(cypherText.length);
 		socket.send(p);
 	}
+	
+	private static byte[] buildMp(int id, int nonce, byte[] message ) {
+		
+		return new byte[100];
+	}
+	
+	
 
 }
