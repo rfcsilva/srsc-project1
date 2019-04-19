@@ -73,15 +73,23 @@ public class SecureDatagramSocket implements java.io.Closeable {
 		socket.send(p);
 	}
 	
-	private static byte[] buildMp(int id, int nonce, byte[] message ) throws IOException {
+	private static byte[] buildMp(long id, long nonce, byte[] message ) throws IOException {
 		
 		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
 		ObjectOutputStream dataOut = new ObjectOutputStream(byteOut);
 		
-		objOut.flush();
-		byteOut.flush();
-		reply = byteOut.toByteArray();
+		dataOut.writeLong(id);
+		dataOut.writeLong(nonce);
+		dataOut.write(message, 0, message.length);
 		
-		return new byte[100];
+		// Colocar logo aqui o Mac
+		
+		// Depois cifrar tudo logo aqui
+		
+		// Depois fazer append do mac final aqui também ?
+		
+		dataOut.flush();
+		byteOut.flush();
+		return byteOut.toByteArray();
 	}
 }
