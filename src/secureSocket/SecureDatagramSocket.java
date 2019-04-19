@@ -73,7 +73,4 @@ public class SecureDatagramSocket implements java.io.Closeable {
 		
 		return new byte[100];
 	}
-	
-	
-
 }
