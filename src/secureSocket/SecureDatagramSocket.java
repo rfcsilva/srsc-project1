@@ -76,7 +76,7 @@ public class SecureDatagramSocket implements java.io.Closeable {
 	private static byte[] buildMp(long id, long nonce, byte[] message ) throws IOException {
 		
 		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-		ObjectOutputStream dataOut = new ObjectOutputStream(byteOut);
+		DataOutputStream dataOut = new DataOutputStream(byteOut);
 		
 		dataOut.writeLong(id);
 		dataOut.writeLong(nonce);
@@ -90,6 +90,27 @@ public class SecureDatagramSocket implements java.io.Closeable {
 		
 		dataOut.flush();
 		byteOut.flush();
-		return byteOut.toByteArray();
+		
+		byte[] Mp = byteOut.toByteArray();
+		
+		dataOut.close();
+		byteOut.close();
+		
+		return Mp;
+	}
+	
+	private static byte[] retrieveM(byte[] Mp) {
+		ByteArrayInputStream byteIn = new ByteArrayInputStream(Mp);
+		DataInputStream dataIn = new DataInputStream(byteIn);
+		
+		long id = dataIn.readLong();
+		long nonce = dataIn.readLong();
+		
+		byte[] m = new byte[/*falta o size*/];
+		datain.readm(m, 0, /*size*/);
+		
+		dataIn.close();
+		byteIn.close();
+		return m;
 	}
 }
