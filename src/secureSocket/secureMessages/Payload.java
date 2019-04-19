@@ -1,6 +1,6 @@
 public interface Payload {
 	
-	public byte payloadType();
+	public static byte payloadType();
 	
 	public byte[] serialize();
 	
