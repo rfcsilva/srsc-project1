@@ -61,7 +61,7 @@ public class SecureDatagramSocket implements java.io.Closeable {
 		socket.close();
 	}
 
-	public void receive(DatagramPacket p) throws IOException, ShortBufferException, IllegalBlockSizeException, BadPaddingException {
+	public void receive(DatagramPacket p) throws IOException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
 		socket.receive(p);
 		byte[] ciphertext = Arrays.copyOfRange(p.getData(), 0, p.getLength());
 		byte[] payload = criptoService.decrypt(ciphertext);
@@ -69,7 +69,7 @@ public class SecureDatagramSocket implements java.io.Closeable {
 		p.setLength(payload.length);
 	}
 
-	public void send(DatagramPacket p) throws IOException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException {
+	public void send(DatagramPacket p) throws IOException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, ShortBufferException {
 		
 		byte[] plaintext = Arrays.copyOfRange(p.getData(), 0, p.getLength());
 		byte[] cypherText = criptoService.encrypt(plaintext);
