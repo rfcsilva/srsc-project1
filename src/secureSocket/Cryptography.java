@@ -58,9 +58,13 @@ public class Cryptography {
 		hMac.init(km);
 	}
 	
-	public byte[] encrypt(byte[] plaintext) throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException {
+	public byte[] encrypt(byte[] plaintext) throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, ShortBufferException {
 		
-		return cipher.doFinal(plaintext);
+		byte[] cipherText = new byte[cipher.getOutputSize(plaintext.length + hMac.getMacLength())];
+		byte[] mac = computeMac(hMac, plaintext);
+		int ctLength = cipher.update(plaintext, 0, plaintext.length, cipherText, 0);
+		cipher.doFinal(mac, 0, mac.length, cipherText, ctLength);
+		return cipherText;
 
 	}
 	
@@ -69,7 +73,7 @@ public class Cryptography {
 	    byte[] plainText = new byte[cipher.getOutputSize(payload.length)];
 	    int ptLength = cipher.update(payload, 0, payload.length, plainText, 0);
 	    ptLength += cipher.doFinal(plainText, ptLength);
-	
+	    
 	    return plainText;
 	}	
 	
@@ -121,21 +125,30 @@ public class Cryptography {
 	}
 	
 
-	private byte[] validateMac(Mac mac, byte[] plainText ) throws InvalidKeyException {
-	
-		int  messageLength = plainText.length - mac.getMacLength();
-		
-		byte[] message = new byte[messageLength];
-        System.arraycopy(plainText, 0, message, 0, messageLength);
-		
-		byte[] expectedMessageHash = new byte[mac.getMacLength()];
-        System.arraycopy(plainText, messageLength, expectedMessageHash, 0, expectedMessageHash.length);
-		
+	private boolean validateMac(Mac mac, byte[] message, byte[] expectedMac ) throws InvalidKeyException {
+
         byte[] inboundMessageMac = computeMac(mac, message);
-		
-        if(MessageDigest.isEqual(inboundMessageMac, expectedMessageHash))
-        	return message;
-        else 
-        	return null;
+        return MessageDigest.isEqual(inboundMessageMac, expectedMac);
+       
 	}
+
+
+     private byte[][] getMessageParts( Mac mac, byte[] plainText ){
+    	 
+    	byte[][] messageParts = new byte[2][]; 
+    	 
+ 		int  messageLength = plainText.length - mac.getMacLength();
+		
+ 		byte[] message = new byte[messageLength];
+        System.arraycopy(plainText, 0, message, 0, messageLength);
+ 		
+ 		byte[] expectedMac = new byte[mac.getMacLength()];
+        System.arraycopy(plainText, messageLength, expectedMac, 0, expectedMac.length);
+    	 
+        messageParts[0] = message;
+        messageParts[1] = expectedMac;
+        
+        return messageParts;
+        
+     }
 }
