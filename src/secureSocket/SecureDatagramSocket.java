@@ -1,6 +1,8 @@
 package secureSocket;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -59,15 +61,17 @@ public class SecureDatagramSocket implements java.io.Closeable {
 	public void receive(DatagramPacket p) throws IOException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
 		socket.receive(p);
 		byte[] ciphertext = Arrays.copyOfRange(p.getData(), 0, p.getLength());
-		byte[] payload = criptoService.decrypt(ciphertext);
-		p.setData(payload);	
-		p.setLength(payload.length);
+		byte[] mp = criptoService.decrypt(ciphertext);
+		byte[] message = retrieveM(mp);
+		p.setData(message);	
+		p.setLength(message.length);
 	}
 
 	public void send(DatagramPacket p) throws IOException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, ShortBufferException {
 		
-		byte[] plaintext = Arrays.copyOfRange(p.getData(), 0, p.getLength());
-		byte[] cypherText = criptoService.encrypt(plaintext);
+		byte[] message = Arrays.copyOfRange(p.getData(), 0, p.getLength());
+		byte[] mp = buildMp(0, 0, message);
+		byte[] cypherText = criptoService.encrypt(mp);
 		p.setData(cypherText);
 		p.setLength(cypherText.length);
 		socket.send(p);
@@ -99,15 +103,16 @@ public class SecureDatagramSocket implements java.io.Closeable {
 		return Mp;
 	}
 	
-	private static byte[] retrieveM(byte[] Mp) {
+	private static byte[] retrieveM(byte[] Mp) throws IOException {
 		ByteArrayInputStream byteIn = new ByteArrayInputStream(Mp);
 		DataInputStream dataIn = new DataInputStream(byteIn);
 		
 		long id = dataIn.readLong();
 		long nonce = dataIn.readLong();
 		
-		byte[] m = new byte[/*falta o size*/];
-		datain.readm(m, 0, /*size*/);
+		int size = Mp.length - 2 * Long.BYTES;
+		byte[] m = new byte[size];
+		dataIn.read(m, 0, size);
 		
 		dataIn.close();
 		byteIn.close();
