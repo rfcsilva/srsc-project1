@@ -4,7 +4,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.DatagramPacket;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyStore;
@@ -14,7 +13,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableEntryException;
 import java.security.KeyStore.SecretKeyEntry;
 import java.security.cert.CertificateException;
-import java.util.Arrays;
 import java.util.Properties;
 
 import javax.crypto.BadPaddingException;
@@ -68,13 +66,17 @@ public class Cryptography {
 
 	}
 	
-	public byte[] decrypt(byte[] payload) throws ShortBufferException, IllegalBlockSizeException, BadPaddingException {
+	public byte[] decrypt(byte[] cipherText) throws ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
 		
-	    byte[] plainText = new byte[cipher.getOutputSize(payload.length)];
-	    int ptLength = cipher.update(payload, 0, payload.length, plainText, 0);
+	    byte[] plainText = new byte[cipher.getOutputSize(cipherText.length)];
+	    int ptLength = cipher.update(cipherText, 0, cipherText.length, plainText, 0);
 	    ptLength += cipher.doFinal(plainText, ptLength);
 	    
-	    return plainText;
+	    byte[][] messageParts = getMessageParts(hMac, plainText);
+	    if(validateMac(hMac, messageParts[0], messageParts[1]) )
+	    	return messageParts[0];
+	
+	    return null;
 	}	
 	
 	
@@ -139,14 +141,13 @@ public class Cryptography {
     	 
  		int  messageLength = plainText.length - mac.getMacLength();
 		
- 		byte[] message = new byte[messageLength];
-        System.arraycopy(plainText, 0, message, 0, messageLength);
- 		
- 		byte[] expectedMac = new byte[mac.getMacLength()];
-        System.arraycopy(plainText, messageLength, expectedMac, 0, expectedMac.length);
-    	 
-        messageParts[0] = message;
-        messageParts[1] = expectedMac;
+ 		byte[] aux = new byte[messageLength];
+        System.arraycopy(plainText, 0, aux, 0, messageLength);
+        messageParts[0] = aux;
+        
+ 		aux = new byte[mac.getMacLength()];
+        System.arraycopy(plainText, messageLength, aux, 0, aux.length);
+        messageParts[1] = aux;
         
         return messageParts;
         
