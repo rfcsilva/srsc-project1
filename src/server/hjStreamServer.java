@@ -34,7 +34,7 @@ class hjStreamServer {
 		DatagramPacket p = new DatagramPacket(buff, buff.length, addr );
 		long t0 = System.nanoTime(); // tempo de referencia para este processo
 		long q0 = 0;
-
+		
 		while ( g.available() > 0 ) {
 			size = g.readShort();
 			time = g.readLong();

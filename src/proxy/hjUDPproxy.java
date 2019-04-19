@@ -62,14 +62,12 @@ class hjUDPproxy {
 
 			System.out.print("*");
 			for (SocketAddress outSocketAddress : outSocketAddressSet) {
-				outSocket.send(new DatagramPacket(buffer, inPacket.getLength(), outSocketAddress));
+				outSocket.send(new DatagramPacket(inPacket.getData(), inPacket.getLength(), outSocketAddress));
 			}
 		}
-		
 	}
 
-	private static InetSocketAddress parseSocketAddress(String socketAddress) 
-	{
+	private static InetSocketAddress parseSocketAddress(String socketAddress) {
 		String[] split = socketAddress.split(":");
 		String host = split[0];
 		int port = Integer.parseInt(split[1]);
