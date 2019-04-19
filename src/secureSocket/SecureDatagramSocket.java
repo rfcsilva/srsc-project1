@@ -57,8 +57,11 @@ public class SecureDatagramSocket implements java.io.Closeable {
 	public void close() throws IOException {
 		socket.close();
 	}
+	
+	public void receive(DatagramPacket p) throws
+		IOException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
+	
 
-	public void receive(DatagramPacket p) throws IOException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
 		socket.receive(p);
 		byte[] ciphertext = Arrays.copyOfRange(p.getData(), 0, p.getLength());
 		byte[] mp = criptoService.decrypt(ciphertext);
@@ -70,14 +73,13 @@ public class SecureDatagramSocket implements java.io.Closeable {
 	public void send(DatagramPacket p) throws IOException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, ShortBufferException {
 		
 		byte[] message = Arrays.copyOfRange(p.getData(), 0, p.getLength());
-		byte[] mp = buildMp(0, 0, message);
-		byte[] cypherText = criptoService.encrypt(mp);
+		byte[] cypherText = buildPayload(0, 0, message);
 		p.setData(cypherText);
 		p.setLength(cypherText.length);
 		socket.send(p);
 	}
 	
-	private static byte[] buildMp(long id, long nonce, byte[] message ) throws IOException {
+	private byte[] buildPayload(long id, long nonce, byte[] message ) throws IOException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, ShortBufferException {
 		
 		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
 		DataOutputStream dataOut = new DataOutputStream(byteOut);
@@ -85,22 +87,22 @@ public class SecureDatagramSocket implements java.io.Closeable {
 		dataOut.writeLong(id);
 		dataOut.writeLong(nonce);
 		dataOut.write(message, 0, message.length);
-		
-		// Colocar logo aqui o Mac
-		
-		// Depois cifrar tudo logo aqui
-		
-		// Depois fazer append do mac final aqui também ?
-		
 		dataOut.flush();
 		byteOut.flush();
 		
+		//cipher MP
 		byte[] Mp = byteOut.toByteArray();
+		byte[] cipheredMp = criptoService.encrypt(Mp);
+		
+		//Append MacDoS
+		byte[] macDos = criptoService.computeMac(mac, key, payload)
+		
+		
 		
 		dataOut.close();
 		byteOut.close();
 		
-		return Mp;
+		return cipheredMp;
 	}
 	
 	private static byte[] retrieveM(byte[] Mp) throws IOException {
@@ -118,4 +120,5 @@ public class SecureDatagramSocket implements java.io.Closeable {
 		byteIn.close();
 		return m;
 	}
+	
 }

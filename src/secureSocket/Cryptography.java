@@ -43,6 +43,7 @@ public class Cryptography {
 	private Properties ciphersuit_properties;
 	private Cipher cipher;
 	private Mac hMac;
+	private Mac macDoS;
 	private SecretKey ks;
 	private SecretKey km;
 	private SecretKey ka;
@@ -54,18 +55,20 @@ public class Cryptography {
 		loadCipherSuit();
 		cipher.init(cypherMode, ks, new IvParameterSpec(ivBytes));
 		hMac.init(km);
+		macDoS.init(ka);
 	}
 	
 	public byte[] encrypt(byte[] plaintext) throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, ShortBufferException {
 		
 		byte[] cipherText = new byte[cipher.getOutputSize(plaintext.length + hMac.getMacLength())];
-		byte[] mac = computeMac(hMac, plaintext);
+		byte[] mac = computeMac(hMac ,plaintext);
 		int ctLength = cipher.update(plaintext, 0, plaintext.length, cipherText, 0);
 		cipher.doFinal(mac, 0, mac.length, cipherText, ctLength);
 		return cipherText;
 
 	}
 	
+	//TODO: What to do when mac is invalid
 	public byte[] decrypt(byte[] cipherText) throws ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
 		
 	    byte[] plainText = new byte[cipher.getOutputSize(cipherText.length)];
@@ -75,10 +78,23 @@ public class Cryptography {
 	    byte[][] messageParts = getMessageParts(hMac, plainText);
 	    if(validateMac(hMac, messageParts[0], messageParts[1]) )
 	    	return messageParts[0];
-	
+	    
 	    return null;
 	}	
 	
+	public byte[] computeMac(Mac mac, byte[] payload) throws InvalidKeyException {
+		
+		mac.update(payload);
+		return mac.doFinal();
+	}
+	
+
+	public boolean validateMac(Mac mac, byte[] message, byte[] expectedMac ) throws InvalidKeyException {
+
+        byte[] inboundMessageMac = computeMac(mac ,message);
+        return MessageDigest.isEqual(inboundMessageMac, expectedMac);
+       
+	}	
 	
 	// Porque estás a retornar bool?
 	private boolean loadCipherSuitConfig() {
@@ -111,6 +127,9 @@ public class Cryptography {
 		
 		// Load HMAC
 		hMac = Mac.getInstance(ciphersuit_properties.getProperty("mac-ciphersuite"));
+		
+		//load MAC to mitigate DOS
+		macDoS = Mac.getInstance(ciphersuit_properties.getProperty("mac-ciphersuite"));
 	}
 
 	private SecretKey readKey(KeyStore ks, String alias) throws
@@ -119,21 +138,6 @@ public class Cryptography {
 		SecretKeyEntry entry = (KeyStore.SecretKeyEntry)ks.getEntry(alias, new KeyStore.PasswordProtection(PASSWORD.toCharArray()));
 		return entry.getSecretKey();
 	}	
-	
-	private byte[] computeMac(Mac mac, byte[] payload) throws InvalidKeyException {
-		mac.init(km);
-		mac.update(payload);
-		return mac.doFinal();
-	}
-	
-
-	private boolean validateMac(Mac mac, byte[] message, byte[] expectedMac ) throws InvalidKeyException {
-
-        byte[] inboundMessageMac = computeMac(mac, message);
-        return MessageDigest.isEqual(inboundMessageMac, expectedMac);
-       
-	}
-
 
      private byte[][] getMessageParts( Mac mac, byte[] plainText ){
     	 
