@@ -1,12 +1,11 @@
 package secureSocket.secureMessages;
 public interface Payload {
 	
-	public byte payloadType();
-	
-	//public Payload deserialize();
-	
+	public byte getPayloadType();
+		
 	public byte[] serialize();
 	
-	public int size();
+	public short size();
 	
+	public byte[] getMessage();
 }

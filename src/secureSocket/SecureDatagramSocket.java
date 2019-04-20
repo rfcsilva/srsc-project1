@@ -26,12 +26,17 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
 import Utils.ArrayUtils;
+import secureSocket.secureMessages.DefaultPayload;
+import secureSocket.secureMessages.Payload;
+import secureSocket.secureMessages.SecureMessage;
+import secureSocket.secureMessages.secureMessageImplementation;
 
 public class SecureDatagramSocket implements java.io.Closeable {
 
-	private DatagramSocket socket;
+	private static final long INITIAL_ID  = 0L;
+	private static final byte VERSION_RELEASE = 0x01;
+	private static DatagramSocket socket;
 	private Cryptography criptoService;
-	private int nonce;
 	
 	public SecureDatagramSocket(int port, InetAddress laddr) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException {
 		if( laddr.isMulticastAddress() ) {
@@ -60,49 +65,28 @@ public class SecureDatagramSocket implements java.io.Closeable {
 		socket.close();
 	}
 	
-	public void receive(DatagramPacket p) throws
+	public static void receive(DatagramPacket p) throws
 		IOException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
 	
 		socket.receive(p);
-		byte[] ciphertext = Arrays.copyOfRange(p.getData(), 0, p.getLength());
-		byte[] mp = criptoService.decrypt(ciphertext);
-		byte[] message = retrieveM(mp);
+		byte[] secureMessageBytes = Arrays.copyOfRange(p.getData(), 0, p.getLength());
+		SecureMessage sm = new secureMessageImplementation( secureMessageBytes );
+		byte[] message = sm.getPayload().getMessage();
 		p.setData(message);	
 		p.setLength(message.length);
 	}
 
-	public void send(DatagramPacket p) throws IOException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, ShortBufferException {
+	public static void send(DatagramPacket p) throws IOException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, ShortBufferException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException {
 		
 		byte[] message = Arrays.copyOfRange(p.getData(), 0, p.getLength());
-		byte[] cypherText = buildPayload(0, 0, message);
-		p.setData(cypherText);
-		p.setLength(cypherText.length);
+		Payload payload = new DefaultPayload(INITIAL_ID, Utils.Utils.getNonce(), message);
+		SecureMessage sm = new secureMessageImplementation(VERSION_RELEASE, payload);
+		byte[] secureMessageBytes = sm.getBytes();
+		p.setData(secureMessageBytes);
+		p.setLength(secureMessageBytes.length);
 		socket.send(p);
 	}
 	
-	private byte[] buildPayload(long id, long nonce, byte[] message ) throws IOException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, ShortBufferException {
-		
-		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-		DataOutputStream dataOut = new DataOutputStream(byteOut);
-		
-		dataOut.writeLong(id);
-		dataOut.writeLong(nonce);
-		dataOut.write(message, 0, message.length);
-		dataOut.flush();
-		byteOut.flush();
-		
-		//cipher MP
-		byte[] Mp = byteOut.toByteArray();
-		byte[] cipheredMp = criptoService.encrypt(Mp);
-		
-		//Append MacDoS
-		byte[] macDos = criptoService.computeMacDoS(cipheredMp);
-		
-		dataOut.close();
-		byteOut.close();
-		
-		return ArrayUtils.concat(cipheredMp, macDos);
-	}
 	
 	private static byte[] retrieveM(byte[] Mp) throws IOException {
 		ByteArrayInputStream byteIn = new ByteArrayInputStream(Mp);
@@ -119,7 +103,8 @@ public class SecureDatagramSocket implements java.io.Closeable {
 		byteIn.close();
 		return m;
 	}
-	
+
+	/*
 	private static final byte HEADER_SEPARATOR = 0x00;
 	
 	private static byte[] appendHeader(byte version_release, byte payload_type, short payload_size, byte[] payload) throws IOException {
@@ -144,7 +129,7 @@ public class SecureDatagramSocket implements java.io.Closeable {
 		
 		return msg;
 	}
-	
+	*/
 	// não sei como ler
 	
 }

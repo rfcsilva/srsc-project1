@@ -1,5 +1,7 @@
 package secureSocket.secureMessages;
 
+import java.io.IOException;
+
 public interface SecureMessage {
 	
 	byte getVersionRelease();
@@ -8,8 +10,8 @@ public interface SecureMessage {
 	
 	short getPayloadSize();
 	
-	byte getPayload();
+	Payload getPayload();
 	
-	byte[] getBytes();
+	byte[] getBytes() throws IOException;
 	
 }

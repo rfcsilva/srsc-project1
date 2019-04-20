@@ -22,7 +22,7 @@ import secureSocket.Cryptography;
 
 // TODO : find better name for the class
 public class DefaultPayload implements Payload {
-	
+		
 	private long id;
 	private long nonce;
 	private byte[] message;
@@ -59,7 +59,7 @@ public class DefaultPayload implements Payload {
 		this.outterMac = criptoService.computeMacDoS(this.cipherText);
 	}
 	
-	public byte payloadType() {
+	public byte getPayloadType() {
 		return 0x01;
 	}
 	
@@ -67,7 +67,18 @@ public class DefaultPayload implements Payload {
 		return ArrayUtils.concat(this.cipherText, this.outterMac);
 	}
 	
-	public int size() {
-		return cipherText.length + outterMac.length;
+	public short size() {
+		return (short) (cipherText.length + outterMac.length);
+	}
+
+	//TODO
+	public static Payload deserialize(byte[] rawPayload ) {
+		return null;
+	}
+
+	@Override
+	public byte[] getMessage() {
+		
+		return message;
 	}
 }
