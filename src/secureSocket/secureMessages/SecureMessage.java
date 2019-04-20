@@ -1,4 +1,4 @@
-package secureSocket.secureMessages.interfaces;
+package secureSocket.secureMessages;
 
 public interface SecureMessage {
 	
@@ -9,5 +9,7 @@ public interface SecureMessage {
 	short getPayloadSize();
 	
 	byte getPayload();
+	
+	byte[] getBytes();
 	
 }
