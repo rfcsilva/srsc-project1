@@ -2,6 +2,7 @@ package secureSocket.secureMessages;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 
 public class secureMessageImplementation implements SecureMessage {
 	
@@ -18,14 +19,18 @@ public class secureMessageImplementation implements SecureMessage {
 		
 	}
 	
-	public secureMessageImplementation(byte[] rawContent) {
+	public secureMessageImplementation(byte[] rawContent) throws IOException {
+		
 		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
 		DataOutputStream dataOut = new DataOutputStream(byteOut);
 		
 		dataOut.write(versionRelease);
 		dataOut.write(payloadType);
 		dataOut.writeShort(payloadSize);
-		dataOut.write(message, 0, message.length);
+		byte[] rawPayload = new byte[ payloadSize ];
+		dataOut.write(rawPayload, 0, payloadSize);
+		payload = PayloadFactory.buildPayload(payloadType, rawPayload );
+		
 		dataOut.flush();
 		byteOut.flush();
 		
@@ -34,20 +39,20 @@ public class secureMessageImplementation implements SecureMessage {
 	
 	@Override
 	public byte getVersionRelease() {
-		// TODO Auto-generated method stub
-		return 0;
+
+		return versionRelease;
 	}
 
 	@Override
 	public byte getPayloadType() {
-		// TODO Auto-generated method stub
-		return 0;
+	
+		return payloadType;
 	}
 
 	@Override
 	public short getPayloadSize() {
-		// TODO Auto-generated method stub
-		return 0;
+		
+		return payloadSize;
 	}
 
 	@Override

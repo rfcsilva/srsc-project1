@@ -63,7 +63,6 @@ public class SecureDatagramSocket implements java.io.Closeable {
 	public void receive(DatagramPacket p) throws
 		IOException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
 	
-
 		socket.receive(p);
 		byte[] ciphertext = Arrays.copyOfRange(p.getData(), 0, p.getLength());
 		byte[] mp = criptoService.decrypt(ciphertext);
