@@ -38,8 +38,7 @@ public class Cryptography {
 			0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
 			0x08, 0x09, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15
 	};
-	private static final String MESSAGE_KEY = null;	
-
+	
 	private Properties ciphersuit_properties;
 	private Cipher cipher;
 	private Mac hMac;
@@ -59,12 +58,6 @@ public class Cryptography {
 	}
 
 	public byte[] encrypt(byte[] plaintext) throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, ShortBufferException {
-		/*byte[] cipherText = new byte[cipher.getOutputSize(plaintext.length + hMac.getMacLength())];
-
-		byte[] mac = computeMac(hMac, plaintext);
-		int ctLength = cipher.update(plaintext, 0, plaintext.length, cipherText, 0);
-		cipher.doFinal(mac, 0, mac.length, cipherText, ctLength);
-		return cipherText;*/
 
 		byte[] cipherText = new byte[cipher.getOutputSize(plaintext.length)];
 		cipher.update(plaintext, 0, plaintext.length, cipherText, 0);
@@ -76,15 +69,6 @@ public class Cryptography {
 	//TODO: What to do when mac is invalid
 	public byte[] decrypt(byte[] cipherText) throws ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
 
-		/* byte[] plainText = new byte[cipher.getOutputSize(cipherText.length)];
-	    int ptLength = cipher.update(cipherText, 0, cipherText.length, plainText, 0);
-	    ptLength += cipher.doFinal(plainText, ptLength);
-
-	    byte[][] messageParts = getMessageParts(hMac, plainText);
-	    if(validateMac( hMac ,messageParts[0], messageParts[1]) )
-	    	return messageParts[0];
-
-	    return null;*/
 
 		byte[] plainText = new byte[cipher.getOutputSize(cipherText.length)];
 		int ptLength = cipher.update(cipherText, 0, cipherText.length, plainText, 0);
@@ -101,21 +85,34 @@ public class Cryptography {
 		return computeMac(hMac, payload);
 	}
 
-	public boolean validateMacDos(byte[] payload, byte[] expectedMac) throws InvalidKeyException {
-		byte[] inboundCipherMac = computeMac(hMacDoS , payload);
-		return MessageDigest.isEqual(inboundCipherMac, expectedMac);		
+	public boolean validateMac(Mac mac, byte[] message, byte[] expectedMac) throws InvalidKeyException {
+		byte[] inboundMessageMac = computeMac(mac, message);
+		return MessageDigest.isEqual(inboundMessageMac, expectedMac);
+	}
+	
+	public byte[][] getMessageParts( Mac mac, byte[] plainText ){
+
+		byte[][] messageParts = new byte[2][]; 
+
+		int  messageLength = plainText.length - mac.getMacLength();
+
+		byte[] aux = new byte[messageLength];
+		System.arraycopy(plainText, 0, aux, 0, messageLength);
+		messageParts[0] = aux;
+
+		aux = new byte[mac.getMacLength()];
+		System.arraycopy(plainText, messageLength, aux, 0, aux.length);
+		messageParts[1] = aux;
+
+		return messageParts;
+
 	}
 
 	private byte[] computeMac(Mac mac, byte[] payload) throws InvalidKeyException {
 		mac.update(payload);
 		return mac.doFinal();
 	}
-
-	private boolean validateMac(Mac mac, byte[] message, byte[] expectedMac ) throws InvalidKeyException {
-		byte[] inboundMessageMac = computeMac(mac, message);
-		return MessageDigest.isEqual(inboundMessageMac, expectedMac);
-	}	
-
+	
 	// Porque estás a retornar bool?
 	private boolean loadCipherSuitConfig() {
 		try {
@@ -158,22 +155,4 @@ public class Cryptography {
 		SecretKeyEntry entry = (KeyStore.SecretKeyEntry)ks.getEntry(alias, new KeyStore.PasswordProtection(PASSWORD.toCharArray()));
 		return entry.getSecretKey();
 	}	
-
-	private byte[][] getMessageParts( Mac mac, byte[] plainText ){
-
-		byte[][] messageParts = new byte[2][]; 
-
-		int  messageLength = plainText.length - mac.getMacLength();
-
-		byte[] aux = new byte[messageLength];
-		System.arraycopy(plainText, 0, aux, 0, messageLength);
-		messageParts[0] = aux;
-
-		aux = new byte[mac.getMacLength()];
-		System.arraycopy(plainText, messageLength, aux, 0, aux.length);
-		messageParts[1] = aux;
-
-		return messageParts;
-
-	}
 }

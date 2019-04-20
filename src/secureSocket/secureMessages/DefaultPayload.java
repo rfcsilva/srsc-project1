@@ -43,19 +43,18 @@ public class DefaultPayload implements Payload {
 		dataOut.write(message, 0, message.length);
 		dataOut.flush();
 		byteOut.flush();
-		
 		// cipherText
+		
 		byte[] Mp = byteOut.toByteArray();
 		
 		dataOut.close();
 		byteOut.close();
 		
 		Cryptography criptoService = new Cryptography(Cipher.ENCRYPT_MODE); // TODO: Isto assim naõ parece bom, tem de se arranjar melhor maneira de interajir com esta class
-		
-		this.cipherText = criptoService.encrypt(Mp);
-		
+				
 		//Append MacDoS
-		this.innerMac = criptoService.computeMacDoS(Mp);
+		this.innerMac = criptoService.computeMac(Mp);	
+		this.cipherText = criptoService.encrypt( ArrayUtils.concat(Mp, innerMac));
 		this.outterMac = criptoService.computeMacDoS(this.cipherText);
 	}
 	
@@ -73,6 +72,14 @@ public class DefaultPayload implements Payload {
 
 	//TODO
 	public static Payload deserialize(byte[] rawPayload ) {
+		
+		
+		
+	    byte[][] messageParts = getMessageParts(, rawPayload);
+	    if(validateMac( hMac ,messageParts[0], messageParts[1]) )
+	    	return messageParts[0];
+	    
+		
 		return null;
 	}
 

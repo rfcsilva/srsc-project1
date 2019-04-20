@@ -36,7 +36,6 @@ public class SecureDatagramSocket implements java.io.Closeable {
 	private static final long INITIAL_ID  = 0L;
 	private static final byte VERSION_RELEASE = 0x01;
 	private static DatagramSocket socket;
-	private Cryptography criptoService;
 	
 	public SecureDatagramSocket(int port, InetAddress laddr) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException {
 		if( laddr.isMulticastAddress() ) {
@@ -46,8 +45,7 @@ public class SecureDatagramSocket implements java.io.Closeable {
 		} else {
 			socket = new DatagramSocket(port, laddr);
 		}
-	
-		criptoService = new Cryptography(Cipher.DECRYPT_MODE);
+
 	}
 
 
@@ -57,7 +55,7 @@ public class SecureDatagramSocket implements java.io.Closeable {
 
 	public SecureDatagramSocket() throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException {
 		socket = new DatagramSocket();	
-		criptoService = new Cryptography(Cipher.ENCRYPT_MODE);
+
 	}
 
 	@Override
