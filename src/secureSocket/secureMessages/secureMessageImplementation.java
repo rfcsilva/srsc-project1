@@ -37,7 +37,7 @@ public class secureMessageImplementation implements SecureMessage {
 	}
 	
 	//TODO payload may come null if type is invalid 
-	public secureMessageImplementation(byte[] rawContent, Cryptography2 criptoService) throws IOException, InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException {
+	public secureMessageImplementation(byte[] rawContent, Cryptography2 cryptoManager) throws IOException, InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException {
 		
 		ByteArrayInputStream byteIn = new ByteArrayInputStream(rawContent);
 		DataInputStream dataIn = new DataInputStream(byteIn);
@@ -49,7 +49,7 @@ public class secureMessageImplementation implements SecureMessage {
 		payloadSize = dataIn.readShort();
 		byte[] rawPayload = new byte[ payloadSize ];
 		dataIn.read(rawPayload, 0, payloadSize);
-		payload = PayloadFactory.buildPayload(payloadType, rawPayload, criptoService );
+		payload = PayloadFactory.buildPayload(payloadType, rawPayload, cryptoManager );
 		
 		dataIn.close();
 		byteIn.close();
