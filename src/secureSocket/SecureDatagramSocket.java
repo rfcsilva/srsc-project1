@@ -26,6 +26,7 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
 import Utils.ArrayUtils;
+import Utils.Utils;
 import secureSocket.secureMessages.DefaultPayload;
 import secureSocket.secureMessages.Payload;
 import secureSocket.secureMessages.SecureMessage;
@@ -77,7 +78,7 @@ public class SecureDatagramSocket implements java.io.Closeable {
 	public static void send(DatagramPacket p) throws IOException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, ShortBufferException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException {
 		
 		byte[] message = Arrays.copyOfRange(p.getData(), 0, p.getLength());
-		Payload payload = new DefaultPayload(INITIAL_ID, Utils.Utils.getNonce(), message);
+		Payload payload = new DefaultPayload(INITIAL_ID, Utils.getNonce(), message);
 		SecureMessage sm = new secureMessageImplementation(VERSION_RELEASE, payload);
 		byte[] secureMessageBytes = sm.getBytes();
 		p.setData(secureMessageBytes);
