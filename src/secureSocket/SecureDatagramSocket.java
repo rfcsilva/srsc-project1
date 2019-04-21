@@ -37,6 +37,7 @@ public class SecureDatagramSocket implements java.io.Closeable {
 	private static final long INITIAL_ID  = 0L;
 	private static final byte VERSION_RELEASE = 0x01;
 	private static DatagramSocket socket;
+	private static Cryptography2 criptoService; //TODO INICIALIZAR!!!
 	
 	public SecureDatagramSocket(int port, InetAddress laddr) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException {
 		if( laddr.isMulticastAddress() ) {
@@ -68,7 +69,7 @@ public class SecureDatagramSocket implements java.io.Closeable {
 	
 		socket.receive(p);
 		byte[] secureMessageBytes = Arrays.copyOfRange(p.getData(), 0, p.getLength());
-		SecureMessage sm = new secureMessageImplementation( secureMessageBytes );
+		SecureMessage sm = new secureMessageImplementation( secureMessageBytes, criptoService );
 		byte[] message = sm.getPayload().getMessage();
 		p.setData(message);	
 		p.setLength(message.length);
@@ -76,9 +77,9 @@ public class SecureDatagramSocket implements java.io.Closeable {
 
 	public static void send(DatagramPacket p) throws IOException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, ShortBufferException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException {
 		byte[] message = Arrays.copyOfRange(p.getData(), 0, p.getLength());
-		Payload payload = new DefaultPayload(INITIAL_ID, Utils.getNonce(), message);
+		Payload payload = new DefaultPayload(INITIAL_ID, Utils.getNonce(), message, criptoService);
 		SecureMessage sm = new secureMessageImplementation(VERSION_RELEASE, payload);
-		byte[] secureMessageBytes = sm.getBytes();
+		byte[] secureMessageBytes = sm.serialize();
 		p.setData(secureMessageBytes);
 		p.setLength(secureMessageBytes.length);
 		socket.send(p);

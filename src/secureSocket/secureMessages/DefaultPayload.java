@@ -21,12 +21,15 @@ import javax.crypto.ShortBufferException;
 
 import Utils.ArrayUtils;
 import secureSocket.Cryptography;
+import secureSocket.Cryptography2;
 
 // TODO : find better name for the class
 public class DefaultPayload implements Payload {
+	
+	protected static final byte TYPE = 0x01;
 		
 	//Encryption support
-	private static Cryptography criptoService; 
+	//private static Cryptography2 criptoService; 
 	
 	
 	//Payload data
@@ -37,7 +40,7 @@ public class DefaultPayload implements Payload {
 	private byte[] cipherText;
 	private byte[] outterMac;
 	
-	public DefaultPayload(long id, long nonce, byte[] message) throws IOException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, IllegalBlockSizeException, BadPaddingException, ShortBufferException {
+	public DefaultPayload(long id, long nonce, byte[] message, Cryptography2 criptoService) throws IOException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, IllegalBlockSizeException, BadPaddingException, ShortBufferException {
 		
 		this.message = message;
 		this.id = id;
@@ -45,7 +48,7 @@ public class DefaultPayload implements Payload {
 		byte[] Mp = buildMp();
 		
 		// cipherText
-		criptoService = new Cryptography(Cipher.ENCRYPT_MODE); // TODO: Isto assim naõ parece bom, tem de se arranjar melhor maneira de interajir com esta class
+		//this.criptoService = criptoService;
 				
 		//Append MacDoS
 		this.innerMac = criptoService.computeMac(Mp);	
@@ -57,7 +60,7 @@ public class DefaultPayload implements Payload {
 			byte[] innerMac, byte[] outterMac) {
 		
 		this.id = id;
-		this.nonce = nonce;
+			this.nonce = nonce;
 		this.message = message;
 		this.cipherText = ciphertext;
 		this.innerMac = innerMac;
@@ -82,7 +85,6 @@ public class DefaultPayload implements Payload {
 		dataOut.close();
 		byteOut.close();
 		
-		
 		return mp;
 	}
 
@@ -100,9 +102,7 @@ public class DefaultPayload implements Payload {
 
 	//TODO handle bad macs
 	// TODO : retornar Payload ou DEfaultPayload?
-	public static Payload deserialize(byte[] rawPayload ) throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException {
-		if(criptoService == null)
-			criptoService = new Cryptography(Cipher.DECRYPT_MODE);
+	public static Payload deserialize(byte[] rawPayload, Cryptography2 criptoService ) throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException {
 		
 	    byte[][] messageParts = criptoService.splitHeader(rawPayload);
 	    if(criptoService.validateMacDos(messageParts[0], messageParts[1])) {
