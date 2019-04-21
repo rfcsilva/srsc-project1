@@ -139,8 +139,8 @@ public class Cryptography2 {
 	public byte[] encrypt(byte[] plaintext) throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, ShortBufferException {
 		byte[] cipherText = new byte[cipher.getOutputSize(plaintext.length)];
 		cipher.update(plaintext, 0, plaintext.length, cipherText, 0);
-		cipher.doFinal();
-		return cipherText;
+		return cipher.doFinal();
+		//return cipherText;
 	}
 
 	public byte[] decrypt(byte[] cipherText) throws ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
