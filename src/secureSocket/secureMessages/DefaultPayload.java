@@ -38,6 +38,7 @@ public class DefaultPayload implements Payload {
 	private byte[] outterMac;
 	
 	public DefaultPayload(long id, long nonce, byte[] message) throws IOException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, IllegalBlockSizeException, BadPaddingException, ShortBufferException {
+		
 		this.message = message;
 		this.id = id;
 		this.nonce = nonce;

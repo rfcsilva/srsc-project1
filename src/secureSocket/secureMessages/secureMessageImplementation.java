@@ -42,7 +42,9 @@ public class secureMessageImplementation implements SecureMessage {
 		DataInputStream dataIn = new DataInputStream(byteIn);
 		
 		versionRelease = dataIn.readByte();
+		dataIn.readByte();
 		payloadType = dataIn.readByte();
+		dataIn.readByte();
 		payloadSize = dataIn.readShort();
 		byte[] rawPayload = new byte[ payloadSize ];
 		dataIn.read(rawPayload, 0, payloadSize);
@@ -107,5 +109,4 @@ public class secureMessageImplementation implements SecureMessage {
 		
 		return messageBytes;
 	}
-		
 }
