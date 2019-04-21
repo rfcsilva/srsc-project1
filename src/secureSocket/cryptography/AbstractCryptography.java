@@ -146,13 +146,7 @@ public abstract class AbstractCryptography implements Cryptography {
 	
 	public abstract byte[] computeIntegrityProof(byte[] payload) throws InvalidKeyException;
 
-	
-	private byte[] computeMac(Mac mac, byte[] payload) throws InvalidKeyException {
-		mac.update(payload);
-		return mac.doFinal();
-	}
-
-	@Override
+		@Override
 	public boolean validateMac(byte[] message, byte[] expectedMac) throws InvalidKeyException {
 		return validateMac(outerMac, message, expectedMac);
 	}
@@ -188,7 +182,7 @@ public abstract class AbstractCryptography implements Cryptography {
 		return messageParts;
 	}
 	
-	private byte[][] splitMac(Mac mac, byte[] plainText){
+	protected byte[][] splitMac(Mac mac, byte[] plainText){
 		byte[][] messageParts = new byte[2][]; 
 
 		int macLength = mac.getMacLength();
@@ -201,6 +195,11 @@ public abstract class AbstractCryptography implements Cryptography {
 		System.arraycopy(plainText, messageLength, messageParts[1], 0, macLength);
 
 		return messageParts;
+	}
+	
+	protected byte[] computeMac(Mac mac, byte[] payload) throws InvalidKeyException {
+		mac.update(payload);
+		return mac.doFinal();
 	}
 	
 }
