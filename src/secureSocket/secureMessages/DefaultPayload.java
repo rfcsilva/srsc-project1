@@ -127,13 +127,31 @@ public class DefaultPayload implements Payload {
 
 				return payload;
 			}
-		}
-			
-			
+		}	
 	}
 
 	@Override
 	public byte[] getMessage() {
 		return message;
+	}
+
+	public long getId() {
+		return id;
+	}
+
+	public long getNonce() {
+		return nonce;
+	}
+
+	public byte[] getInnerMac() {
+		return innerMac;
+	}
+
+	public byte[] getCipherText() {
+		return cipherText;
+	}
+
+	public byte[] getOutterMac() {
+		return outterMac;
 	}
 }

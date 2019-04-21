@@ -40,6 +40,8 @@ class hjUDPproxy {
 			System.exit(1);
 		}
 		
+		System.out.println("Proxy ready to receive...");
+		
 		Properties properties = new Properties();
 		properties.load(inputStream);
 		String remote = properties.getProperty("remote");
