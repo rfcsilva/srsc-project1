@@ -53,6 +53,19 @@ public class DefaultPayload implements Payload {
 		this.outterMac = criptoService.computeMacDoS(this.cipherText);
 	}
 	
+	private DefaultPayload(long id, long nonce, byte[] message, byte[] ciphertext,
+			byte[] innerMac, byte[] outterMac) {
+		
+		this.id = id;
+		this.nonce = nonce;
+		this.message = message;
+		this.cipherText = ciphertext;
+		this.innerMac = innerMac;
+		this.outterMac = outterMac;
+		
+	}
+	
+	
 	private byte[] buildMp() throws IOException {
 		
 		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
@@ -96,29 +109,26 @@ public class DefaultPayload implements Payload {
 	    	byte[] plainText = criptoService.decrypt(messageParts[0]); //TODO: better name
 	    	byte[][] payloadParts = criptoService.splitPayload(plainText);
 	    	if(criptoService.validadeInnerMac(payloadParts[0], payloadParts[1])) {
-	    		return deconstructMp(payloadParts[0]);    		
+	    		
+	    		ByteArrayInputStream byteIn = new ByteArrayInputStream(payloadParts[0]);
+	    		DataInputStream dataIn = new DataInputStream(byteIn);
+	    		
+	    		long id = dataIn.readLong();
+	    		long nonce = dataIn.readLong();
+	    		int  messageSize = payloadParts[0].length - 2* Long.BYTES;
+	    		byte[] message = new byte[ messageSize ];
+	    		dataIn.read(message, 0, messageSize);
+	    	
+	    		Payload payload = new DefaultPayload(id, nonce, message,
+	    				messageParts[0], payloadParts[1], messageParts[1]);
+	    		
+	    		dataIn.close();
+	    		byteIn.close();
+	    		
+	    		return payload;		
 	    	}		
 	    }
 		return null;
-	}
-
-	private static Payload deconstructMp(byte[] mp) throws IOException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, IllegalBlockSizeException, BadPaddingException, ShortBufferException {
-		
-		ByteArrayInputStream byteIn = new ByteArrayInputStream(mp);
-		DataInputStream dataIn = new DataInputStream(byteIn);
-		
-		long id = dataIn.readLong();
-		long nonce = dataIn.readLong();
-		int  messageSize = mp.length - 2* Long.BYTES;
-		byte[] message = new byte[ messageSize ];
-		dataIn.read(message, 0, messageSize);
-		Payload payload = new DefaultPayload(id, nonce, message);
-		
-		dataIn.close();
-		byteIn.close();
-		
-		
-		return payload;
 	}
 
 	@Override
