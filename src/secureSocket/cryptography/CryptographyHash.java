@@ -29,7 +29,7 @@ public class CryptographyHash extends AbstractCryptography {
 		return MessageDigest.isEqual(h, expectedHash);
 	}
 	
-	public byte[][] splitInnerHash(byte[] plainText){
+	public byte[][] splitInnerHash(byte[] plainText) {
 		return splitMessage(innerHash.getDigestLength(), plainText);
 	}
 
@@ -45,8 +45,7 @@ public class CryptographyHash extends AbstractCryptography {
 
 	@Override
 	public byte[][] splitIntegrityProof(byte[] plainText) {
-		// TODO Auto-generated method stub
-		return null;
+		return splitInnerHash(plainText);
 	}
 	
 }
