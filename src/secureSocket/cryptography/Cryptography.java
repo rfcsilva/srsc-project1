@@ -17,18 +17,18 @@ public interface Cryptography {
 	
 	public byte[] decrypt(byte[] cipherText) throws ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException;
 	
-	public byte[] computeMac(byte[] payload) throws InvalidKeyException;
+	public byte[] computeOuterMac(byte[] payload) throws InvalidKeyException;
 	
-	public boolean validateMac(byte[] message, byte[] expectedMac) throws InvalidKeyException;
+	public boolean validateOuterMac(byte[] message, byte[] expectedMac) throws InvalidKeyException;
 	
-	public byte[] computeIntegrityProof(byte[] payload)  throws InvalidKeyException;
+	public byte[] computeIntegrityProof(byte[] payload) throws InvalidKeyException;
 	
-	public boolean validateIntegrityProof(byte[] message, byte[] expectedMac) throws InvalidKeyException;
+	public boolean validateIntegrityProof(byte[] message, byte[] expected) throws InvalidKeyException;
 
-	public byte[][] splitMac(byte[] plainText);
+	public byte[][] splitOuterMac(byte[] plainText);
 
 	public byte[][] splitIntegrityProof(byte[] plainText);
 	
-	public Mac getMac();
+	public Mac getOuterMac();
 }
 

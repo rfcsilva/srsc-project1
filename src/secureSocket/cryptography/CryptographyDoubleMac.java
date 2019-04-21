@@ -12,7 +12,6 @@ public class CryptographyDoubleMac extends AbstractCryptography {
 	public CryptographyDoubleMac(Cipher cipher, Mac innerMac, Mac outerMac) {
 		super(cipher, outerMac);
 		this.innerMac = innerMac;
-		
 	}
 	
 	public Mac getInnerMac() {
@@ -31,7 +30,7 @@ public class CryptographyDoubleMac extends AbstractCryptography {
 
 	@Override
 	public byte[][] splitIntegrityProof(byte[] plainText) {
-		return splitMac(innerMac, plainText);
+		return splitMessage(innerMac.getMacLength(), plainText);
 	}
 		
 }

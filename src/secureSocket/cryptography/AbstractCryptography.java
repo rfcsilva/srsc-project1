@@ -119,7 +119,7 @@ public abstract class AbstractCryptography implements Cryptography {
 	}
 
 	@Override
-	public Mac getMac() {
+	public Mac getOuterMac() {
 		return outerMac;
 	}
 
@@ -140,14 +140,14 @@ public abstract class AbstractCryptography implements Cryptography {
 	}
 
 	@Override
-	public byte[] computeMac(byte[] payload) throws InvalidKeyException {
+	public byte[] computeOuterMac(byte[] payload) throws InvalidKeyException {
 		return computeMac(outerMac, payload);
 	}
 	
 	public abstract byte[] computeIntegrityProof(byte[] payload) throws InvalidKeyException;
 
 		@Override
-	public boolean validateMac(byte[] message, byte[] expectedMac) throws InvalidKeyException {
+	public boolean validateOuterMac(byte[] message, byte[] expectedMac) throws InvalidKeyException {
 		return validateMac(outerMac, message, expectedMac);
 	}
 	
@@ -160,15 +160,14 @@ public abstract class AbstractCryptography implements Cryptography {
 	public abstract boolean validateIntegrityProof(byte[] message, byte[] expectedMac) throws InvalidKeyException;
 	
 	@Override
-	public byte[][] splitMac(byte[] plainText){
-		return splitMac(outerMac, plainText);
+	public byte[][] splitOuterMac(byte[] plainText){
+		return splitMessage(outerMac.getMacLength(), plainText);
 	}
 	
 	@Override
 	public abstract byte[][] splitIntegrityProof(byte[] plainText);
 
-	
-	protected byte[][] splitMessage(int offset, byte[] plainText){
+	protected byte[][] splitMessage(int offset, byte[] plainText) {
 		byte[][] messageParts = new byte[2][]; 
 
 		int messageLength = plainText.length - offset;
@@ -178,21 +177,6 @@ public abstract class AbstractCryptography implements Cryptography {
 
 		messageParts[1] = new byte[offset];
 		System.arraycopy(plainText, messageLength, messageParts[1], 0, offset);
-
-		return messageParts;
-	}
-	
-	protected byte[][] splitMac(Mac mac, byte[] plainText){
-		byte[][] messageParts = new byte[2][]; 
-
-		int macLength = mac.getMacLength();
-		int messageLength = plainText.length - macLength;
-
-		messageParts[0] = new byte[messageLength];
-		System.arraycopy(plainText, 0, messageParts[0], 0, messageLength);
-
-		messageParts[1] = new byte[macLength];
-		System.arraycopy(plainText, messageLength, messageParts[1], 0, macLength);
 
 		return messageParts;
 	}
