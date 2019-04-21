@@ -20,7 +20,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
-import secureSocket.cryptography.CryptographyImplementation;
+import secureSocket.cryptography.CryptographyDoubleMac;
 import secureSocket.exceptions.*;
 import secureSocket.secureMessages.DefaultPayload;
 import secureSocket.secureMessages.Payload;
@@ -35,17 +35,17 @@ public class SecureDatagramSocket {
 	private static final long INITIAL_ID  = 0L;
 	private static final byte VERSION_RELEASE = 0x01;
 	private DatagramSocket socket;
-	private CryptographyImplementation cryptoManager;
+	private CryptographyDoubleMac cryptoManager;
 	
 	public SecureDatagramSocket(int port, InetAddress laddr) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException {
 		if( laddr.isMulticastAddress() ) {
 			MulticastSocket ms = new MulticastSocket(port);
 			ms.joinGroup(laddr);
 			socket = ms;
-			cryptoManager = CryptographyImplementation.loadFromConfig(CIPHERSUITE_CONFIG_PATH, Cipher.DECRYPT_MODE);
+			cryptoManager = CryptographyDoubleMac.loadFromConfig(CIPHERSUITE_CONFIG_PATH, Cipher.DECRYPT_MODE);
 		} else {
 			socket = new DatagramSocket(port, laddr);
-			cryptoManager = CryptographyImplementation.loadFromConfig(CIPHERSUITE_CONFIG_PATH, Cipher.DECRYPT_MODE);
+			cryptoManager = CryptographyDoubleMac.loadFromConfig(CIPHERSUITE_CONFIG_PATH, Cipher.DECRYPT_MODE);
 		}
 	}
 
@@ -55,7 +55,7 @@ public class SecureDatagramSocket {
 
 	public SecureDatagramSocket() throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException {
 		socket = new DatagramSocket();
-		cryptoManager = CryptographyImplementation.loadFromConfig(CIPHERSUITE_CONFIG_PATH, Cipher.ENCRYPT_MODE);
+		cryptoManager = CryptographyDoubleMac.loadFromConfig(CIPHERSUITE_CONFIG_PATH, Cipher.ENCRYPT_MODE);
 	}
 
 	public void close() throws IOException {
