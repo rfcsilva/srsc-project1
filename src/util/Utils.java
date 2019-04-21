@@ -1,4 +1,4 @@
-package Utils;
+package util;
 
 import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;

@@ -17,8 +17,8 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
-import Utils.ArrayUtils;
 import secureSocket.Cryptography2;
+import util.ArrayUtils;
 
 public class secureMessageImplementation implements SecureMessage {
 	

@@ -90,6 +90,9 @@ public class Cryptography2 {
 		// Load KeyStore
 		KeyStore key_store = KeyStore.getInstance(ciphersuit_properties.getProperty(KEYSTORE_TYPE)); // TODO: passar estas strings todas para constatnes
 		char[] password = ciphersuit_properties.getProperty(KEYSTORE_PASSWORD).toCharArray();
+		//String ks_path = path.substring(0, path.lastIndexOf('/')+1) + ciphersuit_properties.getProperty(KEYSTORE);
+		//System.out.println(ks_path);
+		//key_store.load(new FileInputStream(ks_path), password);
 		key_store.load(new FileInputStream(ciphersuit_properties.getProperty(KEYSTORE)), password);
 		KeyStore.PasswordProtection  ks_pp = new KeyStore.PasswordProtection(password);
 
@@ -106,10 +109,10 @@ public class Cryptography2 {
 		return new Cryptography2(cipher, innerMac, outerMac);
 	}
 	
-	private static SecretKey readKey(KeyStore ks, KeyStore.PasswordProtection password, String alias) throws
+	private static SecretKey readKey(KeyStore ks, KeyStore.PasswordProtection ks_pp, String alias) throws
 	NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException,
 	CertificateException, FileNotFoundException, IOException {
-		SecretKeyEntry entry = (KeyStore.SecretKeyEntry)ks.getEntry(alias, password);
+		SecretKeyEntry entry = (KeyStore.SecretKeyEntry)ks.getEntry(alias, ks_pp);
 		return entry.getSecretKey();
 	}
 	

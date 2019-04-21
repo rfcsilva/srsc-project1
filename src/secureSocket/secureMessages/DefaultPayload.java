@@ -11,17 +11,14 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
-import java.util.Arrays;
 
 import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
-import Utils.ArrayUtils;
-import secureSocket.Cryptography;
 import secureSocket.Cryptography2;
+import util.ArrayUtils;
 
 // TODO : find better name for the class
 public class DefaultPayload implements Payload {
