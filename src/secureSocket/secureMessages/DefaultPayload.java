@@ -17,6 +17,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
+import secureSocket.cryptography.Cryptography;
 import secureSocket.cryptography.CryptographyDoubleMac;
 import secureSocket.exceptions.InvalidMacException;
 import secureSocket.exceptions.ReplayedNonceException;
@@ -34,11 +35,11 @@ public class DefaultPayload implements Payload {
 	private long id;
 	private long nonce;
 	private byte[] message;
-	private byte[] innerMac;
+	private byte[] innerIntegrityProof;
 	private byte[] cipherText;
 	private byte[] outterMac;
 
-	public DefaultPayload(long id, long nonce, byte[] message, CryptographyDoubleMac criptoManager)
+	public DefaultPayload(long id, long nonce, byte[] message, Cryptography criptoManager)
 			throws IOException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException,
 			NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException,
 			IllegalBlockSizeException, BadPaddingException, ShortBufferException {
@@ -50,8 +51,8 @@ public class DefaultPayload implements Payload {
 
 		// this.criptoService = criptoService;
 
-		this.innerMac = criptoManager.computeInnerMac(Mp);
-		this.cipherText = criptoManager.encrypt(ArrayUtils.concat(Mp, this.innerMac));
+		this.innerIntegrityProof = criptoManager.computeIntegrityProof(Mp);
+		this.cipherText = criptoManager.encrypt(ArrayUtils.concat(Mp, this.innerIntegrityProof));
 		this.outterMac = criptoManager.computeOuterMac(this.cipherText);
 	}
 
@@ -60,7 +61,7 @@ public class DefaultPayload implements Payload {
 		this.nonce = nonce;
 		this.message = message;
 		this.cipherText = ciphertext;
-		this.innerMac = innerMac;
+		this.innerIntegrityProof = innerMac;
 		this.outterMac = outterMac;
 	}
 
@@ -96,7 +97,7 @@ public class DefaultPayload implements Payload {
 
 	// TODO handle bad macs
 	// TODO : retornar Payload ou DEfaultPayload?
-	public static Payload deserialize(byte[] rawPayload, CryptographyDoubleMac criptoManager)
+	public static Payload deserialize(byte[] rawPayload, Cryptography criptoManager)
 			throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException,
 			InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException,
 			UnrecoverableEntryException, KeyStoreException, CertificateException, IOException, InvalidMacException, ReplayedNonceException {
@@ -106,8 +107,8 @@ public class DefaultPayload implements Payload {
 			throw new InvalidMacException("Invalid Outter Mac");
 		else {
 			byte[] plainText = criptoManager.decrypt(messageParts[0]);
-			byte[][] payloadParts = criptoManager.splitInnerMac(plainText);
-			if (!criptoManager.validadeInnerMac(payloadParts[0], payloadParts[1]))
+			byte[][] payloadParts = criptoManager.splitIntegrityProof(plainText);
+			if (!criptoManager.validateIntegrityProof(payloadParts[0], payloadParts[1]))
 					throw new InvalidMacException("Invalid Inner Mac");
 			else {
 				ByteArrayInputStream byteIn = new ByteArrayInputStream(payloadParts[0]);
@@ -144,7 +145,7 @@ public class DefaultPayload implements Payload {
 	}
 
 	public byte[] getInnerMac() {
-		return innerMac;
+		return innerIntegrityProof;
 	}
 
 	public byte[] getCipherText() {

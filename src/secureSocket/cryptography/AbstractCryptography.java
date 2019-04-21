@@ -68,7 +68,7 @@ public abstract class AbstractCryptography implements Cryptography {
 		return MessageDigest.getInstance(hashAlgorithm);
 	}
 	
-	public static AbstractCryptography loadFromConfig(String path, int cipherMode) throws IOException, NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException {
+	public static Cryptography loadFromConfig(String path, int cipherMode) throws IOException, NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException {
 		InputStream inputStream = new FileInputStream(path);
 		Properties ciphersuit_properties = new Properties();
 		ciphersuit_properties.load(inputStream);
