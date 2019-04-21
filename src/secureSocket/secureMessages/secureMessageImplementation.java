@@ -18,6 +18,7 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
 import Utils.ArrayUtils;
+import secureSocket.Cryptography2;
 
 public class secureMessageImplementation implements SecureMessage {
 	
@@ -36,7 +37,7 @@ public class secureMessageImplementation implements SecureMessage {
 	}
 	
 	//TODO payload may come null if type is invalid 
-	public secureMessageImplementation(byte[] rawContent) throws IOException, InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException {
+	public secureMessageImplementation(byte[] rawContent, Cryptography2 cryptoManager) throws IOException, InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException {
 		
 		ByteArrayInputStream byteIn = new ByteArrayInputStream(rawContent);
 		DataInputStream dataIn = new DataInputStream(byteIn);
@@ -48,7 +49,7 @@ public class secureMessageImplementation implements SecureMessage {
 		payloadSize = dataIn.readShort();
 		byte[] rawPayload = new byte[ payloadSize ];
 		dataIn.read(rawPayload, 0, payloadSize);
-		payload = PayloadFactory.buildPayload(payloadType, rawPayload );
+		payload = PayloadFactory.buildPayload(payloadType, rawPayload, cryptoManager );
 		
 		dataIn.close();
 		byteIn.close();
@@ -80,7 +81,7 @@ public class secureMessageImplementation implements SecureMessage {
 	}
 
 	@Override
-	public byte[] getBytes() throws IOException {
+	public byte[] serialize() throws IOException {
 		
 		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
 		DataOutputStream dataOut = new DataOutputStream(byteOut);

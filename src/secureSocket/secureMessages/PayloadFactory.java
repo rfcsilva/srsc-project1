@@ -13,16 +13,16 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
+import secureSocket.Cryptography2;
+
 public class PayloadFactory {
 
-	protected static final byte TYPE1 = 0x01;
-
-	public static Payload buildPayload(byte payloadType, byte[] rawPayload) throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException {
+	public static Payload buildPayload(byte payloadType, byte[] rawPayload, Cryptography2 cryptoManager) throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException {
 
 		switch(payloadType) {
 
-		case TYPE1:
-			return DefaultPayload.deserialize(rawPayload);		
+		case DefaultPayload.TYPE:
+			return DefaultPayload.deserialize(rawPayload, cryptoManager);	
 		default: 
 			return null; // TODO: Deveria fazer um throw
 		}

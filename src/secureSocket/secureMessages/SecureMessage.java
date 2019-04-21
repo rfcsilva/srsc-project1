@@ -12,6 +12,6 @@ public interface SecureMessage {
 	
 	Payload getPayload();
 	
-	byte[] getBytes() throws IOException;
+	byte[] serialize() throws IOException;
 	
 }
