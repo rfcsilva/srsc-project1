@@ -46,14 +46,12 @@ public class DefaultPayload implements Payload {
 		this.message = message;
 		this.id = id;
 		this.nonce = nonce;
-		byte[] Mp = buildMp();
+		byte[] Mp = buildMp(id, nonce, message);
 
-		// cipherText
 		// this.criptoService = criptoService;
 
-		// Append Macs
 		this.innerMac = criptoManager.computeInnerMac(Mp);
-		this.cipherText = criptoManager.encrypt(ArrayUtils.concat(Mp, innerMac));
+		this.cipherText = criptoManager.encrypt(ArrayUtils.concat(Mp, this.innerMac));
 		this.outterMac = criptoManager.computeOuterMac(this.cipherText);
 	}
 
@@ -66,7 +64,7 @@ public class DefaultPayload implements Payload {
 		this.outterMac = outterMac;
 	}
 
-	private byte[] buildMp() throws IOException {
+	private static byte[] buildMp(long id, long nonce, byte[] message) throws IOException {
 		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
 		DataOutputStream dataOut = new DataOutputStream(byteOut);
 

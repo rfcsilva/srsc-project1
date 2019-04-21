@@ -36,15 +36,6 @@ public class Cryptography {
 	private static final String KEYSTORE_PASSWORD = "keystore-password";
 	private static final String KEYSTORE_TYPE = "keystore-type";
 
-	//private static final String CIPHERSUITE_CONFIG_PATH = "configs/server/ciphersuite.conf";
-	
-	/*private static final String TYPE_OF_KEYSTORE = "PKCS12";
-	private static final String PATH_TO_KEYSTORE = "configs/keystore.p12";
-	private static final String AES_256_KEY_ALIAS = "aes256-key";
-	private static final String AES_256_MAC_KEY_ALIAS = "mac256-key";
-	private static final String AES_128_MAC_KEY_ALIAS = "mac128-key";
-	private static final String PASSWORD = "SRSC1819";*/
-
 	private static final byte[] ivBytes = new byte[] {
 			0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
 			0x08, 0x09, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15
@@ -55,13 +46,6 @@ public class Cryptography {
 	//private Cipher decryptCipher; // é preciso as duas ou passamos o modo no cosntrutor?
 	private Mac innerMac;
 	private Mac outerMac;
-	/*private SecretKey ks; // é preciso guardar as chaves?
-	private SecretKey km;
-	private SecretKey ka;*/
-	
-	/*public Cryptography2(String cipherAlgorithm, String cipherMode, SecretKey ks, byte[] iv, String innerMacAlgorithm) {
-		
-	}*/
 	
 	// TODO: arranjar nome melhor
 	public static Cipher buildCipher(String cipherAlgorithm, int cipherMode, SecretKey key, byte[] iv) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException { 
@@ -139,8 +123,8 @@ public class Cryptography {
 	public byte[] encrypt(byte[] plaintext) throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, ShortBufferException {
 		byte[] cipherText = new byte[cipher.getOutputSize(plaintext.length)];
 		cipher.update(plaintext, 0, plaintext.length, cipherText, 0);
-		return cipher.doFinal();
-		//return cipherText;
+		cipher.doFinal();
+		return cipherText;
 	}
 
 	public byte[] decrypt(byte[] cipherText) throws ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
