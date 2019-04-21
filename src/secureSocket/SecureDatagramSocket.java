@@ -20,6 +20,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
+import secureSocket.exceptions.*;
 import secureSocket.secureMessages.DefaultPayload;
 import secureSocket.secureMessages.Payload;
 import secureSocket.secureMessages.SecureMessage;

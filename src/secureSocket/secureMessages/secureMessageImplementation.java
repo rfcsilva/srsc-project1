@@ -18,6 +18,8 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
 import secureSocket.Cryptography2;
+import secureSocket.exceptions.InvalidMacException;
+import secureSocket.exceptions.ReplayedNonceException;
 import util.ArrayUtils;
 
 public class secureMessageImplementation implements SecureMessage {
@@ -37,7 +39,7 @@ public class secureMessageImplementation implements SecureMessage {
 	}
 	
 	//TODO payload may come null if type is invalid 
-	public secureMessageImplementation(byte[] rawContent, Cryptography2 cryptoManager) throws IOException, InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException {
+	public secureMessageImplementation(byte[] rawContent, Cryptography2 cryptoManager) throws IOException, InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidMacException, ReplayedNonceException {
 		
 		ByteArrayInputStream byteIn = new ByteArrayInputStream(rawContent);
 		DataInputStream dataIn = new DataInputStream(byteIn);

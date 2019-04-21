@@ -19,6 +19,7 @@ import javax.crypto.ShortBufferException;
 
 import secureSocket.Cryptography2;
 import secureSocket.exceptions.InvalidMacException;
+import secureSocket.exceptions.ReplayedNonceException;
 import util.ArrayUtils;
 
 // TODO : find better name for the class
@@ -100,7 +101,7 @@ public class DefaultPayload implements Payload {
 	public static Payload deserialize(byte[] rawPayload, Cryptography2 criptoManager)
 			throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException,
 			InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException,
-			UnrecoverableEntryException, KeyStoreException, CertificateException, IOException, InvalidMacException {
+			UnrecoverableEntryException, KeyStoreException, CertificateException, IOException, InvalidMacException, ReplayedNonceException {
 
 		byte[][] messageParts = criptoManager.splitOuterMac(rawPayload);
 		if (!criptoManager.validateOuterMac(messageParts[0], messageParts[1]))
