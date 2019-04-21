@@ -19,12 +19,12 @@ public class PayloadFactory {
 
 	public static Payload buildPayload(byte payloadType, byte[] rawPayload) throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException {
 
-		switch(payloadType ) {
+		switch(payloadType) {
 
 		case TYPE1:
 			return DefaultPayload.deserialize(rawPayload);		
 		default: 
-			return null;
+			return null; // TODO: Deveria fazer um throw
 		}
 	}
 

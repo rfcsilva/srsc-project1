@@ -86,7 +86,10 @@ public class DefaultPayload implements Payload {
 	}
 
 	//TODO handle bad macs
+	// TODO : retornar Payload ou DEfaultPayload?
 	public static Payload deserialize(byte[] rawPayload ) throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException {
+		if(criptoService == null)
+			criptoService = new Cryptography(Cipher.DECRYPT_MODE);
 		
 	    byte[][] messageParts = criptoService.splitHeader(rawPayload);
 	    if(criptoService.validateMacDos(messageParts[0], messageParts[1])) {
@@ -120,7 +123,6 @@ public class DefaultPayload implements Payload {
 
 	@Override
 	public byte[] getMessage() {
-		
 		return message;
 	}
 }

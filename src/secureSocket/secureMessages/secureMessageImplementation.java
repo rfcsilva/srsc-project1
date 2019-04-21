@@ -52,7 +52,6 @@ public class secureMessageImplementation implements SecureMessage {
 		
 		dataIn.close();
 		byteIn.close();
-		
 	}
 	
 	

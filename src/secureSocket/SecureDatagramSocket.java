@@ -56,7 +56,6 @@ public class SecureDatagramSocket implements java.io.Closeable {
 
 	public SecureDatagramSocket() throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException {
 		socket = new DatagramSocket();	
-
 	}
 
 	@Override
@@ -76,7 +75,6 @@ public class SecureDatagramSocket implements java.io.Closeable {
 	}
 
 	public static void send(DatagramPacket p) throws IOException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, ShortBufferException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException {
-		
 		byte[] message = Arrays.copyOfRange(p.getData(), 0, p.getLength());
 		Payload payload = new DefaultPayload(INITIAL_ID, Utils.getNonce(), message);
 		SecureMessage sm = new secureMessageImplementation(VERSION_RELEASE, payload);
