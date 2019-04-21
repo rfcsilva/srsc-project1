@@ -65,20 +65,21 @@ public class SecureDatagramSocket {
 		BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException,
 		NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException {
 
+		byte[] message = null;
 		while (true) {
 			try {
 				socket.receive(p);
 				byte[] secureMessageBytes = Arrays.copyOfRange(p.getData(), 0, p.getLength());
 				SecureMessage sm = new secureMessageImplementation(secureMessageBytes, cryptoManager);
 				
-				byte[] message = sm.getPayload().getMessage();
-				p.setData(message);
-				p.setLength(message.length);
+				message = sm.getPayload().getMessage();
 				break;
 			} catch (InvalidMacException | ReplayedNonceException e) {
 				System.err.println(e.getMessage());
 			}
 		}
+		p.setData(message);
+		p.setLength(message.length);
 	}
 
 	public void send(DatagramPacket p) throws IOException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, ShortBufferException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException {
