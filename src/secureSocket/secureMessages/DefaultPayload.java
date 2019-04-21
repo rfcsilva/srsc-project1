@@ -18,6 +18,7 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
 import secureSocket.Cryptography2;
+import secureSocket.exceptions.InvalidMacException;
 import util.ArrayUtils;
 
 // TODO : find better name for the class
@@ -99,19 +100,23 @@ public class DefaultPayload implements Payload {
 	public static Payload deserialize(byte[] rawPayload, Cryptography2 criptoManager)
 			throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException,
 			InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException,
-			UnrecoverableEntryException, KeyStoreException, CertificateException, IOException {
+			UnrecoverableEntryException, KeyStoreException, CertificateException, IOException, InvalidMacException {
 
 		byte[][] messageParts = criptoManager.splitOuterMac(rawPayload);
-		if (criptoManager.validateOuterMac(messageParts[0], messageParts[1])) {
+		if (!criptoManager.validateOuterMac(messageParts[0], messageParts[1]))
+			throw new InvalidMacException("Invalid Outter Mac");
+		else {
 			byte[] plainText = criptoManager.decrypt(messageParts[0]);
 			byte[][] payloadParts = criptoManager.splitInnerMac(plainText);
-			if (criptoManager.validadeInnerMac(payloadParts[0], payloadParts[1])) {
-
+			if (!criptoManager.validadeInnerMac(payloadParts[0], payloadParts[1]))
+					throw new InvalidMacException("Invalid Inner Mac");
+			else {
 				ByteArrayInputStream byteIn = new ByteArrayInputStream(payloadParts[0]);
 				DataInputStream dataIn = new DataInputStream(byteIn);
 
 				long id = dataIn.readLong();
 				long nonce = dataIn.readLong();
+				
 				int messageSize = payloadParts[0].length - 2 * Long.BYTES;
 				byte[] message = new byte[messageSize];
 				dataIn.read(message, 0, messageSize);
@@ -124,7 +129,8 @@ public class DefaultPayload implements Payload {
 				return payload;
 			}
 		}
-		return null; // TODO : lidar com isto
+			
+			
 	}
 
 	@Override
