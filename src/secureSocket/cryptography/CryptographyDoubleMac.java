@@ -24,7 +24,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.ShortBufferException;
 import javax.crypto.spec.IvParameterSpec;
 
-public class CryptographyDoubleMac implements Cryptography {
+public class CryptographyDoubleMac extends AbstractCryptography {
 
 	private static final String OUTER_MAC_CIPHERSUITE = "outer-mac-ciphersuite";
 	private static final String INNER_MAC_CIPHERSUITE = "inner-mac-ciphersuite";
@@ -167,20 +167,5 @@ public class CryptographyDoubleMac implements Cryptography {
 	public byte[][] splitInnerMac(byte[] plainText){
 		return splitMac(innerMac, plainText);
 	}
-	
-	private byte[][] splitMac(Mac mac, byte[] plainText){
-		byte[][] messageParts = new byte[2][]; 
-
-		int macLength = mac.getMacLength();
-		int messageLength = plainText.length - macLength;
-
-		messageParts[0] = new byte[messageLength];
-		System.arraycopy(plainText, 0, messageParts[0], 0, messageLength);
-
-		messageParts[1] = new byte[macLength];
-		System.arraycopy(plainText, messageLength, messageParts[1], 0, macLength);
-
-		return messageParts;
-	}
-	
+		
 }
