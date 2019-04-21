@@ -24,7 +24,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.ShortBufferException;
 import javax.crypto.spec.IvParameterSpec;
 
-public class AbstractCryptography implements Cryptography {
+public abstract class AbstractCryptography implements Cryptography {
 
 	private static final String OUTER_MAC_CIPHERSUITE = "outer-mac-ciphersuite";
 	private static final String INNER_MAC_CIPHERSUITE = "inner-mac-ciphersuite";
@@ -113,7 +113,8 @@ public class AbstractCryptography implements Cryptography {
 		return innerMac;
 	}
 
-	public Mac getOuterMac() {
+	@Override
+	public Mac getMac() {
 		return outerMac;
 	}
 
@@ -133,40 +134,38 @@ public class AbstractCryptography implements Cryptography {
 		return plainText;
 	}
 
-	public byte[] computeOuterMac(byte[] payload) throws InvalidKeyException {
+	@Override
+	public byte[] computeMac(byte[] payload) throws InvalidKeyException {
 		return computeMac(outerMac, payload);
 	}
-
-	public byte[] computeInnerMac(byte[] payload) throws InvalidKeyException {
-		return computeMac(innerMac, payload);
-	}
+	
+	public abstract byte[] computeIntegrityProof(byte[] payload) throws InvalidKeyException;
 	
 	private byte[] computeMac(Mac mac, byte[] payload) throws InvalidKeyException {
 		mac.update(payload);
 		return mac.doFinal();
 	}
 
-	//TODO: What to do when mac is invalid
-	public boolean validateOuterMac(byte[] message, byte[] expectedMac) throws InvalidKeyException {
+	@Override
+	public boolean validateMac(byte[] message, byte[] expectedMac) throws InvalidKeyException {
 		return validateMac(outerMac, message, expectedMac);
 	}
-	
-	public boolean validadeInnerMac(byte[] message, byte[] expectedMac) throws InvalidKeyException {
-		return validateMac(innerMac, message, expectedMac);
-	}
-	
+		
 	public boolean validateMac(Mac mac, byte[] message, byte[] expectedMac) throws InvalidKeyException {
 		byte[] inboundMessageMac = computeMac(mac, message);
 		return MessageDigest.isEqual(inboundMessageMac, expectedMac);
 	}
 	
-	public byte[][] splitOuterMac(byte[] plainText){
+	@Override
+	public abstract boolean validateIntegrityProof(byte[] message, byte[] expectedMac) throws InvalidKeyException;
+	
+	@Override
+	public byte[][] splitMac(byte[] plainText){
 		return splitMac(outerMac, plainText);
 	}
 	
-	public byte[][] splitInnerMac(byte[] plainText){
-		return splitMac(innerMac, plainText);
-	}
+	@Override
+	public abstract byte[][] splitIntegrityProof(byte[] plainText);
 	
 	private byte[][] splitMac(Mac mac, byte[] plainText){
 		byte[][] messageParts = new byte[2][]; 
