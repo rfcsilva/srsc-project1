@@ -24,7 +24,7 @@ import secureSocket.exceptions.*;
 import secureSocket.secureMessages.DefaultPayload;
 import secureSocket.secureMessages.Payload;
 import secureSocket.secureMessages.SecureMessage;
-import secureSocket.secureMessages.secureMessageImplementation;
+import secureSocket.secureMessages.SecureMessageImplementation;
 import util.Utils;
 
 public class SecureDatagramSocket {
@@ -70,7 +70,7 @@ public class SecureDatagramSocket {
 			try {
 				socket.receive(p);
 				byte[] secureMessageBytes = Arrays.copyOfRange(p.getData(), 0, p.getLength());
-				SecureMessage sm = new secureMessageImplementation(secureMessageBytes, cryptoManager);
+				SecureMessage sm = new SecureMessageImplementation(secureMessageBytes, cryptoManager);
 				
 				message = sm.getPayload().getMessage();
 				break;
@@ -85,7 +85,7 @@ public class SecureDatagramSocket {
 	public void send(DatagramPacket p) throws IOException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, ShortBufferException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException {
 		byte[] message = Arrays.copyOfRange(p.getData(), 0, p.getLength());
 		Payload payload = new DefaultPayload(INITIAL_ID, Utils.getNonce(), message, cryptoManager);
-		SecureMessage sm = new secureMessageImplementation(VERSION_RELEASE, payload);
+		SecureMessage sm = new SecureMessageImplementation(VERSION_RELEASE, payload);
 		byte[] secureMessageBytes = sm.serialize();
 		p.setData(secureMessageBytes);
 		p.setLength(secureMessageBytes.length);

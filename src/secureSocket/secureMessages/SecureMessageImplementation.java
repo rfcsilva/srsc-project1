@@ -22,14 +22,14 @@ import secureSocket.exceptions.InvalidMacException;
 import secureSocket.exceptions.ReplayedNonceException;
 import util.ArrayUtils;
 
-public class secureMessageImplementation implements SecureMessage {
+public class SecureMessageImplementation implements SecureMessage {
 	
 	private static final byte SEPARATOR = 0x00;
 	private byte versionRelease, payloadType;
 	private short payloadSize;
 	private Payload payload;
 	
-	public secureMessageImplementation(byte versionRelease, Payload payload) {
+	public SecureMessageImplementation(byte versionRelease, Payload payload) {
 		
 		this.versionRelease = versionRelease;
 		payloadType = payload.getPayloadType();
@@ -39,7 +39,7 @@ public class secureMessageImplementation implements SecureMessage {
 	}
 	
 	//TODO payload may come null if type is invalid 
-	public secureMessageImplementation(byte[] rawContent, Cryptography cryptoManager) throws IOException, InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidMacException, ReplayedNonceException {
+	public SecureMessageImplementation(byte[] rawContent, Cryptography cryptoManager) throws IOException, InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidMacException, ReplayedNonceException {
 		
 		ByteArrayInputStream byteIn = new ByteArrayInputStream(rawContent);
 		DataInputStream dataIn = new DataInputStream(byteIn);
