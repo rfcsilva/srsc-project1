@@ -24,8 +24,9 @@ import javax.crypto.SecretKey;
 import javax.crypto.ShortBufferException;
 import javax.crypto.spec.IvParameterSpec;
 
-public class AbstractCryptography implements Cryptography {
+public abstract class AbstractCryptography implements Cryptography {
 
+	private static final String HASH_CIPHERSUITE = "hash-ciphersuite";
 	private static final String OUTER_MAC_CIPHERSUITE = "outer-mac-ciphersuite";
 	private static final String INNER_MAC_CIPHERSUITE = "inner-mac-ciphersuite";
 	private static final String SESSION_CIPHERSUITE = "session-ciphersuite";
@@ -42,7 +43,6 @@ public class AbstractCryptography implements Cryptography {
 	};
 	
 	private Cipher cipher;
-	private Mac innerMac;
 	private Mac outerMac;
 	
 	// TODO: arranjar nome melhor
@@ -62,6 +62,10 @@ public class AbstractCryptography implements Cryptography {
 		Mac mac = Mac.getInstance(macAlgorithm);
 		mac.init(key);
 		return mac;
+	}
+	
+	public static MessageDigest buildHash(String hashAlgorithm) throws NoSuchAlgorithmException {
+		return MessageDigest.getInstance(hashAlgorithm);
 	}
 	
 	public static AbstractCryptography loadFromConfig(String path, int cipherMode) throws IOException, NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException {
@@ -85,10 +89,16 @@ public class AbstractCryptography implements Cryptography {
 		
 		// Build ciphersuits
 		Cipher cipher = buildCipher(ciphersuit_properties.getProperty(SESSION_CIPHERSUITE), cipherMode, ks, ivBytes); // TODO: o que fazer com o IV ?
-		Mac innerMac = buildMac(ciphersuit_properties.getProperty(INNER_MAC_CIPHERSUITE), kim);
 		Mac outerMac = buildMac(ciphersuit_properties.getProperty(OUTER_MAC_CIPHERSUITE), kom);
 		
-		return new AbstractCryptography(cipher, innerMac, outerMac);
+		String hashAlgorithm = ciphersuit_properties.getProperty(HASH_CIPHERSUITE);
+		if(hashAlgorithm != null) {
+			MessageDigest innerHash = buildHash(hashAlgorithm);
+			return new CryptographyHash(cipher, innerHash, outerMac);
+		} else {
+			Mac innerMac = buildMac(ciphersuit_properties.getProperty(INNER_MAC_CIPHERSUITE), kim);
+			return new CryptographyDoubleMac(cipher, innerMac, outerMac);
+		}
 	}
 	
 	private static SecretKey readKey(KeyStore ks, KeyStore.PasswordProtection ks_pp, String alias) throws
@@ -98,19 +108,14 @@ public class AbstractCryptography implements Cryptography {
 		return entry.getSecretKey();
 	}
 		
-	public AbstractCryptography(Cipher cipher, Mac innerMac, Mac outerMac) {
+	public AbstractCryptography(Cipher cipher, Mac outerMac) {
 		this.cipher = cipher;
-		this.innerMac = innerMac;
 		this.outerMac = outerMac;
 	}
 	
 	@Override
 	public Cipher getCipher() {
 		return cipher;
-	}
-
-	public Mac getInnerMac() {
-		return innerMac;
 	}
 
 	public Mac getOuterMac() {
@@ -136,10 +141,6 @@ public class AbstractCryptography implements Cryptography {
 	public byte[] computeOuterMac(byte[] payload) throws InvalidKeyException {
 		return computeMac(outerMac, payload);
 	}
-
-	public byte[] computeInnerMac(byte[] payload) throws InvalidKeyException {
-		return computeMac(innerMac, payload);
-	}
 	
 	private byte[] computeMac(Mac mac, byte[] payload) throws InvalidKeyException {
 		mac.update(payload);
@@ -151,34 +152,25 @@ public class AbstractCryptography implements Cryptography {
 		return validateMac(outerMac, message, expectedMac);
 	}
 	
-	public boolean validadeInnerMac(byte[] message, byte[] expectedMac) throws InvalidKeyException {
-		return validateMac(innerMac, message, expectedMac);
-	}
-	
 	public boolean validateMac(Mac mac, byte[] message, byte[] expectedMac) throws InvalidKeyException {
 		byte[] inboundMessageMac = computeMac(mac, message);
 		return MessageDigest.isEqual(inboundMessageMac, expectedMac);
 	}
 	
 	public byte[][] splitOuterMac(byte[] plainText){
-		return splitMac(outerMac, plainText);
+		return splitMessage(outerMac.getMacLength(), plainText);
 	}
 	
-	public byte[][] splitInnerMac(byte[] plainText){
-		return splitMac(innerMac, plainText);
-	}
-	
-	private byte[][] splitMac(Mac mac, byte[] plainText){
+	protected byte[][] splitMessage(int offset, byte[] plainText){
 		byte[][] messageParts = new byte[2][]; 
 
-		int macLength = mac.getMacLength();
-		int messageLength = plainText.length - macLength;
+		int messageLength = plainText.length - offset;
 
 		messageParts[0] = new byte[messageLength];
 		System.arraycopy(plainText, 0, messageParts[0], 0, messageLength);
 
-		messageParts[1] = new byte[macLength];
-		System.arraycopy(plainText, messageLength, messageParts[1], 0, macLength);
+		messageParts[1] = new byte[offset];
+		System.arraycopy(plainText, messageLength, messageParts[1], 0, offset);
 
 		return messageParts;
 	}

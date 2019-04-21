@@ -24,7 +24,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.ShortBufferException;
 import javax.crypto.spec.IvParameterSpec;
 
-public class CryptographyDoubleMac implements Cryptography {
+public class CryptographyDoubleMac extends AbstractCryptography {
 
 	private static final String OUTER_MAC_CIPHERSUITE = "outer-mac-ciphersuite";
 	private static final String INNER_MAC_CIPHERSUITE = "inner-mac-ciphersuite";
