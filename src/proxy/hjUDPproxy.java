@@ -40,8 +40,6 @@ class hjUDPproxy {
 			System.exit(1);
 		}
 		
-		System.out.println("Proxy ready to receive...");
-		
 		Properties properties = new Properties();
 		properties.load(inputStream);
 		String remote = properties.getProperty("remote");
@@ -56,6 +54,8 @@ class hjUDPproxy {
 		DatagramSocket outSocket = new DatagramSocket();
 		byte[] buffer = new byte[4 * 1024];
 
+		System.out.println("Proxy ready to receive...");
+		
 		// main loop
 		while (true) {
 			DatagramPacket inPacket = new DatagramPacket(buffer, buffer.length);

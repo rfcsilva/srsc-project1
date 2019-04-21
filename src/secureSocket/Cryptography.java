@@ -51,6 +51,9 @@ public class Cryptography {
 	public static Cipher buildCipher(String cipherAlgorithm, int cipherMode, SecretKey key, byte[] iv) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException { 
 		Cipher cipher =	Cipher.getInstance(cipherAlgorithm);
 		
+		//temp
+		//iv = null;
+		
 		if( iv != null )
 			cipher.init(cipherMode, key, new IvParameterSpec(iv));
 		else
