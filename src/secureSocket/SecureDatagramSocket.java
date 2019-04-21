@@ -64,7 +64,7 @@ public class SecureDatagramSocket implements java.io.Closeable {
 	}
 	
 	public static void receive(DatagramPacket p) throws
-		IOException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
+		IOException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException {
 	
 		socket.receive(p);
 		byte[] secureMessageBytes = Arrays.copyOfRange(p.getData(), 0, p.getLength());

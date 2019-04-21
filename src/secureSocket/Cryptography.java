@@ -85,12 +85,31 @@ public class Cryptography {
 		return computeMac(hMac, payload);
 	}
 
-	public boolean validateMac(Mac mac, byte[] message, byte[] expectedMac) throws InvalidKeyException {
+	public boolean validateMacDos(byte[] message, byte[] expectedMac) throws InvalidKeyException {
+		return validateMac(hMacDoS, message, expectedMac);
+	}
+	
+	public boolean validadeInnerMac(byte[] message, byte[] expectedMac) throws InvalidKeyException {
+		return validateMac(hMac, message, expectedMac);
+	}
+	
+	
+	private boolean validateMac(Mac mac, byte[] message, byte[] expectedMac) throws InvalidKeyException {
 		byte[] inboundMessageMac = computeMac(mac, message);
 		return MessageDigest.isEqual(inboundMessageMac, expectedMac);
 	}
 	
-	public byte[][] getMessageParts( Mac mac, byte[] plainText ){
+	public byte[][] splitHeader(byte[] plainText){
+		
+		return getMessageParts(hMacDoS, plainText);
+	}
+	
+	public byte[][] splitPayload(byte[] plainText){
+		
+		return getMessageParts(hMac, plainText);
+	}
+	
+	private byte[][] getMessageParts( Mac mac, byte[] plainText ){
 
 		byte[][] messageParts = new byte[2][]; 
 

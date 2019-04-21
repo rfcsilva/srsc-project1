@@ -5,6 +5,17 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableEntryException;
+import java.security.cert.CertificateException;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.ShortBufferException;
 
 import Utils.ArrayUtils;
 
@@ -25,7 +36,7 @@ public class secureMessageImplementation implements SecureMessage {
 	}
 	
 	//TODO payload may come null if type is invalid 
-	public secureMessageImplementation(byte[] rawContent) throws IOException {
+	public secureMessageImplementation(byte[] rawContent) throws IOException, InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException {
 		
 		ByteArrayInputStream byteIn = new ByteArrayInputStream(rawContent);
 		DataInputStream dataIn = new DataInputStream(byteIn);
@@ -38,7 +49,7 @@ public class secureMessageImplementation implements SecureMessage {
 		payload = PayloadFactory.buildPayload(payloadType, rawPayload );
 		
 		dataIn.close();
-		byteIn.close();;
+		byteIn.close();
 		
 	}
 	
@@ -47,8 +58,8 @@ public class secureMessageImplementation implements SecureMessage {
 	public byte getVersionRelease() {
 
 		return versionRelease;
+		
 	}
-
 	@Override
 	public byte getPayloadType() {
 	

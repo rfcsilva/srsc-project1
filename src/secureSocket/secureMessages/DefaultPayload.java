@@ -1,6 +1,8 @@
 package secureSocket.secureMessages;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
@@ -24,7 +26,7 @@ import secureSocket.Cryptography;
 public class DefaultPayload implements Payload {
 		
 	//Encryption support
-	private Cryptography criptoService; 
+	private static Cryptography criptoService; 
 	
 	
 	//Payload data
@@ -82,17 +84,37 @@ public class DefaultPayload implements Payload {
 		return (short) (cipherText.length + outterMac.length);
 	}
 
-	//TODO
-	public static Payload deserialize(byte[] rawPayload ) {
+	//TODO handle bad macs
+	public static Payload deserialize(byte[] rawPayload ) throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException {
 		
-		
-		
-	    byte[][] messageParts = getMessageParts(, rawPayload);
-	    if(validateMac( hMac ,messageParts[0], messageParts[1]) )
-	    	return messageParts[0];
-	    
-		
+	    byte[][] messageParts = criptoService.splitHeader(rawPayload);
+	    if(criptoService.validateMacDos(messageParts[0], messageParts[1])) {
+	    	byte[] plainText = criptoService.decrypt(messageParts[0]); //TODO: better name
+	    	byte[][] payloadParts = criptoService.splitPayload(plainText);
+	    	if(criptoService.validadeInnerMac(payloadParts[0], payloadParts[1])) {
+	    		return deconstructMp(payloadParts[0]);    		
+	    	}		
+	    }
 		return null;
+	}
+
+	private static Payload deconstructMp(byte[] mp) throws IOException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, IllegalBlockSizeException, BadPaddingException, ShortBufferException {
+		
+		ByteArrayInputStream byteIn = new ByteArrayInputStream(mp);
+		DataInputStream dataIn = new DataInputStream(byteIn);
+		
+		long id = dataIn.readLong();
+		long nonce = dataIn.readLong();
+		int  messageSize = mp.length - 2* Long.BYTES;
+		byte[] message = new byte[ messageSize ];
+		dataIn.read(message, 0, messageSize);
+		Payload payload = new DefaultPayload(id, nonce, message);
+		
+		dataIn.close();
+		byteIn.close();
+		
+		
+		return payload;
 	}
 
 	@Override
