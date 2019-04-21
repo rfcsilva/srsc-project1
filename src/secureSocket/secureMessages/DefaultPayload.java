@@ -23,6 +23,11 @@ import secureSocket.Cryptography;
 // TODO : find better name for the class
 public class DefaultPayload implements Payload {
 		
+	//Encryption support
+	private Cryptography criptoService; 
+	
+	
+	//Payload data
 	private long id;
 	private long nonce;
 	private byte[] message;
@@ -34,6 +39,18 @@ public class DefaultPayload implements Payload {
 		this.message = message;
 		this.id = id;
 		this.nonce = nonce;
+		byte[] Mp = buildMp();
+		
+		// cipherText
+		criptoService = new Cryptography(Cipher.ENCRYPT_MODE); // TODO: Isto assim naõ parece bom, tem de se arranjar melhor maneira de interajir com esta class
+				
+		//Append MacDoS
+		this.innerMac = criptoService.computeMac(Mp);	
+		this.cipherText = criptoService.encrypt( ArrayUtils.concat(Mp, innerMac));
+		this.outterMac = criptoService.computeMacDoS(this.cipherText);
+	}
+	
+	private byte[] buildMp() throws IOException {
 		
 		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
 		DataOutputStream dataOut = new DataOutputStream(byteOut);
@@ -43,21 +60,16 @@ public class DefaultPayload implements Payload {
 		dataOut.write(message, 0, message.length);
 		dataOut.flush();
 		byteOut.flush();
-		// cipherText
 		
-		byte[] Mp = byteOut.toByteArray();
+		byte[] mp = byteOut.toByteArray();
 		
 		dataOut.close();
 		byteOut.close();
 		
-		Cryptography criptoService = new Cryptography(Cipher.ENCRYPT_MODE); // TODO: Isto assim naõ parece bom, tem de se arranjar melhor maneira de interajir com esta class
-				
-		//Append MacDoS
-		this.innerMac = criptoService.computeMac(Mp);	
-		this.cipherText = criptoService.encrypt( ArrayUtils.concat(Mp, innerMac));
-		this.outterMac = criptoService.computeMacDoS(this.cipherText);
+		
+		return mp;
 	}
-	
+
 	public byte getPayloadType() {
 		return 0x01;
 	}
