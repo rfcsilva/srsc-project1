@@ -1,4 +1,4 @@
-package secureSocket;
+package secureSocket.cryptography;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -24,7 +24,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.ShortBufferException;
 import javax.crypto.spec.IvParameterSpec;
 
-public class Cryptography {
+public class CryptographyImplementation implements Cryptography {
 
 	private static final String OUTER_MAC_CIPHERSUITE = "outer-mac-ciphersuite";
 	private static final String INNER_MAC_CIPHERSUITE = "inner-mac-ciphersuite";
@@ -41,18 +41,13 @@ public class Cryptography {
 			0x08, 0x09, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15
 	};
 	
-	//private Properties ciphersuit_properties;
 	private Cipher cipher;
-	//private Cipher decryptCipher; // é preciso as duas ou passamos o modo no cosntrutor?
 	private Mac innerMac;
 	private Mac outerMac;
 	
 	// TODO: arranjar nome melhor
 	public static Cipher buildCipher(String cipherAlgorithm, int cipherMode, SecretKey key, byte[] iv) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException { 
 		Cipher cipher =	Cipher.getInstance(cipherAlgorithm);
-		
-		//temp
-		//iv = null;
 		
 		if( iv != null )
 			cipher.init(cipherMode, key, new IvParameterSpec(iv));
@@ -69,7 +64,7 @@ public class Cryptography {
 		return mac;
 	}
 	
-	public static Cryptography loadFromConfig(String path, int cipherMode) throws IOException, NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException {
+	public static CryptographyImplementation loadFromConfig(String path, int cipherMode) throws IOException, NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException {
 		InputStream inputStream = new FileInputStream(path);
 		Properties ciphersuit_properties = new Properties();
 		ciphersuit_properties.load(inputStream);
@@ -93,7 +88,7 @@ public class Cryptography {
 		Mac innerMac = buildMac(ciphersuit_properties.getProperty(INNER_MAC_CIPHERSUITE), kim);
 		Mac outerMac = buildMac(ciphersuit_properties.getProperty(OUTER_MAC_CIPHERSUITE), kom);
 		
-		return new Cryptography(cipher, innerMac, outerMac);
+		return new CryptographyImplementation(cipher, innerMac, outerMac);
 	}
 	
 	private static SecretKey readKey(KeyStore ks, KeyStore.PasswordProtection ks_pp, String alias) throws
@@ -102,15 +97,14 @@ public class Cryptography {
 		SecretKeyEntry entry = (KeyStore.SecretKeyEntry)ks.getEntry(alias, ks_pp);
 		return entry.getSecretKey();
 	}
-	
-	//TODO: handle exceptions gracefully
-	
-	public Cryptography(Cipher cipher, Mac innerMac, Mac outerMac) {
+		
+	public CryptographyImplementation(Cipher cipher, Mac innerMac, Mac outerMac) {
 		this.cipher = cipher;
 		this.innerMac = innerMac;
 		this.outerMac = outerMac;
 	}
 	
+	@Override
 	public Cipher getCipher() {
 		return cipher;
 	}
@@ -123,6 +117,7 @@ public class Cryptography {
 		return outerMac;
 	}
 
+	@Override
 	public byte[] encrypt(byte[] plaintext) throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, ShortBufferException {
 		byte[] cipherText = new byte[cipher.getOutputSize(plaintext.length)];
 		cipher.update(plaintext, 0, plaintext.length, cipherText, 0);
@@ -130,6 +125,7 @@ public class Cryptography {
 		return cipherText;
 	}
 
+	@Override
 	public byte[] decrypt(byte[] cipherText) throws ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
 		byte[] plainText = new byte[cipher.getOutputSize(cipherText.length)];
 		int ptLength = cipher.update(cipherText, 0, cipherText.length, plainText, 0);
