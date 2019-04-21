@@ -36,18 +36,20 @@ public class SecureDatagramSocket implements java.io.Closeable {
 
 	private static final long INITIAL_ID  = 0L;
 	private static final byte VERSION_RELEASE = 0x01;
-	private static DatagramSocket socket;
-	private static Cryptography2 criptoService; //TODO INICIALIZAR!!!
+	private DatagramSocket socket;
+	private Cryptography2 criptoService;
 	
 	public SecureDatagramSocket(int port, InetAddress laddr) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException {
 		if( laddr.isMulticastAddress() ) {
 			MulticastSocket ms = new MulticastSocket(port);
 			ms.joinGroup(laddr);
 			socket = ms;
+			criptoService = Cryptography2.loadFromConfig(Cryptography2.CIPHERSUITE_CONFIG_PATH, Cipher.DECRYPT_MODE);
 		} else {
 			socket = new DatagramSocket(port, laddr);
+			criptoService = Cryptography2.loadFromConfig(criptoService.CIPHERSUITE_CONFIG_PATH, Cipher.ENCRYPT_MODE);
 		}
-
+	
 	}
 
 
@@ -64,7 +66,7 @@ public class SecureDatagramSocket implements java.io.Closeable {
 		socket.close();
 	}
 	
-	public static void receive(DatagramPacket p) throws
+	public void receive(DatagramPacket p) throws
 		IOException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException {
 	
 		socket.receive(p);
@@ -75,7 +77,7 @@ public class SecureDatagramSocket implements java.io.Closeable {
 		p.setLength(message.length);
 	}
 
-	public static void send(DatagramPacket p) throws IOException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, ShortBufferException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException {
+	public void send(DatagramPacket p) throws IOException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, ShortBufferException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException {
 		byte[] message = Arrays.copyOfRange(p.getData(), 0, p.getLength());
 		Payload payload = new DefaultPayload(INITIAL_ID, Utils.getNonce(), message, criptoService);
 		SecureMessage sm = new secureMessageImplementation(VERSION_RELEASE, payload);
