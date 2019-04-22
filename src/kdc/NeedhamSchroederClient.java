@@ -16,6 +16,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
+import cryptography.CryptographyUtils;
 import secureSocket.SecureDatagramSocket;
 import secureSocket.secureMessages.ClearPayload;
 import util.ArrayUtils;
@@ -32,19 +33,23 @@ public class NeedhamSchroederClient implements KDCClient {
 	
 	@Override
 	public KDCReply getSessionParameters() {
-		// TODO Auto-generated method stub
-		shareKeys(b_addr, requestKeys(kdc_addr));
+		
+		byte[] keys = requestKeys(kdc_addr);
+		shareKeys(b_addr, keys);
 		
 		return null;
 	}
 	
 	private static byte[] requestKeys(InetSocketAddress kdc_addr) {
 		try {
+			long Na = CryptographyUtils.getNonce();
+			
+			
 			SecureDatagramSocket socket = new SecureDatagramSocket();
 			byte[] buff = new byte[65000];
 			DatagramPacket p = new DatagramPacket(buff, buff.length, kdc_addr );
 			
-			byte[] request = "Dá-me Chaves!".getBytes();
+			byte[] request = ("a" + "||" + "b" + "||" + Na ).getBytes();
 			
 			p.setData(request, 0, request.length );
 			p.setSocketAddress( kdc_addr );
