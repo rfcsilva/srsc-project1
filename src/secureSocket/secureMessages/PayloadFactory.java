@@ -15,6 +15,7 @@ import javax.crypto.ShortBufferException;
 
 import cryptography.Cryptography;
 import cryptography.CryptographyDoubleMac;
+import secureSocket.exceptions.BrokenIntegrityException;
 import secureSocket.exceptions.InvalidMacException;
 import secureSocket.exceptions.ReplayedNonceException;
 
@@ -24,7 +25,7 @@ public class PayloadFactory {
 			throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException,
 			InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException,
 			UnrecoverableEntryException, KeyStoreException, CertificateException, IOException, InvalidMacException,
-			ReplayedNonceException {
+			ReplayedNonceException, BrokenIntegrityException {
 
 		switch (payloadType) {
 

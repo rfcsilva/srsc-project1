@@ -78,7 +78,7 @@ public class SecureDatagramSocket {
 				
 				message = sm.getPayload().getMessage();
 				break;
-			} catch (InvalidMacException | ReplayedNonceException e) {
+			} catch (InvalidMacException | ReplayedNonceException | BrokenIntegrityException  e) {
 				System.err.println(e.getMessage());
 			}
 		}
