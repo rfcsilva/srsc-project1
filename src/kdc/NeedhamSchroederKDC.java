@@ -9,6 +9,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
+import java.util.Arrays;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -32,6 +33,9 @@ public class NeedhamSchroederKDC implements KDC {
 		byte[] buffer = new byte[4 * 1024];
 		DatagramPacket inPacket = new DatagramPacket(buffer, buffer.length);
 		socket.receive(inPacket);
+		
+		byte[] request = Arrays.copyOfRange(inPacket.getData(), 0, inPacket.getLength());
+		System.out.println(new String(request));
 		
 		String msg = "YOLO";
 		inPacket.setData(msg.getBytes(), 0, msg.length());
