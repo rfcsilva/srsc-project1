@@ -4,7 +4,10 @@ import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 
 public class CryptographyUtils {
 
@@ -70,4 +73,18 @@ public class CryptographyUtils {
 
 	}
 
+	public static SecretKey generateKey(String algorithm, int size) throws NoSuchAlgorithmException {
+		
+		KeyGenerator    generator = KeyGenerator.getInstance(algorithm);
+        generator.init(size);
+        return generator.generateKey();
+		
+	}
+	
+	public static SecretKey deserialize(byte[] keyBytes, String algorithm ) {
+		
+		return new SecretKeySpec(keyBytes, algorithm);
+		
+	}
+	
 }
