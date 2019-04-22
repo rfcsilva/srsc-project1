@@ -2,7 +2,9 @@ package kdc.needhamSchroeder;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyStoreException;
@@ -21,7 +23,8 @@ import kdc.KDCClient;
 import kdc.KDCReply;
 import secureSocket.SecureDatagramSocket;
 import secureSocket.secureMessages.ClearPayload;
-import util.ArrayUtils;
+import secureSocket.secureMessages.Payload;
+
 
 public class NeedhamSchroederClient implements KDCClient {
 
@@ -31,6 +34,7 @@ public class NeedhamSchroederClient implements KDCClient {
 	public NeedhamSchroederClient(InetSocketAddress kdc_addr, InetSocketAddress b_addr) {
 		this.kdc_addr = kdc_addr;
 		this.b_addr = b_addr;
+		
 	}
 	
 	@Override
@@ -42,16 +46,17 @@ public class NeedhamSchroederClient implements KDCClient {
 		return null;
 	}
 	
-	private static byte[] requestKeys(InetSocketAddress kdc_addr) {
+	private byte[] requestKeys(InetSocketAddress kdc_addr) {
 		try {
 			long Na = CryptographyUtils.getNonce();
-			
-			
+						
 			SecureDatagramSocket socket = new SecureDatagramSocket();
 			byte[] buff = new byte[65000];
 			DatagramPacket p = new DatagramPacket(buff, buff.length, kdc_addr );
 			
-			byte[] request = ("a" + "||" + "b" + "||" + Na ).getBytes();
+			
+			Payload ns1 = new NS1(socket.getLocalAddress().getAddress(),
+					b_addr.getAddress(), Na, cryptoManager);
 			
 			p.setData(request, 0, request.length );
 			p.setSocketAddress( kdc_addr );

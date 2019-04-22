@@ -18,7 +18,6 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
 import cryptography.Cryptography;
-import cryptography.CryptographyDoubleMac;
 import secureSocket.exceptions.BrokenIntegrityException;
 import secureSocket.exceptions.InvalidMacException;
 import secureSocket.exceptions.ReplayedNonceException;
@@ -36,7 +35,7 @@ public class NS1 implements Payload {
 	// Payload data
 	private byte[] a;
 	private byte[] b;
-	private long Na;
+	private long na;
 	private byte[] message;
 	private byte[] outerMac;
 
@@ -47,17 +46,17 @@ public class NS1 implements Payload {
 
 		this.a = a;
 		this.b = b;
-		this.Na = Na;
-		
+		this.na = Na;
+
 		this.message = buildMessage(a, b, Na);
 
-		this.outerMac = cryptoManager.computeOuterMac(this.message);
+		this.outerMac = cryptoManager.computeOuterMac(message);
 	}
 
 	private NS1(byte[] a, byte[] b, long Na, byte[] outerMac) {
 		this.a = a;
 		this.b = b;
-		this.Na = Na;
+		this.na = Na;
 		this.outerMac = outerMac;
 	}
 
@@ -65,12 +64,12 @@ public class NS1 implements Payload {
 		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
 		DataOutputStream dataOut = new DataOutputStream(byteOut);
 
-		//dataOut.writeInt(a.length);
+		dataOut.writeInt(a.length);
 		dataOut.write(a, 0, a.length);
-		//dataOut.writeInt(b.length);
+		dataOut.writeInt(b.length);
 		dataOut.write(b, 0, b.length);
 		dataOut.writeLong(Na);
-		
+
 		dataOut.flush();
 		byteOut.flush();
 
@@ -105,53 +104,46 @@ public class NS1 implements Payload {
 		if (!criptoManager.validateOuterMac(messageParts[0], messageParts[1]))
 			throw new InvalidMacException("Invalid Outter Mac");
 		else {
-			byte[] plainText = criptoManager.decrypt(messageParts[0]);
-			byte[][] payloadParts = criptoManager.splitIntegrityProof(plainText);
-			if (!criptoManager.validateIntegrityProof(payloadParts[0], payloadParts[1]))
-					throw new BrokenIntegrityException("Invalid Inner Mac");
-			else {
-				ByteArrayInputStream byteIn = new ByteArrayInputStream(payloadParts[0]);
-				DataInputStream dataIn = new DataInputStream(byteIn);
 
-				long id = dataIn.readLong();
-				long nonce = dataIn.readLong();
-				
-				int messageSize = payloadParts[0].length - 2 * Long.BYTES;
-				byte[] message = new byte[messageSize];
-				dataIn.read(message, 0, messageSize);
+			ByteArrayInputStream byteIn = new ByteArrayInputStream(messageParts[0]);
+			DataInputStream dataIn = new DataInputStream(byteIn);
 
-				NS1 payload = new NS1(id, nonce, message, messageParts[0], payloadParts[1], messageParts[1]);
+			//read a
+			int a_size = dataIn.readInt();
+			byte[] a  = new byte[a_size];
+			dataIn.read(a, 0, a_size);
 
-				dataIn.close();
-				byteIn.close();
+			//read b
+			int b_size = dataIn.readInt();
+			byte[] b  = new byte[b_size];
+			dataIn.read(b, 0, b_size);
 
-				return payload;
-			}
-		}	
-	}
+			long na = dataIn.readLong();
+
+			NS1 payload = new NS1(a,b,na,messageParts[1]);
+			dataIn.close();
+			byteIn.close();
+
+			return payload;
+		}
+	}	
+
 
 	@Override
 	public byte[] getMessage() {
 		return message;
 	}
-
-	public long getId() {
-		return id;
+	
+	public byte[] getA() {
+		return a;
 	}
-
-	public long getNonce() {
-		return nonce;
+	
+	public byte[] getB() {
+		return b;
 	}
-
-	public byte[] getInnerMac() {
-		return innerIntegrityProof;
+	
+	public long getNa() {
+		return na;
 	}
-
-	public byte[] getCipherText() {
-		return cipherText;
-	}
-
-	public byte[] getOutterMac() {
-		return outterMac;
-	}
+	
 }

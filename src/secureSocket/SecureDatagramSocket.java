@@ -121,4 +121,9 @@ public class SecureDatagramSocket {
 		DatagramPacket p = new DatagramPacket(secureMessageBytes, 0, secureMessageBytes.length, address);
 		socket.send(p);
 	}
+	
+	public InetAddress getLocalAddress() {
+		return socket.getLocalAddress();
+	}
+	
 }

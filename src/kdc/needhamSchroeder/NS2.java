@@ -10,10 +10,15 @@ public class NS2 implements Payload {
 	private long nc;
 	private Key sessionKey;
 	private byte[] b;
+	private byte[] a;
 	
-	
-	public NS2() {
-		// TODO Auto-generated constructor stub
+	public NS2(long na, long nc, Key sessionKey, byte[] b ) {
+		
+		this.na = na;
+		this.nc = nc;
+		this.sessionKey = sessionKey;
+		
+		
 	}
 
 	@Override
