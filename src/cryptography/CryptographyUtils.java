@@ -1,8 +1,16 @@
 package cryptography;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.security.UnrecoverableEntryException;
+import java.security.KeyStore.SecretKeyEntry;
+import java.security.cert.CertificateException;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
@@ -85,6 +93,20 @@ public class CryptographyUtils {
 		
 		return new SecretKeySpec(keyBytes, algorithm);
 		
+	}
+	
+	public static KeyStore loadKeyStrore(String path, String password, String keyStore_type) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, FileNotFoundException, IOException {
+		KeyStore key_store = KeyStore.getInstance(keyStore_type);
+		key_store.load(new FileInputStream(path), password.toCharArray());
+		return key_store;
+	}
+	
+	public static SecretKey getKey(KeyStore ks, String password, String alias) throws
+	NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException,
+	CertificateException, FileNotFoundException, IOException {
+		KeyStore.PasswordProtection  ks_pp = new KeyStore.PasswordProtection(password.toCharArray());
+		SecretKeyEntry entry = (KeyStore.SecretKeyEntry)ks.getEntry(alias, ks_pp);
+		return entry.getSecretKey();
 	}
 	
 }

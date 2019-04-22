@@ -26,7 +26,8 @@ public class NeedhamSchroederServer implements KDCServer {
 
 	private static byte[] receiveKeys(InetSocketAddress b_addr) {
 		try {
-			SecureDatagramSocket inSocket = new SecureDatagramSocket(b_addr);
+			// nesta msg3 o dred tem de ler a chave e criar o cryptoManager com essas chaves para validar o mac
+			SecureDatagramSocket inSocket = new SecureDatagramSocket(b_addr, null);
 
 			byte[] buffer = new byte[4 * 1024];
 			DatagramPacket p = new DatagramPacket(buffer, buffer.length);

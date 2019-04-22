@@ -44,9 +44,16 @@ public class SecureMessageImplementation implements SecureMessage {
 		this(VERSION_RELEASE, payload);
 	}
 	
+	public SecureMessageImplementation() {
+		// DUMMY to be filled later with deserialize call
+	}
+	
 	//TODO payload may come null if type is invalid 
 	public SecureMessageImplementation(byte[] rawContent, Cryptography cryptoManager) throws IOException, InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidMacException, ReplayedNonceException, BrokenIntegrityException {
-		
+		deserialize(rawContent, cryptoManager);
+	}
+	
+	public void deserialize(byte[] rawContent, Cryptography cryptoManager) throws IOException, InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidMacException, ReplayedNonceException, BrokenIntegrityException {
 		ByteArrayInputStream byteIn = new ByteArrayInputStream(rawContent);
 		DataInputStream dataIn = new DataInputStream(byteIn);
 		

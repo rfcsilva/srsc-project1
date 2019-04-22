@@ -10,10 +10,17 @@ package server;
 import java.io.*;
 import java.net.*;
 
+import javax.crypto.Cipher;
+
+import cryptography.AbstractCryptography;
+import cryptography.Cryptography;
+import cryptography.CryptographyDoubleMac;
 import secureSocket.SecureDatagramSocket;
 
 class hjStreamServer {
 
+	private static final String CIPHERSUITE_CONFIG_PATH = "configs/server/ciphersuite.conf";
+	
 	static public void main( String []args ) throws Exception {
 	        if (args.length != 3)
 	        {
@@ -29,7 +36,8 @@ class hjStreamServer {
 		byte[] buff = new byte[65000];
 		//MulticastSocket s = new MulticastSocket();
 		//DatagramSocket s = new DatagramSocket();
-		SecureDatagramSocket socket = new SecureDatagramSocket();
+		Cryptography cryptoManager = AbstractCryptography.loadFromConfig(CIPHERSUITE_CONFIG_PATH, Cipher.ENCRYPT_MODE);
+		SecureDatagramSocket socket = new SecureDatagramSocket(cryptoManager);
 		InetSocketAddress addr = new InetSocketAddress( args[1], Integer.parseInt(args[2]));
 		DatagramPacket p = new DatagramPacket(buff, buff.length, addr );
 		long t0 = System.nanoTime(); // tempo de referencia para este processo

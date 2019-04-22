@@ -15,6 +15,7 @@ import javax.crypto.ShortBufferException;
 
 import cryptography.Cryptography;
 import cryptography.CryptographyDoubleMac;
+import kdc.needhamSchroeder.NS1;
 import secureSocket.exceptions.BrokenIntegrityException;
 import secureSocket.exceptions.InvalidMacException;
 import secureSocket.exceptions.ReplayedNonceException;
@@ -33,6 +34,8 @@ public class PayloadFactory {
 			return DefaultPayload.deserialize(rawPayload, cryptoManager);
 		case ClearPayload.TYPE:
 			return ClearPayload.deserialize(rawPayload, cryptoManager);
+		case NS1.TYPE: // TODO: isto não deveria estar aqui
+			return NS1.deserialize(rawPayload, cryptoManager);
 		default:
 			return null; // TODO: Deveria fazer um throw
 		}

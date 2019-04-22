@@ -71,24 +71,18 @@ public abstract class AbstractCryptography implements Cryptography {
 		ciphersuit_properties.load(inputStream);
 
 		// Load KeyStore
-		KeyStore key_store = KeyStore.getInstance(ciphersuit_properties.getProperty(KEYSTORE_TYPE)); // TODO: passar estas strings todas para constatnes
-		char[] password = ciphersuit_properties.getProperty(KEYSTORE_PASSWORD).toCharArray();
-		//String ks_path = path.substring(0, path.lastIndexOf('/')+1) + ciphersuit_properties.getProperty(KEYSTORE);
-		//System.out.println(ks_path);
-		//key_store.load(new FileInputStream(ks_path), password);
-		key_store.load(new FileInputStream(ciphersuit_properties.getProperty(KEYSTORE)), password);
-		KeyStore.PasswordProtection  ks_pp = new KeyStore.PasswordProtection(password);
+		String password = ciphersuit_properties.getProperty(KEYSTORE_PASSWORD);
+		KeyStore key_store = CryptographyUtils.loadKeyStrore(ciphersuit_properties.getProperty(KEYSTORE), password, ciphersuit_properties.getProperty(KEYSTORE_TYPE));
 
 		// Load Keys from KeyStore
 		SecretKey ks = null, kim = null, kom = null;
 		if(ciphersuit_properties.getProperty(SESSION_KEY) != null)
-			ks = readKey(key_store, ks_pp, ciphersuit_properties.getProperty(SESSION_KEY));
-
+			ks = CryptographyUtils.getKey(key_store, password, ciphersuit_properties.getProperty(SESSION_KEY));
 		if(ciphersuit_properties.getProperty(INNER_MAC_KEY)!= null)
-			kim = readKey(key_store, ks_pp, ciphersuit_properties.getProperty(INNER_MAC_KEY));
+			kim = CryptographyUtils.getKey(key_store, password, ciphersuit_properties.getProperty(INNER_MAC_KEY));
 
 		if(ciphersuit_properties.getProperty(OUTER_MAC_KEY)!=null)
-			kom = readKey(key_store, ks_pp, ciphersuit_properties.getProperty(OUTER_MAC_KEY));
+			kom = CryptographyUtils.getKey(key_store, password, ciphersuit_properties.getProperty(OUTER_MAC_KEY));
 
 		// Build ciphersuits
 		byte[] iv = ArrayUtils.unparse(ciphersuit_properties.getProperty("iv"));
@@ -110,13 +104,6 @@ public abstract class AbstractCryptography implements Cryptography {
 			
 			return new CryptographyDoubleMac(cipher, innerMac, outerMac);
 		}
-	}
-
-	private static SecretKey readKey(KeyStore ks, KeyStore.PasswordProtection ks_pp, String alias) throws
-	NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException,
-	CertificateException, FileNotFoundException, IOException {
-		SecretKeyEntry entry = (KeyStore.SecretKeyEntry)ks.getEntry(alias, ks_pp);
-		return entry.getSecretKey();
 	}
 
 	public AbstractCryptography(Cipher cipher, Mac outerMac) {

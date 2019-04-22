@@ -31,9 +31,16 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.crypto.Cipher;
+
+import cryptography.AbstractCryptography;
+import cryptography.Cryptography;
+import cryptography.CryptographyDoubleMac;
 import secureSocket.SecureDatagramSocket;
 
 class hjUDPproxy {
+	private static final String CIPHERSUITE_CONFIG_PATH = "configs/server/ciphersuite.conf";
+	
 	public static void main(String[] args) throws Exception {
 		InputStream inputStream = new FileInputStream("configs/proxy/config.properties");
 		if (inputStream == null) {
@@ -50,7 +57,8 @@ class hjUDPproxy {
 		Set<SocketAddress> outSocketAddressSet = Arrays.stream(destinations.split(",")).map(s -> parseSocketAddress(s)).collect(Collectors.toSet());
 
 		// Create inSocket 
-		SecureDatagramSocket inSocket = new SecureDatagramSocket(inSocketAddress);
+		Cryptography cryptoManager = AbstractCryptography.loadFromConfig(CIPHERSUITE_CONFIG_PATH, Cipher.DECRYPT_MODE);
+		SecureDatagramSocket inSocket = new SecureDatagramSocket(inSocketAddress, cryptoManager);
 		
 		DatagramSocket outSocket = new DatagramSocket();
 		byte[] buffer = new byte[4 * 1024];

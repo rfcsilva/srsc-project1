@@ -7,6 +7,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableEntryException;
@@ -14,10 +15,15 @@ import java.security.cert.CertificateException;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.Mac;
 import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
 import javax.crypto.ShortBufferException;
 
+import cryptography.AbstractCryptography;
 import cryptography.Cryptography;
+import cryptography.CryptographyHash;
+import cryptography.CryptographyUtils;
 import secureSocket.exceptions.BrokenIntegrityException;
 import secureSocket.exceptions.InvalidMacException;
 import secureSocket.exceptions.ReplayedNonceException;
@@ -100,34 +106,39 @@ public class NS1 implements Payload {
 			InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException,
 			UnrecoverableEntryException, KeyStoreException, CertificateException, IOException, InvalidMacException, ReplayedNonceException, BrokenIntegrityException {
 
+		// TODO: INICIALIZAR O criptoManager aqui para usar a key do a em vez de a default
+		
+		ByteArrayInputStream byteIn = new ByteArrayInputStream(rawPayload);
+		DataInputStream dataIn = new DataInputStream(byteIn);
+
+		//read a
+		int a_size = dataIn.readInt();
+		byte[] a  = new byte[a_size];
+		dataIn.read(a, 0, a_size);
+		
+		//read b
+		int b_size = dataIn.readInt();
+		byte[] b  = new byte[b_size];
+		dataIn.read(b, 0, b_size);
+
+		long Na = dataIn.readLong();
+
+		dataIn.close();
+		byteIn.close();
+		
+		KeyStore key_store = CryptographyUtils.loadKeyStrore("./configs/kdc/kdc-keystore.p12", "SRSC1819", "PKCS12");
+		System.out.println(new String(a));
+		SecretKey kma = CryptographyUtils.getKey(key_store, "SRSC1819", "Km" + new String(a));
+		Mac outerMac = AbstractCryptography.buildMac("HMACSHA256", kma); // TODO: passar para CryptographyUtils
+		
+		criptoManager = new CryptographyHash(null, null, outerMac);
+		
 		byte[][] messageParts = criptoManager.splitOuterMac(rawPayload);
 		if (!criptoManager.validateOuterMac(messageParts[0], messageParts[1]))
 			throw new InvalidMacException("Invalid Outter Mac");
-		else {
 
-			ByteArrayInputStream byteIn = new ByteArrayInputStream(messageParts[0]);
-			DataInputStream dataIn = new DataInputStream(byteIn);
-
-			//read a
-			int a_size = dataIn.readInt();
-			byte[] a  = new byte[a_size];
-			dataIn.read(a, 0, a_size);
-
-			//read b
-			int b_size = dataIn.readInt();
-			byte[] b  = new byte[b_size];
-			dataIn.read(b, 0, b_size);
-
-			long na = dataIn.readLong();
-
-			NS1 payload = new NS1(a,b,na,messageParts[1]);
-			dataIn.close();
-			byteIn.close();
-
-			return payload;
-		}
+		return new NS1(a, b, Na, messageParts[1]); // Falta a msg
 	}	
-
 
 	@Override
 	public byte[] getMessage() {

@@ -31,7 +31,7 @@ import secureSocket.secureMessages.Payload;
 
 public class NeedhamSchroederClient implements KDCClient {
 	
-	private static final String PATH_TO_CONFIG = "./configs/server/a-keystore.p12";
+	private static final String PATH_TO_CONFIG = "./configs/server/ciphersuite.conf";
 	
 	private Cryptography cryptoManager;
 	private InetSocketAddress kdc_addr;
@@ -46,7 +46,10 @@ public class NeedhamSchroederClient implements KDCClient {
 	@Override
 	public KDCReply getSessionParameters() {
 		
+		System.out.println("Requesting keys...");
 		byte[] keys = requestKeys(kdc_addr);
+		
+		System.out.println("Sharing keys...");
 		shareKeys(b_addr, keys);
 		
 		return null;
@@ -56,13 +59,15 @@ public class NeedhamSchroederClient implements KDCClient {
 		try {
 			long Na = CryptographyUtils.getNonce();
 						
-			SecureDatagramSocket socket = new SecureDatagramSocket();
+			SecureDatagramSocket socket = new SecureDatagramSocket(cryptoManager);
 			byte[] buff = new byte[65000];
 			DatagramPacket p = new DatagramPacket(buff, buff.length, kdc_addr );
 			
 			
-			Payload ns1 = new NS1(socket.getLocalAddress().getAddress(),
-					b_addr.getAddress().getAddress(), Na, cryptoManager);
+			/*Payload ns1 = new NS1(socket.getLocalAddress().getAddress(),
+					b_addr.getAddress().getAddress(), Na, cryptoManager);*/
+			
+			Payload ns1 = new NS1("a".getBytes(), "b".getBytes(), Na, cryptoManager);
 			
 			socket.send(p, ns1);
 			
@@ -84,9 +89,11 @@ public class NeedhamSchroederClient implements KDCClient {
 		return null;
 	}  
 	
-	private static void shareKeys(InetSocketAddress b_addr, byte[] keys) {
+	private void shareKeys(InetSocketAddress b_addr, byte[] keys) {
 		try {
-			SecureDatagramSocket socket = new SecureDatagramSocket();
+			// Trocar este cryptoManager pelo crytpo manager que é construído no métod anteiroro para usar a chave dos macs definida pelo kdc uma vez que o a não partilha nenhuma chave com o b e depois nem o a nem o b conseguem validar as merdas.
+			
+			SecureDatagramSocket socket = new SecureDatagramSocket(cryptoManager);
 			byte[] buff = new byte[65000];
 			DatagramPacket p = new DatagramPacket(buff, buff.length, b_addr );
 			
