@@ -36,6 +36,7 @@ public class SecureDatagramSocket {
 
 	private static final long INITIAL_ID  = 0L;
 	private static final byte VERSION_RELEASE = 0x01;
+	
 	private DatagramSocket socket;
 	private Cryptography cryptoManager;
 	
