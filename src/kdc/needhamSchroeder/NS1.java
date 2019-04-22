@@ -34,55 +34,52 @@ public class NS1 implements Payload {
 	// private static Cryptography2 criptoService;
 
 	// Payload data
-	private long id;
-	private long nonce;
+	private byte[] a;
+	private byte[] b;
+	private long Na;
 	private byte[] message;
-	private byte[] innerIntegrityProof;
-	private byte[] cipherText;
-	private byte[] outterMac;
+	private byte[] outerMac;
 
-	public NS1(long id, long nonce, byte[] message, Cryptography criptoManager)
+	public NS1(byte[] a, byte[] b, long Na, Cryptography cryptoManager)
 			throws IOException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException,
 			NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException,
 			IllegalBlockSizeException, BadPaddingException, ShortBufferException {
 
-		this.message = message;
-		this.id = id;
-		this.nonce = nonce;
-		byte[] Mp = buildMp(id, nonce, message);
+		this.a = a;
+		this.b = b;
+		this.Na = Na;
+		
+		this.message = buildMessage(a, b, Na);
 
-		// this.criptoService = criptoService;
-
-		this.innerIntegrityProof = criptoManager.computeIntegrityProof(Mp);
-		this.cipherText = criptoManager.encrypt(ArrayUtils.concat(Mp, this.innerIntegrityProof));
-		this.outterMac = criptoManager.computeOuterMac(this.cipherText);
+		this.outerMac = cryptoManager.computeOuterMac(this.message);
 	}
 
-	private NS1(long id, long nonce, byte[] message, byte[] ciphertext, byte[] innerMac, byte[] outterMac) {
-		this.id = id;
-		this.nonce = nonce;
-		this.message = message;
-		this.cipherText = ciphertext;
-		this.innerIntegrityProof = innerMac;
-		this.outterMac = outterMac;
+	private NS1(byte[] a, byte[] b, long Na, byte[] outerMac) {
+		this.a = a;
+		this.b = b;
+		this.Na = Na;
+		this.outerMac = outerMac;
 	}
 
-	private static byte[] buildMp(long id, long nonce, byte[] message) throws IOException {
+	private static byte[] buildMessage(byte[] a, byte[] b, long Na) throws IOException {
 		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
 		DataOutputStream dataOut = new DataOutputStream(byteOut);
 
-		dataOut.writeLong(id);
-		dataOut.writeLong(nonce);
-		dataOut.write(message, 0, message.length);
+		//dataOut.writeInt(a.length);
+		dataOut.write(a, 0, a.length);
+		//dataOut.writeInt(b.length);
+		dataOut.write(b, 0, b.length);
+		dataOut.writeLong(Na);
+		
 		dataOut.flush();
 		byteOut.flush();
 
-		byte[] mp = byteOut.toByteArray();
+		byte[] msg = byteOut.toByteArray();
 
 		dataOut.close();
 		byteOut.close();
 
-		return mp;
+		return msg;
 	}
 
 	public byte getPayloadType() {
@@ -90,11 +87,11 @@ public class NS1 implements Payload {
 	}
 
 	public byte[] serialize() {
-		return ArrayUtils.concat(this.cipherText, this.outterMac);
+		return ArrayUtils.concat(this.message, this.outerMac);
 	}
 
 	public short size() {
-		return (short) (cipherText.length + outterMac.length);
+		return (short) (message.length + outerMac.length);
 	}
 
 	// TODO handle bad macs
