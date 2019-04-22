@@ -15,7 +15,9 @@ public class ClientMain {
 			nsc.getSessionParameters();	
 
 		}else {
-						
+		
+			NeedhamSchroederServer ncs = new NeedhamSchroederServer(b_addr);
+			ncs.getSessionParameters();
 		}
 
 	}
