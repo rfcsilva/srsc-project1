@@ -1,9 +1,11 @@
-package kdc;
+package kdc.needhamSchroeder;
 
 import java.net.DatagramPacket;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 
+import kdc.KDCReply;
+import kdc.KDCServer;
 import secureSocket.SecureDatagramSocket;
 
 public class NeedhamSchroederServer implements KDCServer {

@@ -2,6 +2,9 @@ package kdc;
 
 import java.net.InetSocketAddress;
 
+import kdc.needhamSchroeder.NeedhamSchroederClient;
+import kdc.needhamSchroeder.NeedhamSchroederServer;
+
 public class ClientMain {
 
 	public static void main(String[] args) throws Exception {

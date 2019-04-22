@@ -1,4 +1,4 @@
-package kdc;
+package kdc.needhamSchroeder;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -17,6 +17,8 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
 import cryptography.CryptographyUtils;
+import kdc.KDCClient;
+import kdc.KDCReply;
 import secureSocket.SecureDatagramSocket;
 import secureSocket.secureMessages.ClearPayload;
 import util.ArrayUtils;

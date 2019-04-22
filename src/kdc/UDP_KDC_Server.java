@@ -18,6 +18,7 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
 import cryptography.CryptographyUtils;
+import kdc.needhamSchroeder.NeedhamSchroederKDC;
 
 //TODO: renomear?
 public class UDP_KDC_Server {
