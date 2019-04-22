@@ -60,9 +60,9 @@ public class NeedhamSchroederClient implements KDCClient {
 			byte[] buff = new byte[65000];
 			DatagramPacket p = new DatagramPacket(buff, buff.length, kdc_addr );
 			
-			
-			Payload ns1 = new NS1(socket.getLocalAddress().getAddress(),
-					b_addr.getAddress().getAddress(), Na, cryptoManager);
+			//TODO: Change ID
+			Payload ns1 = new NS1("a".getBytes(),
+				"b".getBytes(), Na, cryptoManager);
 			
 			socket.send(p, ns1);
 			
