@@ -25,9 +25,7 @@ public class NS2 implements Payload { //{Na+1, Nc, Ks , B, {Nc, A, B, Ks}KB }KA
 		this.Nc = Nc;
 		this.Ks = Ks;
 		this.b = b;
-		
-		
-		
+
 		this.cipherText = null; // TODO
 
 	}

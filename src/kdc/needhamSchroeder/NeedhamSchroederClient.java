@@ -14,6 +14,7 @@ import java.security.cert.CertificateException;
 import java.util.Arrays;
 
 import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
@@ -30,14 +31,16 @@ import secureSocket.secureMessages.Payload;
 
 public class NeedhamSchroederClient implements KDCClient {
 	
+	private static final String PATH_TO_CONFIG = "./configs/server/a-keystore.p12";
+	
 	private Cryptography cryptoManager;
 	private InetSocketAddress kdc_addr;
 	private InetSocketAddress b_addr;
 	
-	public NeedhamSchroederClient(InetSocketAddress kdc_addr, InetSocketAddress b_addr) {
+	public NeedhamSchroederClient(InetSocketAddress kdc_addr, InetSocketAddress b_addr) throws InvalidKeyException, NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, CertificateException, NoSuchPaddingException, InvalidAlgorithmParameterException, IOException {
 		this.kdc_addr = kdc_addr;
 		this.b_addr = b_addr;
-		cryptoManager = AbstractCryptography.loadFromConfig(PATH_TO_CONFIG, cipherMode)
+		cryptoManager = AbstractCryptography.loadFromConfig(PATH_TO_CONFIG, Cipher.ENCRYPT_MODE);
 	}
 	
 	@Override
@@ -59,11 +62,9 @@ public class NeedhamSchroederClient implements KDCClient {
 			
 			
 			Payload ns1 = new NS1(socket.getLocalAddress().getAddress(),
-					b_addr.getAddress(), Na, cryptoManager);
+					b_addr.getAddress().getAddress(), Na, cryptoManager);
 			
-			p.setData(request, 0, request.length );
-			p.setSocketAddress( kdc_addr );
-			socket.send(p, ClearPayload.TYPE);
+			socket.send(p, ns1);
 			
 			// Receive reply from KDC
 			socket.receive(p);
