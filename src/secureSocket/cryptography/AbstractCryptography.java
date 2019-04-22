@@ -24,6 +24,8 @@ import javax.crypto.SecretKey;
 import javax.crypto.ShortBufferException;
 import javax.crypto.spec.IvParameterSpec;
 
+import util.ArrayUtils;
+
 public abstract class AbstractCryptography implements Cryptography {
 
 	private static final String HASH_CIPHERSUITE = "hash-ciphersuite";
@@ -37,10 +39,10 @@ public abstract class AbstractCryptography implements Cryptography {
 	private static final String KEYSTORE_PASSWORD = "keystore-password";
 	private static final String KEYSTORE_TYPE = "keystore-type";
 
-	private static final byte[] ivBytes = new byte[] {
+	/*private static final byte[] ivBytes = new byte[] {
 			0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
 			0x08, 0x09, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15
-	};
+	};*/
 	
 	private Cipher cipher;
 	private Mac outerMac;
@@ -88,7 +90,8 @@ public abstract class AbstractCryptography implements Cryptography {
 		SecretKey kom = readKey(key_store, ks_pp, ciphersuit_properties.getProperty(OUTER_MAC_KEY));
 		
 		// Build ciphersuits
-		Cipher cipher = buildCipher(ciphersuit_properties.getProperty(SESSION_CIPHERSUITE), cipherMode, ks, ivBytes); // TODO: o que fazer com o IV ?
+		byte[] iv = ArrayUtils.unparse(ciphersuit_properties.getProperty("iv"));
+		Cipher cipher = buildCipher(ciphersuit_properties.getProperty(SESSION_CIPHERSUITE), cipherMode, ks, iv);
 		Mac outerMac = buildMac(ciphersuit_properties.getProperty(OUTER_MAC_CIPHERSUITE), kom);
 		
 		String hashAlgorithm = ciphersuit_properties.getProperty(HASH_CIPHERSUITE);
