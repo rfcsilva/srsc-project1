@@ -66,7 +66,7 @@ public class NeedhamSchroederClient implements KDCClient {
 			/*Payload ns1 = new NS1(socket.getLocalAddress().getAddress(),
 					b_addr.getAddress().getAddress(), Na, cryptoManager);*/
 			
-			//TODO: Change ID
+			//TODO: Change ID and load IDs from a config file
 			Payload ns1 = new NS1("a".getBytes(), "b".getBytes(), Na, cryptoManager);
 
 			socket.send(p, ns1);
