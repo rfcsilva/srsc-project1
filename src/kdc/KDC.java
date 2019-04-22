@@ -1,6 +1,6 @@
 package kdc;
 
-public interface KDCServer {
+public interface KDC {
 
 	void /*request*/ receiveRequest();
 	
