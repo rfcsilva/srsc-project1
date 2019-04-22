@@ -26,6 +26,8 @@ public class PayloadFactory {
 
 		case DefaultPayload.TYPE:
 			return DefaultPayload.deserialize(rawPayload, cryptoManager);	
+		case ClearPayload.TYPE:
+			return ClearPayload.deserialize(rawPayload, cryptoManager);
 		default: 
 			return null; // TODO: Deveria fazer um throw
 		}
