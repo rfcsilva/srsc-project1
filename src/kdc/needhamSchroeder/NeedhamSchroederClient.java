@@ -18,6 +18,8 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
+import cryptography.AbstractCryptography;
+import cryptography.Cryptography;
 import cryptography.CryptographyUtils;
 import kdc.KDCClient;
 import kdc.KDCReply;
@@ -27,14 +29,15 @@ import secureSocket.secureMessages.Payload;
 
 
 public class NeedhamSchroederClient implements KDCClient {
-
+	
+	private Cryptography cryptoManager;
 	private InetSocketAddress kdc_addr;
 	private InetSocketAddress b_addr;
 	
 	public NeedhamSchroederClient(InetSocketAddress kdc_addr, InetSocketAddress b_addr) {
 		this.kdc_addr = kdc_addr;
 		this.b_addr = b_addr;
-		
+		cryptoManager = AbstractCryptography.loadFromConfig(PATH_TO_CONFIG, cipherMode)
 	}
 	
 	@Override
