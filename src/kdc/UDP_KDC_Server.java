@@ -14,13 +14,14 @@ public class UDP_KDC_Server {
 		if(args.length < 2) {
 			System.out.println("usage: kdc <ip> <port>");
 		}
-		InputStream inputStream = new FileInputStream("configs/kdc/config.properties");
+		//InputStream inputStream = new FileInputStream("configs/kdc/ciphersuite.conf");
 		
 		InetSocketAddress addr = new InetSocketAddress( args[0], Integer.parseInt(args[1]) );
 		
-		KDCServer kdc_server = new NeedhamSchroederServer(addr);
+		KDC kdc_server = new NeedhamSchroederKDC(addr);
 		
 		System.out.println("KDC Server ready to receive...");
+		
 		while(true) {
 			// recebe pedidos -> não deveria bloquear infintamente? ou isto lança uma excepção? eu acho que lança ...
 			kdc_server.receiveRequest();

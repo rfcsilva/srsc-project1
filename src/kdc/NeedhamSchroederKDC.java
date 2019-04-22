@@ -2,9 +2,9 @@ package kdc;
 
 import java.net.InetSocketAddress;
 
-public class NeedhamSchroederServer implements KDCServer {
+public class NeedhamSchroederKDC implements KDC {
 
-	public NeedhamSchroederServer(InetSocketAddress addr) {
+	public NeedhamSchroederKDC(InetSocketAddress addr) {
 		
 	}
 
