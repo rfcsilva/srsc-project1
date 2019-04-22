@@ -13,8 +13,8 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
-import secureSocket.cryptography.Cryptography;
-import secureSocket.cryptography.CryptographyDoubleMac;
+import cryptography.Cryptography;
+import cryptography.CryptographyDoubleMac;
 import secureSocket.exceptions.InvalidMacException;
 import secureSocket.exceptions.ReplayedNonceException;
 

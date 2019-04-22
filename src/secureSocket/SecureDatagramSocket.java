@@ -20,10 +20,10 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
-import secureSocket.cryptography.Cryptography;
-import secureSocket.cryptography.AbstractCryptography;
-import secureSocket.cryptography.CryptographyDoubleMac;
-import secureSocket.cryptography.CryptographyUtils;
+import cryptography.AbstractCryptography;
+import cryptography.Cryptography;
+import cryptography.CryptographyDoubleMac;
+import cryptography.CryptographyUtils;
 import secureSocket.exceptions.*;
 import secureSocket.secureMessages.DefaultPayload;
 import secureSocket.secureMessages.Payload;

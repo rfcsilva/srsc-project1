@@ -1,4 +1,4 @@
-package secureSocket.cryptography;
+package cryptography;
 
 import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
