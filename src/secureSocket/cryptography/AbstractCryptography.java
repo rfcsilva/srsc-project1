@@ -38,11 +38,6 @@ public abstract class AbstractCryptography implements Cryptography {
 	private static final String KEYSTORE = "keystore";
 	private static final String KEYSTORE_PASSWORD = "keystore-password";
 	private static final String KEYSTORE_TYPE = "keystore-type";
-
-	/*private static final byte[] ivBytes = new byte[] {
-			0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
-			0x08, 0x09, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15
-	};*/
 	
 	private Cipher cipher;
 	private Mac outerMac;
