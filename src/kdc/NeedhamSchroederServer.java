@@ -19,7 +19,7 @@ public class NeedhamSchroederServer implements KDCServer {
 		
 		receiveKeys(b_addr);
 		
-		return null;
+		return null; 
 	}
 
 	private static byte[] receiveKeys(InetSocketAddress b_addr) {
