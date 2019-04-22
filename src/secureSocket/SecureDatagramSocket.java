@@ -25,6 +25,7 @@ import cryptography.Cryptography;
 import cryptography.CryptographyDoubleMac;
 import cryptography.CryptographyUtils;
 import secureSocket.exceptions.*;
+import secureSocket.secureMessages.ClearPayload;
 import secureSocket.secureMessages.DefaultPayload;
 import secureSocket.secureMessages.Payload;
 import secureSocket.secureMessages.SecureMessage;
@@ -84,10 +85,30 @@ public class SecureDatagramSocket {
 		p.setData(message);
 		p.setLength(message.length);
 	}
-
-	public void send(DatagramPacket p) throws IOException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, ShortBufferException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException {
+	
+	public void send(DatagramPacket p, byte type) throws InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, IllegalBlockSizeException, BadPaddingException, ShortBufferException, IOException {
 		byte[] message = Arrays.copyOfRange(p.getData(), 0, p.getLength());
-		Payload payload = new DefaultPayload(INITIAL_ID, CryptographyUtils.getNonce(), message, cryptoManager);
+		Payload payload = null;
+		switch(type) {
+		
+		case ClearPayload.TYPE :
+			payload = new ClearPayload(message, cryptoManager);
+			break;
+		case DefaultPayload.TYPE:
+			payload = new DefaultPayload(INITIAL_ID, CryptographyUtils.getNonce(), message, cryptoManager);
+			break;
+		default : System.err.println("Erro");
+		}
+		
+		send(p, payload);
+	}
+
+	public void send(DatagramPacket p) throws InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, IllegalBlockSizeException, BadPaddingException, ShortBufferException, IOException {
+		send(p, DefaultPayload.TYPE);
+	}
+	
+	private void send(DatagramPacket p, Payload payload) throws IOException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, ShortBufferException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException {
+		
 		SecureMessage sm = new SecureMessageImplementation(VERSION_RELEASE, payload);
 		byte[] secureMessageBytes = sm.serialize();
 		p.setData(secureMessageBytes);
