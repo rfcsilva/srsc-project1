@@ -1,5 +1,9 @@
 package util;
 
+import java.security.MessageDigest;
+
+import org.bouncycastle.util.encoders.Hex;
+
 public class ArrayUtils {
 	
 	/**
@@ -16,7 +20,19 @@ public class ArrayUtils {
 	    System.arraycopy(a, 0, r, 0, a.length);
 	    System.arraycopy(b, 0, r, a.length, b.length);
 	    return r;
-
+	}
+	
+	public static byte[] unparse(String array) {
+		String aux = array.substring(1, array.length()-1);
+		String s[] = aux.split(",");
+		
+		byte[] result = new byte[s.length];
+		
+		for(int i = 0; i < s.length; i++) {
+			result[i] = (byte) Integer.parseInt(s[i].trim().replace("0x", ""), 16);
+		}
+		
+		return result;
 	}
 
 }
