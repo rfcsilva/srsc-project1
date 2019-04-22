@@ -25,18 +25,22 @@ import util.ArrayUtils;
 
 public class SecureMessageImplementation implements SecureMessage {
 	
+	private static final byte VERSION_RELEASE = 0x01;
 	private static final byte SEPARATOR = 0x00;
+	
 	private byte versionRelease, payloadType;
 	private short payloadSize;
 	private Payload payload;
 	
 	public SecureMessageImplementation(byte versionRelease, Payload payload) {
-		
 		this.versionRelease = versionRelease;
-		payloadType = payload.getPayloadType();
+		this.payloadType = payload.getPayloadType();
 		this.payloadSize = payload.size();
 		this.payload = payload;
-		
+	}
+	
+	public SecureMessageImplementation(Payload payload) {
+		this(VERSION_RELEASE, payload);
 	}
 	
 	//TODO payload may come null if type is invalid 
@@ -61,31 +65,25 @@ public class SecureMessageImplementation implements SecureMessage {
 	
 	@Override
 	public byte getVersionRelease() {
-
 		return versionRelease;
-		
 	}
 	@Override
 	public byte getPayloadType() {
-	
 		return payloadType;
 	}
 
 	@Override
 	public short getPayloadSize() {
-		
 		return payloadSize;
 	}
 
 	@Override
 	public Payload getPayload() {
-		
 		return payload;
 	}
 
 	@Override
 	public byte[] serialize() throws IOException {
-		
 		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
 		DataOutputStream dataOut = new DataOutputStream(byteOut);
 		

@@ -98,7 +98,7 @@ public class SecureDatagramSocket {
 		case DefaultPayload.TYPE:
 			payload = new DefaultPayload(INITIAL_ID, CryptographyUtils.getNonce(), message, cryptoManager);
 			break;
-		default : System.err.println("Erro");
+		default : System.err.println("Unknown Payload Type");
 		}
 		
 		send(p, payload);
@@ -108,12 +108,17 @@ public class SecureDatagramSocket {
 		send(p, DefaultPayload.TYPE);
 	}
 	
-	private void send(DatagramPacket p, Payload payload) throws IOException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, ShortBufferException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException {
-		
+	public void send(DatagramPacket p, Payload payload) throws IOException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, ShortBufferException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException {
 		SecureMessage sm = new SecureMessageImplementation(VERSION_RELEASE, payload);
 		byte[] secureMessageBytes = sm.serialize();
 		p.setData(secureMessageBytes);
 		p.setLength(secureMessageBytes.length);
+		socket.send(p);
+	}
+	
+	public void send(SecureMessage sm, InetSocketAddress address) throws IOException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, ShortBufferException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException {
+		byte[] secureMessageBytes = sm.serialize();
+		DatagramPacket p = new DatagramPacket(secureMessageBytes, 0, secureMessageBytes.length, address);
 		socket.send(p);
 	}
 }
