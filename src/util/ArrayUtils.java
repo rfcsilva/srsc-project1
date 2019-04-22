@@ -1,9 +1,5 @@
 package util;
 
-import java.security.MessageDigest;
-
-import org.bouncycastle.util.encoders.Hex;
-
 public class ArrayUtils {
 	
 	/**
@@ -13,7 +9,6 @@ public class ArrayUtils {
 	 * @return concatenation result
 	 */
 	public static byte[] concat  (byte[] a, byte[] b){
-	    
 		if (a == null) return b;
 	    if (b == null) return a;
 	    byte[] r = new byte[a.length+b.length];
@@ -23,6 +18,9 @@ public class ArrayUtils {
 	}
 	
 	public static byte[] unparse(String array) {
+		if(array == null)
+			return null;
+		
 		String aux = array.substring(1, array.length()-1);
 		String s[] = aux.split(",");
 		
@@ -34,5 +32,4 @@ public class ArrayUtils {
 		
 		return result;
 	}
-
 }
