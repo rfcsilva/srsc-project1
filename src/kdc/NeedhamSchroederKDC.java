@@ -16,6 +16,7 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
 import secureSocket.SecureDatagramSocket;
+import secureSocket.secureMessages.ClearPayload;
 
 public class NeedhamSchroederKDC implements KDC {
 
@@ -30,9 +31,13 @@ public class NeedhamSchroederKDC implements KDC {
 		
 		byte[] buffer = new byte[4 * 1024];
 		DatagramPacket inPacket = new DatagramPacket(buffer, buffer.length);
+		socket.receive(inPacket);
+		
 		String msg = "YOLO";
 		inPacket.setData(msg.getBytes(), 0, msg.length());
-		socket.receive(inPacket);
+		inPacket.setAddress(inPacket.getAddress());
+		socket.send(inPacket, ClearPayload.TYPE);
+		
 		
 	}
 
