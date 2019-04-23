@@ -15,7 +15,9 @@ import javax.crypto.Cipher;
 import cryptography.AbstractCryptography;
 import cryptography.Cryptography;
 import cryptography.CryptographyDoubleMac;
+import kdc.KDCClient;
 import kdc.KDCServer;
+import kdc.needhamSchroeder.NeedhamSchroederClient;
 import kdc.needhamSchroeder.NeedhamSchroederServer;
 import secureSocket.SecureDatagramSocket;
 
@@ -35,15 +37,17 @@ class hjStreamServer {
 		int count = 0;
  		long time;
 		DataInputStream g = new DataInputStream( new FileInputStream(args[0]) );
-		byte[] buff = new byte[65000];
+		byte[] buff = new byte[65000]; 
 		//MulticastSocket s = new MulticastSocket();
 		//DatagramSocket s = new DatagramSocket();
-		InetSocketAddress addr = new InetSocketAddress( args[1], Integer.parseInt(args[2]));
-		KDCServer needhamServer = new NeedhamSchroederServer(addr);
+		InetSocketAddress b_addr = new InetSocketAddress( args[1], Integer.parseInt(args[2]));
+		InetSocketAddress kdc_addr = new InetSocketAddress("localhost", 8888);
+		
+		KDCClient needhamServer = new NeedhamSchroederClient(kdc_addr, b_addr);
 		Cryptography cryptoManager = needhamServer.getSessionParameters();
 		SecureDatagramSocket socket = new SecureDatagramSocket(cryptoManager);
 		
-		DatagramPacket p = new DatagramPacket(buff, buff.length, addr );
+		DatagramPacket p = new DatagramPacket(buff, buff.length, b_addr );
 		long t0 = System.nanoTime(); // tempo de referencia para este processo
 		long q0 = 0;
 		
@@ -54,7 +58,7 @@ class hjStreamServer {
 			count += 1;
 			g.readFully(buff, 0, size );
 			p.setData(buff, 0, size );
-			p.setSocketAddress( addr );
+			p.setSocketAddress( b_addr );
 			long t = System.nanoTime();
 			Thread.sleep( Math.max(0, ((time-q0)-(t-t0))/1000000) );
 			socket.send( p );
