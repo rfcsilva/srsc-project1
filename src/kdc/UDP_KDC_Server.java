@@ -1,6 +1,8 @@
 package kdc;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -11,6 +13,7 @@ import java.net.SocketAddress;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyStoreException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.UnrecoverableEntryException;
@@ -19,11 +22,18 @@ import java.util.Base64;
 import java.util.Properties;
 
 import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.Mac;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.ShortBufferException;
+import javax.crypto.spec.SecretKeySpec;
 
+import cryptography.AbstractCryptography;
+import cryptography.Cryptography;
+import cryptography.CryptographyDoubleMac;
+import cryptography.CryptographyHash;
 import cryptography.CryptographyUtils;
 import kdc.needhamSchroeder.NS1;
 import kdc.needhamSchroeder.NeedhamSchroederKDC;
@@ -109,7 +119,10 @@ public class UDP_KDC_Server {
 		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
 		DataOutputStream dataOut = new DataOutputStream(byteOut);
 
-		dataOut.writeChars(cipherAlgorithm);
+		dataOut.writeUTF(secureRandomAlgorithm);
+		
+		dataOut.writeUTF(cipherAlgorithm);
+		dataOut.writeUTF(session_key_gen_alg);
 		byte[] session_key_encoded = ks.getEncoded();
 		dataOut.writeInt(session_key_encoded.length);
 		dataOut.write(session_key_encoded, 0, session_key_encoded.length);
@@ -117,7 +130,8 @@ public class UDP_KDC_Server {
 		dataOut.writeInt(iv.length);
 		dataOut.write(iv, 0, iv.length);
 		
-		dataOut.writeChars(outerMacAlgorithm);
+		dataOut.writeUTF(outerMacAlgorithm);
+		dataOut.writeUTF(outer_key_gen_alg);
 		byte[] outer_mac_key_encoded = kms.getEncoded();
 		dataOut.writeInt(outer_mac_key_encoded.length);
 		dataOut.write(outer_mac_key_encoded, 0, outer_mac_key_encoded.length);
@@ -125,25 +139,75 @@ public class UDP_KDC_Server {
 		dataOut.writeBoolean(useHash);
 		
 		if(useHash) {
-			dataOut.writeChars(hashAlgorithm);
+			dataOut.writeUTF(hashAlgorithm);
 		} else {
-			dataOut.writeChars(innerMacAlgorithm);
+			dataOut.writeUTF(innerMacAlgorithm);
+			dataOut.writeUTF(inner_key_gen_alg);
 			byte[] inner_mac_key_encoded = kms2.getEncoded();
 			dataOut.writeInt(inner_mac_key_encoded.length);
 			dataOut.write(inner_mac_key_encoded, 0, inner_mac_key_encoded.length);
 		}
 		
-		dataOut.writeChars(secureRandomAlgorithm);
-		
 		dataOut.flush();
 		byteOut.flush();
 
-		byte[] msg = byteOut.toByteArray(); // TODO: renomear
+		byte[] msg = byteOut.toByteArray(); // TODO: renomear de msg para outra coisa
 
 		dataOut.close();
 		byteOut.close();
 		
 		return msg;
+	}
+	
+	public static Cryptography deserializeSessionParameters(byte[] rawParams) throws NoSuchAlgorithmException, IOException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException { // TODO: passar para outra class ou assim
+		ByteArrayInputStream byteIn = new ByteArrayInputStream(rawParams);
+		DataInputStream dataIn = new DataInputStream(byteIn);
+		
+		String secureRandomAlgorithm = dataIn.readUTF(); // TODO: Acrescentar ao cryptoManager
+		
+		String cipherAlgorithm = dataIn.readUTF();
+		String session_key_alg = dataIn.readUTF();
+		int length = dataIn.readInt();
+		byte[] ks_encoded = new byte[length];
+		dataIn.read(ks_encoded, 0, length);
+		SecretKey ks = new SecretKeySpec(ks_encoded, session_key_alg);
+		
+		length = dataIn.readInt();
+		byte[] iv = new byte[length];
+		dataIn.read(iv, 0, length);
+		
+		String outerMacAlgorithm = dataIn.readUTF();
+		String outer_key_alg = dataIn.readUTF();
+		length = dataIn.readInt();
+		byte[] outer_mac_key_encoded = new byte[length];
+		dataIn.read(outer_mac_key_encoded, 0, length);
+		SecretKey kms = new SecretKeySpec(outer_mac_key_encoded, outer_key_alg);
+		
+		boolean useHash = dataIn.readBoolean();
+		
+		Cryptography cryptoManager = null;
+		Cipher cipher = AbstractCryptography.buildCipher(cipherAlgorithm, Cipher.ENCRYPT_MODE, ks, iv);
+		Mac outerMac = AbstractCryptography.buildMac(outerMacAlgorithm, kms);
+		
+		if(useHash) {
+			String hashAlgorithm = dataIn.readUTF();
+			MessageDigest innerHash = AbstractCryptography.buildHash(hashAlgorithm);
+			
+			cryptoManager = new CryptographyHash(cipher, innerHash, outerMac);
+		} else {
+			String innerMacAlgorithm = dataIn.readUTF();
+			String inner_key_alg = dataIn.readUTF();
+			length = dataIn.readInt();
+			byte[] inner_mac_key_encoded = new byte[length];
+			dataIn.read(inner_mac_key_encoded, 0, length);
+			SecretKey kms2 = new SecretKeySpec(inner_mac_key_encoded, inner_key_alg);
+			
+			Mac innerMac = AbstractCryptography.buildMac(innerMacAlgorithm, kms2);
+			
+			cryptoManager = new CryptographyDoubleMac(cipher, innerMac, outerMac);
+		}
+		
+		return cryptoManager;
 	}
 	
 }

@@ -23,6 +23,7 @@ import cryptography.AbstractCryptography;
 import cryptography.Cryptography;
 import cryptography.CryptographyUtils;
 import kdc.KDCClient;
+import kdc.UDP_KDC_Server;
 import secureSocket.SecureDatagramSocket;
 import secureSocket.secureMessages.ClearPayload;
 import secureSocket.secureMessages.Payload;
@@ -49,7 +50,7 @@ public class NeedhamSchroederClient implements KDCClient {
 	private int max_tries = 3;
 	
 	@Override
-	public Cryptography getSessionParameters() throws NoSuchAlgorithmException, IOException {
+	public Cryptography getSessionParameters() throws NoSuchAlgorithmException, IOException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException {
 		
 		socket.setTimeout(30*1000); // 30 s -> passar a constante
 		
@@ -59,13 +60,17 @@ public class NeedhamSchroederClient implements KDCClient {
 		    	
 		    	System.out.println("Requesting keys...");
 				NS2 kdc_reply = requestKeys(kdc_addr, Na);
+				System.out.println("Received Keys.");
+				
+				// Build a criptoManager
+				Cryptography cryptoManager = UDP_KDC_Server.deserializeSessionParameters(kdc_reply.getKs());
 				
 				System.out.println("Sharing keys...");
-				shareKeys(b_addr, kdc_reply);
+				shareKeys(b_addr, kdc_reply.getTicket(), cryptoManager);
 				
-				// TODO: Falta o resto         
+				// TODO: falta o resto
 				
-				return null;
+				return cryptoManager;
 		    } catch (SocketTimeoutException e) {
 		        // Try again
 		    }
@@ -88,11 +93,10 @@ public class NeedhamSchroederClient implements KDCClient {
 			
 			//TODO: Change ID and load IDs from a config file
 			Payload ns1 = new NS1("a".getBytes(), "b".getBytes(), Na, cryptoManager);
-
-			socket.send(p, ns1);
+			SecureMessage sm = new SecureMessageImplementation(ns1);
+			socket.send(sm, kdc_addr);
 			
 			// Receive reply from KDC
-			SecureMessage sm = new SecureMessageImplementation();
 			socket.receive(sm); // TODO: comparar os IPs de onde enviei e de onde veio?
 			
 			NS2 reply = (NS2) sm.getPayload();
@@ -121,10 +125,12 @@ public class NeedhamSchroederClient implements KDCClient {
 		return null;
 	}  
 	
-	private void shareKeys(InetSocketAddress b_addr, NS2 kdc_reply) {
+	private void shareKeys(InetSocketAddress b_addr, byte[] ticket, Cryptography cryptoManager) {
 		try {
+			Payload ns3 = new NS3(ticket, cryptoManager);
 			
-			
+			SecureMessage sm = new SecureMessageImplementation(ns3);
+			socket.send(sm, b_addr);
 			
 			
 			// Trocar este cryptoManager pelo crytpo manager que é construído no métod anteiroro para usar a chave dos macs definida pelo kdc uma vez que o a não partilha nenhuma chave com o b e depois nem o a nem o b conseguem validar as merdas.
