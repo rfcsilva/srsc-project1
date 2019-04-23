@@ -28,7 +28,6 @@ public class NS4 implements Payload {
 	private byte[] outermac;
 	
 	public NS4(long nb, Cryptography cryptoManager) throws IOException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, ShortBufferException {
-		
 		this.nb = nb;
 		nb_bytes = computeNbBytes(nb);
 		cipherText = cryptoManager.encrypt(nb_bytes);
@@ -40,7 +39,6 @@ public class NS4 implements Payload {
 	}	
 	
 	private NS4(long nb, byte[] cipherText, byte[] outermac) throws IOException {
-		
 		this.nb = nb;
 		this.nb_bytes = computeNbBytes(nb); 
 		this.cipherText = cipherText;
@@ -65,25 +63,21 @@ public class NS4 implements Payload {
 
 	@Override
 	public byte getPayloadType() {
-		
 		return TYPE;
 	}
 
 	@Override
 	public byte[] serialize() {
-		
 		return ArrayUtils.concat(cipherText, outermac);
 	}
 
 	@Override
 	public short size() {
-		
 		return (short) (cipherText.length + outermac.length);
 	}
 
 	@Override
 	public byte[] getMessage() {
-		
 		return nb_bytes;
 	}
 	

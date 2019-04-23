@@ -52,9 +52,9 @@ public class NeedhamSchroederClient implements KDCClient {
 	private static final int TIMEOUT = 30*1000;
 	
 	@Override
-	public Cryptography getSessionParameters() throws NoSuchAlgorithmException, IOException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException {
+	public Cryptography getSessionParameters() throws NoSuchAlgorithmException, IOException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException {
 		
-		socket.setTimeout(TIMEOUT); // 30 s -> passar a constante
+		
 		
 		for(int i=0; i < max_tries; i++) { // TODO: se algum nonce for replay ou mau, repetir?
 		    try {
@@ -65,10 +65,10 @@ public class NeedhamSchroederClient implements KDCClient {
 				System.out.println("Received Keys.");
 				
 				// Build a criptoManager
-				Cryptography cryptoManager = UDP_KDC_Server.deserializeSessionParameters(kdc_reply.getKs());
+				Cryptography session_cryptoManager = UDP_KDC_Server.deserializeSessionParameters(kdc_reply.getKs());
 				
 				System.out.println("Sharing keys...");
-				shareKeys(b_addr, kdc_reply.getTicket(), cryptoManager);
+				shareKeys(b_addr, kdc_reply.getTicket(), session_cryptoManager);
 				
 				System.out.println("Finished key establishment.");
 				
@@ -85,7 +85,9 @@ public class NeedhamSchroederClient implements KDCClient {
 	
 	private NS2 requestKeys(InetSocketAddress kdc_addr, long Na) throws IOException {
 		try {
-						
+			SecureDatagramSocket socket = new SecureDatagramSocket(cryptoManager);
+			socket.setTimeout(TIMEOUT); // 30 s -> passar a constante
+			
 			//SecureDatagramSocket socket = new SecureDatagramSocket(cryptoManager);
 			byte[] buff = new byte[65000];
 			DatagramPacket p = new DatagramPacket(buff, buff.length, kdc_addr );
@@ -127,32 +129,28 @@ public class NeedhamSchroederClient implements KDCClient {
 		return null;
 	}  
 	
-	private void shareKeys(InetSocketAddress b_addr, byte[] ticket, Cryptography cryptoManager) throws IOException {
+	private void shareKeys(InetSocketAddress b_addr, byte[] ticket, Cryptography session_cryptoManager) throws IOException {
 		try {
-			SecureDatagramSocket new_socket = new SecureDatagramSocket(cryptoManager);
+			SecureDatagramSocket new_socket = new SecureDatagramSocket(session_cryptoManager);
 			new_socket.setTimeout(TIMEOUT);
 			
-			Payload ns3 = new NS3(ticket, cryptoManager);
+			Payload ns3 = new NS3(ticket, session_cryptoManager);
 			
 			System.out.println("Sending Ticket to B ...");
 			SecureMessage sm = new SecureMessageImplementation(ns3);
 			new_socket.send(sm, b_addr);
 			
-			String ola = "Ola";
-			byte[]  om = cryptoManager.computeOuterMac(ola.getBytes());
-			System.out.println("Outer fora mac: " + Base64.getEncoder().encodeToString(om));
-			
 			// Receive Challenge
-			new_socket.receive(sm); // TODO: trocar a função de Na+1 e assim para uma chamada a uma funçção challenge que pode ter difenets implemneações
+			InetSocketAddress addr = new_socket.receive(sm); // TODO: trocar a função de Na+1 e assim para uma chamada a uma funçção challenge que pode ter difenets implemneações
 			System.out.println("Received Challenge.");
 			
 			NS4 ns4 = ((NS4)sm.getPayload());
 			long Nb = ns4.getNb();
 			
 			System.out.println("Sending Challenge result ...");
-			ns4 = new NS4(Nb+1, cryptoManager);
+			ns4 = new NS4(Nb+1, session_cryptoManager);
 			sm = new SecureMessageImplementation(ns4);
-			new_socket.send(sm, b_addr);
+			new_socket.send(sm, addr);
 			
 		} catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException
 				| InvalidAlgorithmParameterException | UnrecoverableEntryException | KeyStoreException
@@ -172,8 +170,5 @@ public class NeedhamSchroederClient implements KDCClient {
 	// B -> A : {Nb }Ks
 	// A -> B : {Nb+1 }Ks
 		
-	//V3R8NJQnBF0st7CPlGixAzP57uceswxT8ZJhUXoUV3k=
-	//V3R8NJQnBF0st7CPlGixAzP57uceswxT8ZJhUXoUV3k=
-	//
-	
 }
+

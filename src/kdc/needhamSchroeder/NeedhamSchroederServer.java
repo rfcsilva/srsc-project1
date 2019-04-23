@@ -81,12 +81,17 @@ public class NeedhamSchroederServer implements KDCServer {
 			System.out.println("Sending Challenge...");
 			Cryptography session_cryptoManager = UDP_KDC_Server.deserializeSessionParameters(ns3.getKs());
 			
-			SecureDatagramSocket new_socket = new SecureDatagramSocket(session_cryptoManager);
-			new_socket.setTimeout(30*1000);
-			
 			String ola = "Ola";
 			byte[]  om = session_cryptoManager.computeOuterMac(ola.getBytes());
 			System.out.println("Outer mac: " + Base64.getEncoder().encodeToString(om));
+			
+			
+			
+			System.out.println(Base64.getEncoder().encodeToString(ns3.getKs()) + " \n"
+		     + Base64.getEncoder().encodeToString(ns3.getTicket()));
+			
+			SecureDatagramSocket new_socket = new SecureDatagramSocket(session_cryptoManager);
+			new_socket.setTimeout(30*1000);
 			
 			long Nb = CryptographyUtils.getNonce(session_cryptoManager.getSecureRandom());
 			SecureMessage sm = new SecureMessageImplementation(new NS4(Nb, session_cryptoManager));
@@ -95,7 +100,6 @@ public class NeedhamSchroederServer implements KDCServer {
 			
 			System.out.println("SM Serializaada: " + Base64.getEncoder().encodeToString(sm.getPayload().serialize()));
 			
-			
 			InetSocketAddress addr2 = new_socket.receive(sm);
 			System.out.println("Received Challenge answer.");
 			
@@ -103,7 +107,7 @@ public class NeedhamSchroederServer implements KDCServer {
 			
 			System.out.println(ns5.getNb());
 			
-			
+			results.put("session_cryptoManager", session_cryptoManager);
 			finished.set(true); // TODO: Verificar se o NONCE é válido
 			} catch(Exception e) {
 				e.printStackTrace();
@@ -112,3 +116,4 @@ public class NeedhamSchroederServer implements KDCServer {
 	}
 
 }
+
