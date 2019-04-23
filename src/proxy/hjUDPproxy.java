@@ -36,6 +36,10 @@ import javax.crypto.Cipher;
 import cryptography.AbstractCryptography;
 import cryptography.Cryptography;
 import cryptography.CryptographyDoubleMac;
+import kdc.KDCClient;
+import kdc.KDCServer;
+import kdc.needhamSchroeder.NeedhamSchroederClient;
+import kdc.needhamSchroeder.NeedhamSchroederServer;
 import secureSocket.SecureDatagramSocket;
 
 class hjUDPproxy {
@@ -57,7 +61,11 @@ class hjUDPproxy {
 		Set<SocketAddress> outSocketAddressSet = Arrays.stream(destinations.split(",")).map(s -> parseSocketAddress(s)).collect(Collectors.toSet());
 
 		// Create inSocket 
-		Cryptography cryptoManager = AbstractCryptography.loadFromConfig(CIPHERSUITE_CONFIG_PATH);
+		//Cryptography cryptoManager = AbstractCryptography.loadFromConfig(CIPHERSUITE_CONFIG_PATH);
+		//InetSocketAddress b_addr = new InetSocketAddress("localhost", 9999);
+		KDCServer kdc_server = new NeedhamSchroederServer(inSocketAddress);
+		Cryptography cryptoManager = kdc_server.getSessionParameters();
+		
 		SecureDatagramSocket inSocket = new SecureDatagramSocket(inSocketAddress, cryptoManager);
 		
 		DatagramSocket outSocket = new DatagramSocket();
