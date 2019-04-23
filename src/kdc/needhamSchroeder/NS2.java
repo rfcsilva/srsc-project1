@@ -7,16 +7,12 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
-import java.security.Key;
-import java.util.Arrays;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.SecretKey;
 import javax.crypto.ShortBufferException;
 
 import cryptography.Cryptography;
-import secureSocket.exceptions.BrokenIntegrityException;
 import secureSocket.exceptions.InvalidMacException;
 import secureSocket.secureMessages.Payload;
 import util.ArrayUtils;
