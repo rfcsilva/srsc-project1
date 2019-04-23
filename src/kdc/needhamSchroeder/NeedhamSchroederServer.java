@@ -65,6 +65,8 @@ public class NeedhamSchroederServer implements KDCServer {
 
 			}
 		}
+		
+		inSocket.close();
 
 		return results.get("session_cryptoManager");
 	}
@@ -94,15 +96,17 @@ public class NeedhamSchroederServer implements KDCServer {
 				System.out.println("Received Challenge answer.");
 
 				NS4 ns5 = (NS4) sm.getPayload();
-
-
-				if(ns5.getNb() == Nb+1) {			
-					System.out.println(ns5.getNb());
-
+				System.out.println(ns5.getNb());
+				
+				if(ns5.getNb() == (Nb+1)) {			
+					System.out.println("Valid Challenge Answer.");
 					results.put("session_cryptoManager", session_cryptoManager);
 					finished.set(true); // TODO: Verificar se o NONCE é válido
-				}else 
-					System.err.println("Invalid challenge");
+				} else {
+					System.err.println("Invalid Challenge Answer: " + ns5.getNb() + " != " + (Nb+1));
+				}
+				
+				new_socket.close();
 				
 			} catch(Exception e) {
 				e.printStackTrace();

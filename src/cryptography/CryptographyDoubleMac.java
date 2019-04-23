@@ -13,6 +13,8 @@ public class CryptographyDoubleMac extends AbstractCryptography {
 	public CryptographyDoubleMac(Cipher encryptCipher, Cipher decryptCipher, SecureRandom secureRandom, Mac innerMac, Mac outerMac) {
 		super(encryptCipher, decryptCipher, outerMac, secureRandom);
 		this.innerMac = innerMac;
+		
+		System.out.println("innerMac: " + (innerMac == null));
 	}
 	
 	public Mac getInnerMac() {

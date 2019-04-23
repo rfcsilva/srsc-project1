@@ -43,8 +43,8 @@ class hjStreamServer {
 		InetSocketAddress b_addr = new InetSocketAddress( args[1], Integer.parseInt(args[2]));
 		InetSocketAddress kdc_addr = new InetSocketAddress("localhost", 8888);
 		
-		KDCClient needhamServer = new NeedhamSchroederClient(kdc_addr, b_addr);
-		Cryptography cryptoManager = needhamServer.getSessionParameters();
+		KDCClient needhamClient = new NeedhamSchroederClient(kdc_addr, b_addr);
+		Cryptography cryptoManager = needhamClient.getSessionParameters();
 		SecureDatagramSocket socket = new SecureDatagramSocket(cryptoManager);
 		
 		DatagramPacket p = new DatagramPacket(buff, buff.length, b_addr );
