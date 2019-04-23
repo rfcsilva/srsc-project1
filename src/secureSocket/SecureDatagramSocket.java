@@ -151,5 +151,9 @@ public class SecureDatagramSocket {
 	public InetAddress getLocalAddress() {
 		return socket.getLocalAddress();
 	}
+
+	public void setCryptoManager(Cryptography cryptoManager) {
+		this.cryptoManager = cryptoManager;
+	}
 	
 }
