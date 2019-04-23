@@ -133,15 +133,13 @@ public class NeedhamSchroederClient implements KDCClient {
 			SecureMessage sm = new SecureMessageImplementation(ns3);
 			socket.send(sm, b_addr);
 			
-			System.out.println("Received Challenge.");
 			// Receive Challenge
-			socket.setCryptoManager(cryptoManager);
+			socket.setCryptoManager(cryptoManager); //TODO: fazer um novo send com cryptoMAnager explicito
 			socket.receive(sm); // TODO: trocar a função de Na+1 e assim para uma chamada a uma funçção challenge que pode ter difenets implemneações
-			 // como é que isto usa o cryptoManager correto?
+			System.out.println("Received Challenge.");
 			
 			NS4 ns4 = ((NS4)sm.getPayload());
 			long Nb = ns4.getNb();
-			
 			
 			System.out.println("Sending Challenge result ...");
 			ns4 = new NS4(Nb+1, cryptoManager);

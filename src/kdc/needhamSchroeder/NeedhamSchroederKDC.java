@@ -31,6 +31,10 @@ public class NeedhamSchroederKDC implements KDC {
 		socket = new SecureDatagramSocket(addr, null);
 	}
 	
+	public NeedhamSchroederKDC() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException {
+		socket = new SecureDatagramSocket(null);
+	}
+	
 	//TODO: temos de lidar com os nonces
 
 	@Override
