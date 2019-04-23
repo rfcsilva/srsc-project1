@@ -1,50 +1,50 @@
 package kdc.needhamSchroeder;
 
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableEntryException;
+import java.security.cert.CertificateException;
 import java.util.Arrays;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.ShortBufferException;
+
+import cryptography.AbstractCryptography;
 import cryptography.Cryptography;
 import kdc.KDCServer;
 import secureSocket.SecureDatagramSocket;
 
 public class NeedhamSchroederServer implements KDCServer {
 	
+	private static final String PATH_TO_CONFIG = "./configs/ciphersuite.conf";
 	private InetSocketAddress b_addr;
+	private Cryptography cryptoManager;
+	 
 	
-	public NeedhamSchroederServer(InetSocketAddress b_addr) {
+	public NeedhamSchroederServer(InetSocketAddress b_addr) throws InvalidKeyException, NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, CertificateException, NoSuchPaddingException, InvalidAlgorithmParameterException, IOException, ShortBufferException, IllegalBlockSizeException, BadPaddingException {
+		
 		this.b_addr = b_addr;
+		cryptoManager = getSessionParameters();
+		
 	}
 
 	@Override
-	public Cryptography getSessionParameters() { // TODO: isto precisa de outo nome
+	public Cryptography getSessionParameters() throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException { // TODO: isto precisa de outo nome
 		
-		receiveKeys(b_addr);
-		
-		return null; 
+		SecureDatagramSocket inSocket = new SecureDatagramSocket(b_addr, AbstractCryptography.loadFromConfig(PATH_TO_CONFIG, Cipher.ENCRYPT_MODE));
+		NS3 keys = inSocket.receive();
+		return keys.getSessionCryptoManager(); 
 	}
-
-	private static byte[] receiveKeys(InetSocketAddress b_addr) {
-		try {
-			// nesta msg3 o dred tem de ler a chave e criar o cryptoManager com essas chaves para validar o mac
-			SecureDatagramSocket inSocket = new SecureDatagramSocket(b_addr, null);
-
-			byte[] buffer = new byte[4 * 1024];
-			DatagramPacket p = new DatagramPacket(buffer, buffer.length);
-			
-			inSocket.receive(p);
-
-			byte[] reply = Arrays.copyOfRange(p.getData(), 0, p.getLength());
-			
-			
-
-			System.out.println(new String(reply)); // temp
-			
-			return reply;
-		} catch(Exception e) {
-
-		}
-		return null;
-	}
+	
+	
 
 }
