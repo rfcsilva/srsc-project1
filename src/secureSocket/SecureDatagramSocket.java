@@ -7,6 +7,8 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.net.SocketAddress;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyStoreException;
@@ -62,6 +64,10 @@ public class SecureDatagramSocket {
 
 	public void close() throws IOException {
 		socket.close();
+	}
+	
+	public void setTimeout(int t) throws SocketException {
+		socket.setSoTimeout(t);
 	}
 	
 	// TODO: FAZER OUTRO RCV que RECEBE SecureMessage -> metter setters e retronar o endereço de onde veio

@@ -2,9 +2,8 @@ package kdc.needhamSchroeder;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
-import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyStoreException;
@@ -23,7 +22,6 @@ import cryptography.AbstractCryptography;
 import cryptography.Cryptography;
 import cryptography.CryptographyUtils;
 import kdc.KDCClient;
-import kdc.KDCReply;
 import secureSocket.SecureDatagramSocket;
 import secureSocket.secureMessages.ClearPayload;
 import secureSocket.secureMessages.Payload;
@@ -36,28 +34,48 @@ public class NeedhamSchroederClient implements KDCClient {
 	private Cryptography cryptoManager;
 	private InetSocketAddress kdc_addr;
 	private InetSocketAddress b_addr;
+	private SecureDatagramSocket socket;
 	
 	public NeedhamSchroederClient(InetSocketAddress kdc_addr, InetSocketAddress b_addr) throws InvalidKeyException, NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, CertificateException, NoSuchPaddingException, InvalidAlgorithmParameterException, IOException {
 		this.kdc_addr = kdc_addr;
 		this.b_addr = b_addr;
 		cryptoManager = AbstractCryptography.loadFromConfig(PATH_TO_CONFIG, Cipher.ENCRYPT_MODE);
+		socket = new SecureDatagramSocket(cryptoManager);
 	}
 	
+	private int max_tries = 3;
+	
 	@Override
-	public KDCReply getSessionParameters() {
+	public Cryptography getSessionParameters() throws NoSuchAlgorithmException, IOException {
 		
-		System.out.println("Requesting keys...");
-		byte[] keys = requestKeys(kdc_addr);
+		socket.setTimeout(30*1000); // 30 s -> passar a constante
 		
-		System.out.println("Sharing keys...");
-		shareKeys(b_addr, keys);
+		for(int i=0; i < max_tries; i++) {
+		    try {
+		    	long Na = CryptographyUtils.getNonce();
+		    	
+		    	System.out.println("Requesting keys...");
+				byte[] keys = requestKeys(kdc_addr, Na);
+				
+				System.out.println("Sharing keys...");
+				shareKeys(b_addr, keys);
+				
+				// TODO: Falta o resto         
+				
+				return null;
+		    } catch (SocketTimeoutException e) {
+		        // Try again
+		    }
+		}
+		
+		// TODO: Too many tries -> O que fazer?
 		
 		return null;
 	}
 	
-	private byte[] requestKeys(InetSocketAddress kdc_addr) {
+	private byte[] requestKeys(InetSocketAddress kdc_addr, long Na) throws IOException {
 		try {
-			long Na = CryptographyUtils.getNonce();
+			
 						
 			SecureDatagramSocket socket = new SecureDatagramSocket(cryptoManager);
 			byte[] buff = new byte[65000];
@@ -82,7 +100,7 @@ public class NeedhamSchroederClient implements KDCClient {
 			
 		} catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException
 				| InvalidAlgorithmParameterException | UnrecoverableEntryException | KeyStoreException
-				| CertificateException | IOException | IllegalBlockSizeException | BadPaddingException | ShortBufferException e) {
+				| CertificateException | IllegalBlockSizeException | BadPaddingException | ShortBufferException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

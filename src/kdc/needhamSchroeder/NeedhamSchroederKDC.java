@@ -1,7 +1,6 @@
 package kdc.needhamSchroeder;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.security.InvalidAlgorithmParameterException;
@@ -10,7 +9,6 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
-import java.util.Arrays;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -18,7 +16,6 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
 import kdc.KDC;
-import kdc.KDCReply;
 import secureSocket.SecureDatagramSocket;
 import secureSocket.secureMessages.ClearPayload;
 import secureSocket.secureMessages.SecureMessage;
@@ -35,16 +32,11 @@ public class NeedhamSchroederKDC implements KDC {
 	//TODO: temos de lidar com os nonces
 
 	@Override
-	public void receiveRequest() throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException {
+	public SocketAddress receiveRequest( SecureMessage sm ) throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException {
 		
-		byte[] buffer = new byte[4 * 1024];
-		//DatagramPacket inPacket = new DatagramPacket(buffer, buffer.length);
-		SecureMessage sm = new SecureMessageImplementation();
-		SocketAddress addr = socket.receive(sm);
+		// TODO: Não deveria fazer mais coisas?
 		
-		String a = new String(((NS1)sm.getPayload()).getA());
-		String b = new String(((NS1)sm.getPayload()).getB());
-		System.out.println(a + " " + b + " " + ((NS1)sm.getPayload()).getNa());
+		return socket.receive(sm);
 		
 		/*byte[] request = Arrays.copyOfRange(inPacket.getData(), 0, inPacket.getLength());
 		System.out.println(new String(request));*/
@@ -58,7 +50,7 @@ public class NeedhamSchroederKDC implements KDC {
 	}
 
 	@Override
-	public void sendReply(KDCReply reply) {
+	public void sendReply() {
 		// TODO Auto-generated method stub
 		
 	}

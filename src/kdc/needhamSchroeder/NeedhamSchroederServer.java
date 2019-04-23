@@ -4,7 +4,7 @@ import java.net.DatagramPacket;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 
-import kdc.KDCReply;
+import cryptography.Cryptography;
 import kdc.KDCServer;
 import secureSocket.SecureDatagramSocket;
 
@@ -17,7 +17,7 @@ public class NeedhamSchroederServer implements KDCServer {
 	}
 
 	@Override
-	public KDCReply getSessionParameters() { // TODO: isto precisa de outo nome
+	public Cryptography getSessionParameters() { // TODO: isto precisa de outo nome
 		
 		receiveKeys(b_addr);
 		

@@ -1,7 +1,9 @@
 package kdc;
 
+import cryptography.Cryptography;
+
 public interface KDCServer {
 
-	public KDCReply getSessionParameters();
+	public Cryptography getSessionParameters();
 	
 }
