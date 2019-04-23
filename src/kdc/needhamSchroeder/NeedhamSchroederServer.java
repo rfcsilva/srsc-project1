@@ -1,9 +1,7 @@
 package kdc.needhamSchroeder;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
 import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -11,13 +9,11 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
@@ -41,7 +37,7 @@ public class NeedhamSchroederServer implements KDCServer {
 	public NeedhamSchroederServer(InetSocketAddress b_addr) throws InvalidKeyException, NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, CertificateException, NoSuchPaddingException, InvalidAlgorithmParameterException, IOException, ShortBufferException, IllegalBlockSizeException, BadPaddingException {
 		
 		this.b_addr = b_addr;
-		cryptoManager = getSessionParameters(); // O que é isto bina?
+	//	cryptoManager = getSessionParameters(); // O que é isto bina?
 		
 	}
 
@@ -81,11 +77,6 @@ public class NeedhamSchroederServer implements KDCServer {
 			System.out.println("Sending Challenge...");
 			Cryptography session_cryptoManager = UDP_KDC_Server.deserializeSessionParameters(ns3.getKs());
 			
-			String ola = "Ola";
-			byte[]  om = session_cryptoManager.computeOuterMac(ola.getBytes());
-			System.out.println("Outer mac: " + Base64.getEncoder().encodeToString(om));
-			
-			
 			
 			System.out.println(Base64.getEncoder().encodeToString(ns3.getKs()) + " \n"
 		     + Base64.getEncoder().encodeToString(ns3.getTicket()));
@@ -94,12 +85,11 @@ public class NeedhamSchroederServer implements KDCServer {
 			new_socket.setTimeout(30*1000);
 			
 			long Nb = CryptographyUtils.getNonce(session_cryptoManager.getSecureRandom());
-			SecureMessage sm = new SecureMessageImplementation(new NS4(Nb, session_cryptoManager));
+			NS4 ns4 = new NS4(Nb, session_cryptoManager);
+			SecureMessage sm = new SecureMessageImplementation(ns4);
 			new_socket.send(sm, addr);
 			System.out.println(Nb);
-			
-			System.out.println("SM Serializaada: " + Base64.getEncoder().encodeToString(sm.getPayload().serialize()));
-			
+
 			InetSocketAddress addr2 = new_socket.receive(sm);
 			System.out.println("Received Challenge answer.");
 			

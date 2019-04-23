@@ -24,6 +24,7 @@ import cryptography.Cryptography;
 import cryptography.CryptographyUtils;
 import kdc.KDCClient;
 import kdc.UDP_KDC_Server;
+import kdc.needhamSchroeder.exceptions.InvalidChallangeReplyException;
 import secureSocket.SecureDatagramSocket;
 import secureSocket.secureMessages.ClearPayload;
 import secureSocket.secureMessages.Payload;
@@ -52,7 +53,7 @@ public class NeedhamSchroederClient implements KDCClient {
 	private static final int TIMEOUT = 30*1000;
 	
 	@Override
-	public Cryptography getSessionParameters() throws NoSuchAlgorithmException, IOException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException {
+	public Cryptography getSessionParameters() throws NoSuchAlgorithmException, IOException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidChallangeReplyException {
 		
 		
 		
@@ -83,18 +84,11 @@ public class NeedhamSchroederClient implements KDCClient {
 		return null;
 	}
 	
-	private NS2 requestKeys(InetSocketAddress kdc_addr, long Na) throws IOException {
+	private NS2 requestKeys(InetSocketAddress kdc_addr, long Na) throws IOException, InvalidChallangeReplyException {
 		try {
 			SecureDatagramSocket socket = new SecureDatagramSocket(cryptoManager);
 			socket.setTimeout(TIMEOUT); // 30 s -> passar a constante
-			
-			//SecureDatagramSocket socket = new SecureDatagramSocket(cryptoManager);
-			byte[] buff = new byte[65000];
-			DatagramPacket p = new DatagramPacket(buff, buff.length, kdc_addr );
-			
-			/*Payload ns1 = new NS1(socket.getLocalAddress().getAddress(),
-					b_addr.getAddress().getAddress(), Na, cryptoManager);*/
-			
+						
 			//TODO: Change ID and load IDs from a config file
 			Payload ns1 = new NS1("a".getBytes(), "b".getBytes(), Na, cryptoManager);
 			SecureMessage sm = new SecureMessageImplementation(ns1);
@@ -104,6 +98,8 @@ public class NeedhamSchroederClient implements KDCClient {
 			socket.receive(sm); // TODO: comparar os IPs de onde enviei e de onde veio?
 			
 			NS2 reply = (NS2) sm.getPayload();
+			
+			if(reply.getNa_1() != Na+1) throw new InvalidChallangeReplyException("Na recieved diffent from the expected.");
 			
 			System.out.println(reply.getNa_1() + " "
 						     + reply.getNc() + " "
