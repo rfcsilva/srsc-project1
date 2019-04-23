@@ -26,8 +26,12 @@ public class Test {
 		System.out.println(cipher.getBlockSize());
 		
 		byte[] plaintext = "Olá".getBytes();
+
 		/*byte[] plaintext = new byte[16];
 		System.arraycopy("Ola".getBytes(), 0, plaintext, 0, "Ola".length());*/
+
+		//byte[] plaintext = new byte[16];
+		//System.arraycopy("Ola".getBytes(), 0, plaintext, 0, "Ola".length());
 		
 		byte[] cipherText = new byte[cipher.getOutputSize(plaintext.length)];
 		cipher.update(plaintext, 0, plaintext.length, cipherText, 0);

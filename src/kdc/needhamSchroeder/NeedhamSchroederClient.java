@@ -158,7 +158,7 @@ public class NeedhamSchroederClient implements KDCClient {
 	// Alterar construtor do SecureSocket para receber CriptoManager
 
 	// A -> KDC : A, B, Na
-	// KDC -> A : {Na+1, Nc, Ks , B, {Nc, A, B, Ks}KB }KA 
+	// KDC -> A : {Na+1, Nc, Ks , B, { {Nc, A, B, Ks}KB, MacTiket Kb}  }KA + MAC Ka	 
 	
 	// A -> B : {Nc, A, B, Ks }KB
 	// B -> A : {Nb }Ks
