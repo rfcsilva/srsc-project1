@@ -15,9 +15,11 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
+import cryptography.Cryptography;
+import cryptography.CryptographyUtils;
 import kdc.KDC;
 import secureSocket.SecureDatagramSocket;
-import secureSocket.secureMessages.ClearPayload;
+import secureSocket.secureMessages.Payload;
 import secureSocket.secureMessages.SecureMessage;
 import secureSocket.secureMessages.SecureMessageImplementation;
 
@@ -32,7 +34,7 @@ public class NeedhamSchroederKDC implements KDC {
 	//TODO: temos de lidar com os nonces
 
 	@Override
-	public SocketAddress receiveRequest( SecureMessage sm ) throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException {
+	public InetSocketAddress receiveRequest( SecureMessage sm ) throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException {
 		
 		// TODO: Não deveria fazer mais coisas?
 		
@@ -49,9 +51,16 @@ public class NeedhamSchroederKDC implements KDC {
 		
 	}
 
+	//TODO: Fazer verificação dos nonces
+	
 	@Override
-	public void sendReply() {
-		// TODO Auto-generated method stub
+	public void sendReply(NS1 request, byte[] securityParams, InetSocketAddress addr) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, ShortBufferException, IOException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException {
+		long Na_1 = request.getNa() + 1;
+		long Nc = CryptographyUtils.getNonce();
 		
+		Payload payload = new NS2(Na_1, Nc, securityParams, request.getA(), request.getB(), request.getCryptoManagerB(), request.getCryptoManagerA());
+		SecureMessage sm = new SecureMessageImplementation(payload);
+		
+		socket.send(sm, addr);
 	}
 }

@@ -71,7 +71,7 @@ public class SecureDatagramSocket {
 	}
 	
 	// TODO: FAZER OUTRO RCV que RECEBE SecureMessage -> metter setters e retronar o endereço de onde veio
-	public SocketAddress receive(SecureMessage sm) throws IOException, ShortBufferException, IllegalBlockSizeException,
+	public InetSocketAddress receive(SecureMessage sm) throws IOException, ShortBufferException, IllegalBlockSizeException,
 	BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException,
 	NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException {
 
@@ -87,9 +87,9 @@ public class SecureDatagramSocket {
 		} catch (InvalidMacException | ReplayedNonceException | BrokenIntegrityException  e) {
 			System.err.println(e.getMessage());
 		}
-	}
+	} 
 	
-	return p.getSocketAddress();
+	return new InetSocketAddress(p.getAddress(), p.getPort());
 }
 	
 	public void receive(DatagramPacket p) throws IOException, ShortBufferException, IllegalBlockSizeException,

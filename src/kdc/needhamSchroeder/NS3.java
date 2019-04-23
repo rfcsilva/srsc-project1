@@ -32,65 +32,38 @@ import secureSocket.secureMessages.Payload;
 import util.ArrayUtils;
 
 // TODO : find better name for the class
-public class NS1 implements Payload {
+public class NS3 implements Payload { // A -> B : {Nc, A, B, Ks }KB
 
-	public static final byte TYPE = 0x11;
-
-	// Encryption support
-	// private static Cryptography2 criptoService;
+	public static final byte TYPE = 0x13;
 
 	// Payload data
-	private byte[] a;
-	private byte[] b;
-	private long na;
-	private byte[] message;
+	long Nc;
+	byte[] a;
+	byte[] b;
+	byte[] Ks;
+	private byte[] ticket;
 	private byte[] outerMac;
 	
-	private Cryptography criptoManagerA;
-	private Cryptography criptoManagerB;
+	//private Cryptography criptoManager;
 
-	public NS1(byte[] a, byte[] b, long Na, Cryptography cryptoManager)
+	public NS3(byte[] ticket, Cryptography cryptoManager)
 			throws IOException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException,
 			NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException,
 			IllegalBlockSizeException, BadPaddingException, ShortBufferException {
 
-		this.a = a;
-		this.b = b;
-		this.na = Na;
+		this.ticket = ticket;
 
-		this.message = buildMessage(a, b, Na);
-
-		this.outerMac = cryptoManager.computeOuterMac(message);
+		this.outerMac = cryptoManager.computeOuterMac(ticket);
 	}
 
-	private NS1(byte[] a, byte[] b, long Na, byte[] outerMac, Cryptography criptoManagerA, Cryptography criptoManagerB) {
+	private NS3(long Nc, byte[] a, byte[] b, byte[] Ks, byte[] ticket, byte[] outerMac/*, Cryptography criptoManager*/) {
+		this.Nc = Nc;
 		this.a = a;
 		this.b = b;
-		this.na = Na;
+		this.Ks = Ks;
+		this.ticket = ticket;
 		this.outerMac = outerMac;
-		this.criptoManagerA = criptoManagerA;
-		this.criptoManagerB= criptoManagerB;
-	}
-
-	private static byte[] buildMessage(byte[] a, byte[] b, long Na) throws IOException {
-		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-		DataOutputStream dataOut = new DataOutputStream(byteOut);
-
-		dataOut.writeInt(a.length);
-		dataOut.write(a, 0, a.length);
-		dataOut.writeInt(b.length);
-		dataOut.write(b, 0, b.length);
-		dataOut.writeLong(Na);
-
-		dataOut.flush();
-		byteOut.flush();
-
-		byte[] msg = byteOut.toByteArray();
-
-		dataOut.close();
-		byteOut.close();
-
-		return msg;
+		//this.criptoManager = criptoManager;
 	}
 
 	public byte getPayloadType() {
@@ -98,11 +71,11 @@ public class NS1 implements Payload {
 	}
 
 	public byte[] serialize() {
-		return ArrayUtils.concat(this.message, this.outerMac);
+		return ArrayUtils.concat(this.ticket, this.outerMac);
 	}
 
 	public short size() {
-		return (short) (message.length + outerMac.length);
+		return (short) (ticket.length + outerMac.length);
 	}
 
 	// TODO handle bad macs
@@ -114,6 +87,8 @@ public class NS1 implements Payload {
 
 		ByteArrayInputStream byteIn = new ByteArrayInputStream(rawPayload);
 		DataInputStream dataIn = new DataInputStream(byteIn);
+		
+		// Separar o MAC -> como? Não sabemos o tipo de mac nem o seu length nem o lenght do ticket
 
 		//read a
 		int a_size = dataIn.readInt();
@@ -150,7 +125,7 @@ public class NS1 implements Payload {
 		if (!criptoManagerA.validateOuterMac(messageParts[0], messageParts[1]))
 			throw new InvalidMacException("Invalid Outter Mac");
 
-		return new NS1(a, b, Na, messageParts[1], criptoManagerA, criptoManagerB); // Falta a msg
+		return new NS3(a, b, Na, messageParts[1], criptoManagerA, criptoManagerB); // Falta a msg
 	}	
 	
 	public Cryptography getCryptoManagerA() {

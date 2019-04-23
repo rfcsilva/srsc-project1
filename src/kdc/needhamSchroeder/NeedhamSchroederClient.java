@@ -11,6 +11,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
 import java.util.Arrays;
+import java.util.Base64;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -25,6 +26,8 @@ import kdc.KDCClient;
 import secureSocket.SecureDatagramSocket;
 import secureSocket.secureMessages.ClearPayload;
 import secureSocket.secureMessages.Payload;
+import secureSocket.secureMessages.SecureMessage;
+import secureSocket.secureMessages.SecureMessageImplementation;
 
 
 public class NeedhamSchroederClient implements KDCClient {
@@ -55,10 +58,10 @@ public class NeedhamSchroederClient implements KDCClient {
 		    	long Na = CryptographyUtils.getNonce();
 		    	
 		    	System.out.println("Requesting keys...");
-				byte[] keys = requestKeys(kdc_addr, Na);
+				NS2 kdc_reply = requestKeys(kdc_addr, Na);
 				
 				System.out.println("Sharing keys...");
-				shareKeys(b_addr, keys);
+				shareKeys(b_addr, kdc_reply);
 				
 				// TODO: Falta o resto         
 				
@@ -73,11 +76,10 @@ public class NeedhamSchroederClient implements KDCClient {
 		return null;
 	}
 	
-	private byte[] requestKeys(InetSocketAddress kdc_addr, long Na) throws IOException {
+	private NS2 requestKeys(InetSocketAddress kdc_addr, long Na) throws IOException {
 		try {
-			
 						
-			SecureDatagramSocket socket = new SecureDatagramSocket(cryptoManager);
+			//SecureDatagramSocket socket = new SecureDatagramSocket(cryptoManager);
 			byte[] buff = new byte[65000];
 			DatagramPacket p = new DatagramPacket(buff, buff.length, kdc_addr );
 			
@@ -90,11 +92,23 @@ public class NeedhamSchroederClient implements KDCClient {
 			socket.send(p, ns1);
 			
 			// Receive reply from KDC
-			socket.receive(p);
+			SecureMessage sm = new SecureMessageImplementation();
+			socket.receive(sm); // TODO: comparar os IPs de onde enviei e de onde veio?
+			
+			NS2 reply = (NS2) sm.getPayload();
+			
+			System.out.println(reply.getNa_1() + " "
+						     + reply.getNc() + " "
+						     + new String(reply.getB())  + " \n"
+						     + Base64.getEncoder().encodeToString(reply.getKs()) + " \n"
+						     + Base64.getEncoder().encodeToString(reply.getTicket()));
+			
+			// Receive reply from KDC
+			/*socket.receive(p);
 			byte[] reply = Arrays.copyOfRange(p.getData(), 0, p.getLength());
 			
 			// TODO : como fazer deserialize?
-			System.out.println(new String(reply)); // temp
+			System.out.println(new String(reply)); // temp*/
 			
 			return reply;
 			
@@ -107,11 +121,15 @@ public class NeedhamSchroederClient implements KDCClient {
 		return null;
 	}  
 	
-	private void shareKeys(InetSocketAddress b_addr, byte[] keys) {
+	private void shareKeys(InetSocketAddress b_addr, NS2 kdc_reply) {
 		try {
+			
+			
+			
+			
 			// Trocar este cryptoManager pelo crytpo manager que é construído no métod anteiroro para usar a chave dos macs definida pelo kdc uma vez que o a não partilha nenhuma chave com o b e depois nem o a nem o b conseguem validar as merdas.
 			
-			SecureDatagramSocket socket = new SecureDatagramSocket(cryptoManager);
+			/*SecureDatagramSocket socket = new SecureDatagramSocket(cryptoManager);
 			byte[] buff = new byte[65000];
 			DatagramPacket p = new DatagramPacket(buff, buff.length, b_addr );
 			
@@ -119,7 +137,7 @@ public class NeedhamSchroederClient implements KDCClient {
 			
 			p.setData(keys, 0, keys.length );
 			p.setSocketAddress( b_addr );
-			socket.send(p, ClearPayload.TYPE);
+			socket.send(p, ClearPayload.TYPE);*/
 		} catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException
 				| InvalidAlgorithmParameterException | UnrecoverableEntryException | KeyStoreException
 				| CertificateException | IOException | IllegalBlockSizeException | BadPaddingException | ShortBufferException e) {
@@ -137,11 +155,5 @@ public class NeedhamSchroederClient implements KDCClient {
 	// A -> B : {Nc, A, B, Ks }KB
 	// B -> A : {Nb }Ks
 	// A -> B : {Nb+1 }Ks
-	
-	// A -> KDC : Dá-me Chaves
-	// KDC -> A : toma
-	// A -> B : toma também
-	
- 
-	
+		
 }
