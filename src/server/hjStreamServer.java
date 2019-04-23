@@ -15,6 +15,8 @@ import javax.crypto.Cipher;
 import cryptography.AbstractCryptography;
 import cryptography.Cryptography;
 import cryptography.CryptographyDoubleMac;
+import kdc.KDCServer;
+import kdc.needhamSchroeder.NeedhamSchroederServer;
 import secureSocket.SecureDatagramSocket;
 
 class hjStreamServer {
@@ -28,7 +30,7 @@ class hjStreamServer {
 	         System.out.println("        or: mySend <movie> <ip-unicast-address> <port>");
 	         System.exit(-1);
 	         }
-      
+	     
 		int size;
 		int count = 0;
  		long time;
@@ -36,9 +38,11 @@ class hjStreamServer {
 		byte[] buff = new byte[65000];
 		//MulticastSocket s = new MulticastSocket();
 		//DatagramSocket s = new DatagramSocket();
-		Cryptography cryptoManager = AbstractCryptography.loadFromConfig(CIPHERSUITE_CONFIG_PATH);
-		SecureDatagramSocket socket = new SecureDatagramSocket(cryptoManager);
 		InetSocketAddress addr = new InetSocketAddress( args[1], Integer.parseInt(args[2]));
+		KDCServer needhamServer = new NeedhamSchroederServer(addr);
+		Cryptography cryptoManager = needhamServer.getSessionParameters();
+		SecureDatagramSocket socket = new SecureDatagramSocket(cryptoManager);
+		
 		DatagramPacket p = new DatagramPacket(buff, buff.length, addr );
 		long t0 = System.nanoTime(); // tempo de referencia para este processo
 		long q0 = 0;
