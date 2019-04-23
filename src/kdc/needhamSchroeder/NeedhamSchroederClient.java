@@ -138,6 +138,10 @@ public class NeedhamSchroederClient implements KDCClient {
 			SecureMessage sm = new SecureMessageImplementation(ns3);
 			new_socket.send(sm, b_addr);
 			
+			String ola = "Ola";
+			byte[]  om = cryptoManager.computeOuterMac(ola.getBytes());
+			System.out.println("Outer fora mac: " + Base64.getEncoder().encodeToString(om));
+			
 			// Receive Challenge
 			new_socket.receive(sm); // TODO: trocar a função de Na+1 e assim para uma chamada a uma funçção challenge que pode ter difenets implemneações
 			System.out.println("Received Challenge.");
@@ -168,4 +172,8 @@ public class NeedhamSchroederClient implements KDCClient {
 	// B -> A : {Nb }Ks
 	// A -> B : {Nb+1 }Ks
 		
+	//V3R8NJQnBF0st7CPlGixAzP57uceswxT8ZJhUXoUV3k=
+	//V3R8NJQnBF0st7CPlGixAzP57uceswxT8ZJhUXoUV3k=
+	//
+	
 }

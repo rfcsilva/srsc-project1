@@ -12,6 +12,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -83,10 +84,16 @@ public class NeedhamSchroederServer implements KDCServer {
 			SecureDatagramSocket new_socket = new SecureDatagramSocket(session_cryptoManager);
 			new_socket.setTimeout(30*1000);
 			
+			String ola = "Ola";
+			byte[]  om = session_cryptoManager.computeOuterMac(ola.getBytes());
+			System.out.println("Outer mac: " + Base64.getEncoder().encodeToString(om));
+			
 			long Nb = CryptographyUtils.getNonce(session_cryptoManager.getSecureRandom());
 			SecureMessage sm = new SecureMessageImplementation(new NS4(Nb, session_cryptoManager));
 			new_socket.send(sm, addr);
 			System.out.println(Nb);
+			
+			System.out.println("SM Serializaada: " + Base64.getEncoder().encodeToString(sm.getPayload().serialize()));
 			
 			
 			InetSocketAddress addr2 = new_socket.receive(sm);

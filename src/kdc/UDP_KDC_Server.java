@@ -177,7 +177,7 @@ public class UDP_KDC_Server {
 		ByteArrayInputStream byteIn = new ByteArrayInputStream(rawParams);
 		DataInputStream dataIn = new DataInputStream(byteIn);
 
-		String secureRandomAlgorithm = dataIn.readUTF(); // TODO: Acrescentar ao cryptoManager
+		String secureRandomAlgorithm = dataIn.readUTF();
 
 		String cipherAlgorithm = dataIn.readUTF();
 		String session_key_alg = dataIn.readUTF();
