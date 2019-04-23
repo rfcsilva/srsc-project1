@@ -12,6 +12,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -80,6 +81,9 @@ public class NeedhamSchroederServer implements KDCServer {
 			System.out.println("Sending Challenge...");
 			Cryptography session_cryptoManager = UDP_KDC_Server.deserializeSessionParameters(ns3.getKs());
 			
+			System.out.println(Base64.getEncoder().encodeToString(ns3.getKs()) + " \n"
+		     + Base64.getEncoder().encodeToString(ns3.getTicket()));
+			
 			SecureDatagramSocket new_socket = new SecureDatagramSocket(session_cryptoManager);
 			new_socket.setTimeout(30*1000);
 			
@@ -96,7 +100,7 @@ public class NeedhamSchroederServer implements KDCServer {
 			
 			System.out.println(ns5.getNb());
 			
-			
+			results.put("session_cryptoManager", session_cryptoManager);
 			finished.set(true); // TODO: Verificar se o NONCE é válido
 			} catch(Exception e) {
 				e.printStackTrace();
