@@ -43,7 +43,7 @@ public class NeedhamSchroederClient implements KDCClient {
 	public NeedhamSchroederClient(InetSocketAddress kdc_addr, InetSocketAddress b_addr) throws InvalidKeyException, NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, CertificateException, NoSuchPaddingException, InvalidAlgorithmParameterException, IOException {
 		this.kdc_addr = kdc_addr;
 		this.b_addr = b_addr;
-		cryptoManager = AbstractCryptography.loadFromConfig(PATH_TO_CONFIG, Cipher.ENCRYPT_MODE);
+		cryptoManager = AbstractCryptography.loadFromConfig(PATH_TO_CONFIG);
 		socket = new SecureDatagramSocket(cryptoManager);
 	}
 	

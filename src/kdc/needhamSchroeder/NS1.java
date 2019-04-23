@@ -136,15 +136,17 @@ public class NS1 implements Payload {
 		Mac outerMacA = AbstractCryptography.buildMac("HMACSHA256", kma); // TODO: passar para CryptographyUtils
 		SecretKey ka = CryptographyUtils.getKey(key_store, "SRSC1819", "K" + new String(a));
 		byte[] iv = new byte[] {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15};
-		Cipher cipherA = AbstractCryptography.buildCipher("AES/CTR/PKCS5Padding", Cipher.DECRYPT_MODE, ka, iv);
+		Cipher encryptCipherA = AbstractCryptography.buildCipher("AES/CTR/PKCS5Padding", Cipher.ENCRYPT_MODE, ka, iv);
+		Cipher decryptCipherA = AbstractCryptography.buildCipher("AES/CTR/PKCS5Padding", Cipher.DECRYPT_MODE, ka, iv);
 		
 		SecretKey kmb = CryptographyUtils.getKey(key_store, "SRSC1819", "Km" + new String(b));
 		Mac outerMacB = AbstractCryptography.buildMac("HMACSHA256", kmb); // TODO: passar para CryptographyUtils
 		SecretKey kb = CryptographyUtils.getKey(key_store, "SRSC1819", "K" + new String(b));
-		Cipher cipherB = AbstractCryptography.buildCipher("AES/CTR/PKCS5Padding", Cipher.DECRYPT_MODE, kb, iv);
+		Cipher encryptCipherB = AbstractCryptography.buildCipher("AES/CTR/PKCS5Padding", Cipher.ENCRYPT_MODE, kb, iv);
+		Cipher decryptCipherB = AbstractCryptography.buildCipher("AES/CTR/PKCS5Padding", Cipher.DECRYPT_MODE, kb, iv);
 		
-		Cryptography criptoManagerA = new CryptographyHash(cipherA, null, outerMacA);
-		Cryptography criptoManagerB = new CryptographyHash(cipherB, null, outerMacB);
+		Cryptography criptoManagerA = new CryptographyHash(encryptCipherA, decryptCipherA, null, null, outerMacA);
+		Cryptography criptoManagerB = new CryptographyHash(encryptCipherB, decryptCipherB, null, null, outerMacB);
 		
 		byte[][] messageParts = criptoManagerA.splitOuterMac(rawPayload);
 		if (!criptoManagerA.validateOuterMac(messageParts[0], messageParts[1]))

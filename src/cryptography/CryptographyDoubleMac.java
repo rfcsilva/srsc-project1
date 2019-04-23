@@ -1,6 +1,7 @@
 package cryptography;
 
 import java.security.InvalidKeyException;
+import java.security.SecureRandom;
 
 import javax.crypto.Cipher;
 import javax.crypto.Mac;
@@ -9,8 +10,8 @@ public class CryptographyDoubleMac extends AbstractCryptography {
 	
 	private Mac innerMac;
 			
-	public CryptographyDoubleMac(Cipher cipher, Mac innerMac, Mac outerMac) {
-		super(cipher, outerMac);
+	public CryptographyDoubleMac(Cipher encryptCipher, Cipher decryptCipher, SecureRandom secureRandom, Mac innerMac, Mac outerMac) {
+		super(encryptCipher, decryptCipher, outerMac, secureRandom);
 		this.innerMac = innerMac;
 	}
 	

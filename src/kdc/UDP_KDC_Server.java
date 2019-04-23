@@ -91,6 +91,8 @@ public class UDP_KDC_Server {
 		}).start();
 	}
 
+	
+	// TODO: secalhar ir para o CryptoMAnager?
 	private static byte[] buildSessionParameters(String path) throws NoSuchAlgorithmException, IOException { // TODO: passar para outra class ou assim
 		InputStream inputStream = new FileInputStream(path);
 		Properties ciphersuit_properties = new Properties();
@@ -198,14 +200,16 @@ public class UDP_KDC_Server {
 		boolean useHash = dataIn.readBoolean();
 
 		Cryptography cryptoManager = null;
-		Cipher cipher = AbstractCryptography.buildCipher(cipherAlgorithm, Cipher.ENCRYPT_MODE, ks, iv);
+		Cipher encryptCipher = AbstractCryptography.buildCipher(cipherAlgorithm, Cipher.ENCRYPT_MODE, ks, iv);
+		Cipher decryptCipher = AbstractCryptography.buildCipher(cipherAlgorithm, Cipher.DECRYPT_MODE, ks, iv);
 		Mac outerMac = AbstractCryptography.buildMac(outerMacAlgorithm, kms);
-
+		SecureRandom secureRandom = AbstractCryptography.buildSecureRandom(secureRandomAlgorithm);
+		
 		if(useHash) {
 			String hashAlgorithm = dataIn.readUTF();
 			MessageDigest innerHash = AbstractCryptography.buildHash(hashAlgorithm);
 
-			cryptoManager = new CryptographyHash(cipher, innerHash, outerMac);
+			cryptoManager = new CryptographyHash(encryptCipher, decryptCipher, secureRandom, innerHash, outerMac);
 		} else {
 			String innerMacAlgorithm = dataIn.readUTF();
 			String inner_key_alg = dataIn.readUTF();
@@ -216,7 +220,7 @@ public class UDP_KDC_Server {
 
 			Mac innerMac = AbstractCryptography.buildMac(innerMacAlgorithm, kms2);
 
-			cryptoManager = new CryptographyDoubleMac(cipher, innerMac, outerMac);
+			cryptoManager = new CryptographyDoubleMac(encryptCipher, decryptCipher, secureRandom, innerMac, outerMac);
 		}
 
 		return cryptoManager;

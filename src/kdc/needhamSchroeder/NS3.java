@@ -107,6 +107,8 @@ public class NS3 implements Payload { // A -> B : {Nc, A, B, Ks }KB
 		
 		long Nc = dataIn.readLong();
 		
+		System.out.println(Nc);
+		
 		int length = dataIn.readInt();
 		byte[] a = new byte[length];
 		dataIn.read(a, 0, a.length);

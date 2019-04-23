@@ -36,7 +36,7 @@ class hjStreamServer {
 		byte[] buff = new byte[65000];
 		//MulticastSocket s = new MulticastSocket();
 		//DatagramSocket s = new DatagramSocket();
-		Cryptography cryptoManager = AbstractCryptography.loadFromConfig(CIPHERSUITE_CONFIG_PATH, Cipher.ENCRYPT_MODE);
+		Cryptography cryptoManager = AbstractCryptography.loadFromConfig(CIPHERSUITE_CONFIG_PATH);
 		SecureDatagramSocket socket = new SecureDatagramSocket(cryptoManager);
 		InetSocketAddress addr = new InetSocketAddress( args[1], Integer.parseInt(args[2]));
 		DatagramPacket p = new DatagramPacket(buff, buff.length, addr );

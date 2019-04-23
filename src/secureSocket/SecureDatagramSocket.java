@@ -110,24 +110,6 @@ public class SecureDatagramSocket {
 		p.setData(message);
 		p.setLength(message.length);
 	}
-	
-	public NS3 receive() throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException {
-		
-		while (true) {
-			try {
-				byte[] buffer = new byte[4 * 1024];
-				DatagramPacket p = new DatagramPacket(buffer, buffer.length);
-				socket.receive(p);
-				byte[] secureMessageBytes = Arrays.copyOfRange(p.getData(), 0, p.getLength());
-				SecureMessage sm = new SecureMessageImplementation(secureMessageBytes, cryptoManager);
-
-				return (NS3) sm.getPayload();
-				
-			} catch (InvalidMacException | ReplayedNonceException | BrokenIntegrityException  e) {
-				System.err.println(e.getMessage());
-			}
-		}
-	}
 
 	public void send(DatagramPacket p, byte type) throws InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, IllegalBlockSizeException, BadPaddingException, ShortBufferException, IOException {
 		byte[] message = Arrays.copyOfRange(p.getData(), 0, p.getLength());
@@ -159,6 +141,7 @@ public class SecureDatagramSocket {
 	}
 
 	public void send(SecureMessage sm, InetSocketAddress address) throws IOException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, ShortBufferException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException {
+		// TODO: TROCAR O MODO PARA ENCRYPT em todos os sends e para DECRYPT EM TODOS OS RECEIVES
 		byte[] secureMessageBytes = sm.serialize();
 		DatagramPacket p = new DatagramPacket(secureMessageBytes, 0, secureMessageBytes.length, address);
 		socket.send(p);

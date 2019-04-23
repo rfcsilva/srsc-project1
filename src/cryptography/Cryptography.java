@@ -2,6 +2,7 @@ package cryptography;
 
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.SecureRandom;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -11,7 +12,13 @@ import javax.crypto.ShortBufferException;
 
 public interface Cryptography {
 
-	public Cipher getCipher();
+	public Cipher getEncryptCipher();
+	
+	public Cipher getDecryptCipher();
+	
+	public Mac getOuterMac();
+	
+	public SecureRandom getSecureRandom();
 	
 	public byte[] encrypt(byte[] plaintext) throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, ShortBufferException;
 	
@@ -28,7 +35,5 @@ public interface Cryptography {
 	public byte[][] splitOuterMac(byte[] plainText);
 
 	public byte[][] splitIntegrityProof(byte[] plainText);
-	
-	public Mac getOuterMac();
 }
 

@@ -2,6 +2,8 @@ package cryptography;
 
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
+import java.security.SecureRandom;
+
 import javax.crypto.Cipher;
 import javax.crypto.Mac;
 
@@ -10,8 +12,8 @@ public class CryptographyHash extends AbstractCryptography {
 	private MessageDigest innerHash;
 
 	//TODO: handle exceptions gracefully
-	public CryptographyHash(Cipher cipher, MessageDigest innerHash, Mac outerMac) {
-		super(cipher, outerMac);
+	public CryptographyHash(Cipher encryptCipher, Cipher decryptCipher, SecureRandom secureRandom, MessageDigest innerHash, Mac outerMac) {
+		super(encryptCipher, decryptCipher, outerMac, secureRandom);
 		this.innerHash = innerHash;
 	}
 
