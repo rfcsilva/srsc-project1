@@ -25,7 +25,7 @@ import secureSocket.SecureDatagramSocket;
 
 public class NeedhamSchroederServer implements KDCServer {
 	
-	private static final String PATH_TO_CONFIG = "./configs/ciphersuite.conf";
+	private static final String PATH_TO_CONFIG = "./configs/server/ciphersuite.conf";
 	private InetSocketAddress b_addr;
 	private Cryptography cryptoManager;
 	 
@@ -40,8 +40,9 @@ public class NeedhamSchroederServer implements KDCServer {
 	@Override
 	public Cryptography getSessionParameters() throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException { // TODO: isto precisa de outo nome
 		
-		SecureDatagramSocket inSocket = new SecureDatagramSocket(b_addr, AbstractCryptography.loadFromConfig(PATH_TO_CONFIG, Cipher.ENCRYPT_MODE));
+		SecureDatagramSocket inSocket = new SecureDatagramSocket(b_addr, AbstractCryptography.loadFromConfig(PATH_TO_CONFIG, Cipher.DECRYPT_MODE));
 		NS3 keys = inSocket.receive();
+		System.out.println("Ks: " + keys.getKs());
 		return keys.getSessionCryptoManager(); 
 	}
 	
