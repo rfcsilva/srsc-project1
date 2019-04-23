@@ -25,7 +25,7 @@ import secureSocket.SecureDatagramSocket;
 
 public class NeedhamSchroederServer implements KDCServer {
 	
-	private static final String PATH_TO_CONFIG = "./configs/ciphersuite.conf";
+	private static final String PATH_TO_CONFIG = "./configs/server/ciphersuite.conf";
 	private InetSocketAddress b_addr;
 	private Cryptography cryptoManager;
 	 

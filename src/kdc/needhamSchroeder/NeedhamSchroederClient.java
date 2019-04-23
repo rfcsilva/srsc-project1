@@ -49,10 +49,12 @@ public class NeedhamSchroederClient implements KDCClient {
 	
 	private int max_tries = 3;
 	
+	private static final int TIMEOUT = 30*1000;
+	
 	@Override
 	public Cryptography getSessionParameters() throws NoSuchAlgorithmException, IOException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException {
 		
-		socket.setTimeout(30*1000); // 30 s -> passar a constante
+		socket.setTimeout(TIMEOUT); // 30 s -> passar a constante
 		
 		for(int i=0; i < max_tries; i++) { // TODO: se algum nonce for replay ou mau, repetir?
 		    try {
@@ -125,17 +127,19 @@ public class NeedhamSchroederClient implements KDCClient {
 		return null;
 	}  
 	
-	private void shareKeys(InetSocketAddress b_addr, byte[] ticket, Cryptography cryptoManager) {
+	private void shareKeys(InetSocketAddress b_addr, byte[] ticket, Cryptography cryptoManager) throws IOException {
 		try {
+			SecureDatagramSocket new_socket = new SecureDatagramSocket(cryptoManager);
+			new_socket.setTimeout(TIMEOUT);
+			
 			Payload ns3 = new NS3(ticket, cryptoManager);
 			
 			System.out.println("Sending Ticket to B ...");
 			SecureMessage sm = new SecureMessageImplementation(ns3);
-			socket.send(sm, b_addr);
+			new_socket.send(sm, b_addr);
 			
 			// Receive Challenge
-			socket.setCryptoManager(cryptoManager); //TODO: fazer um novo send com cryptoMAnager explicito
-			socket.receive(sm); // TODO: trocar a função de Na+1 e assim para uma chamada a uma funçção challenge que pode ter difenets implemneações
+			new_socket.receive(sm); // TODO: trocar a função de Na+1 e assim para uma chamada a uma funçção challenge que pode ter difenets implemneações
 			System.out.println("Received Challenge.");
 			
 			NS4 ns4 = ((NS4)sm.getPayload());
@@ -144,11 +148,11 @@ public class NeedhamSchroederClient implements KDCClient {
 			System.out.println("Sending Challenge result ...");
 			ns4 = new NS4(Nb+1, cryptoManager);
 			sm = new SecureMessageImplementation(ns4);
-			socket.send(sm, b_addr);
+			new_socket.send(sm, b_addr);
 			
 		} catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException
 				| InvalidAlgorithmParameterException | UnrecoverableEntryException | KeyStoreException
-				| CertificateException | IOException | IllegalBlockSizeException | BadPaddingException | ShortBufferException e) {
+				| CertificateException | IllegalBlockSizeException | BadPaddingException | ShortBufferException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
