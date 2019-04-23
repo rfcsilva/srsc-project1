@@ -104,7 +104,10 @@ public abstract class AbstractCryptography implements Cryptography {
 			MessageDigest innerHash = buildHash(hashAlgorithm);
 			return new CryptographyHash(cipher, innerHash, outerMac);
 		} else {
-			Mac innerMac = buildMac(ciphersuit_properties.getProperty(INNER_MAC_CIPHERSUITE), kim);
+			Mac innerMac = null;
+			if(kim != null && ciphersuit_properties.getProperty(INNER_MAC_CIPHERSUITE) != null )
+				innerMac = buildMac(ciphersuit_properties.getProperty(INNER_MAC_CIPHERSUITE), kim);
+			
 			return new CryptographyDoubleMac(cipher, innerMac, outerMac);
 		}
 	}
