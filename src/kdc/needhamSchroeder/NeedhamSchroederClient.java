@@ -54,7 +54,7 @@ public class NeedhamSchroederClient implements KDCClient {
 		
 		socket.setTimeout(30*1000); // 30 s -> passar a constante
 		
-		for(int i=0; i < max_tries; i++) {
+		for(int i=0; i < max_tries; i++) { // TODO: se algum nonce for replay ou mau, repetir?
 		    try {
 		    	long Na = CryptographyUtils.getNonce();
 		    	
@@ -68,7 +68,7 @@ public class NeedhamSchroederClient implements KDCClient {
 				System.out.println("Sharing keys...");
 				shareKeys(b_addr, kdc_reply.getTicket(), cryptoManager);
 				
-				// TODO: falta o resto
+				System.out.println("Finished key establishment.");
 				
 				return cryptoManager;
 		    } catch (SocketTimeoutException e) {
@@ -129,21 +129,25 @@ public class NeedhamSchroederClient implements KDCClient {
 		try {
 			Payload ns3 = new NS3(ticket, cryptoManager);
 			
+			System.out.println("Sending Ticket to B ...");
 			SecureMessage sm = new SecureMessageImplementation(ns3);
 			socket.send(sm, b_addr);
 			
+			System.out.println("Received Challenge.");
+			// Receive Challenge
+			socket.setCryptoManager(cryptoManager);
+			socket.receive(sm); // TODO: trocar a função de Na+1 e assim para uma chamada a uma funçção challenge que pode ter difenets implemneações
+			 // como é que isto usa o cryptoManager correto?
 			
-			// Trocar este cryptoManager pelo crytpo manager que é construído no métod anteiroro para usar a chave dos macs definida pelo kdc uma vez que o a não partilha nenhuma chave com o b e depois nem o a nem o b conseguem validar as merdas.
+			NS4 ns4 = ((NS4)sm.getPayload());
+			long Nb = ns4.getNb();
 			
-			/*SecureDatagramSocket socket = new SecureDatagramSocket(cryptoManager);
-			byte[] buff = new byte[65000];
-			DatagramPacket p = new DatagramPacket(buff, buff.length, b_addr );
 			
-			//byte[] request = "To Chaves!".getBytes();
+			System.out.println("Sending Challenge result ...");
+			ns4 = new NS4(Nb+1, cryptoManager);
+			sm = new SecureMessageImplementation(ns4);
+			socket.send(sm, b_addr);
 			
-			p.setData(keys, 0, keys.length );
-			p.setSocketAddress( b_addr );
-			socket.send(p, ClearPayload.TYPE);*/
 		} catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException
 				| InvalidAlgorithmParameterException | UnrecoverableEntryException | KeyStoreException
 				| CertificateException | IOException | IllegalBlockSizeException | BadPaddingException | ShortBufferException e) {

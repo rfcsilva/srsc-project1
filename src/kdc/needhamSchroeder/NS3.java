@@ -9,6 +9,7 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
@@ -25,6 +26,7 @@ import cryptography.AbstractCryptography;
 import cryptography.Cryptography;
 import cryptography.CryptographyHash;
 import cryptography.CryptographyUtils;
+import kdc.UDP_KDC_Server;
 import secureSocket.exceptions.BrokenIntegrityException;
 import secureSocket.exceptions.InvalidMacException;
 import secureSocket.exceptions.ReplayedNonceException;
@@ -44,7 +46,7 @@ public class NS3 implements Payload { // A -> B : {Nc, A, B, Ks }KB
 	private byte[] ticket;
 	private byte[] outerMac;
 	
-	//private Cryptography criptoManager;
+	private Cryptography session_criptoManager;
 
 	public NS3(byte[] ticket, Cryptography cryptoManager)
 			throws IOException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException,
@@ -56,14 +58,14 @@ public class NS3 implements Payload { // A -> B : {Nc, A, B, Ks }KB
 		this.outerMac = cryptoManager.computeOuterMac(ticket);
 	}
 
-	private NS3(long Nc, byte[] a, byte[] b, byte[] Ks, byte[] ticket, byte[] outerMac/*, Cryptography criptoManager*/) {
+	private NS3(long Nc, byte[] a, byte[] b, byte[] Ks, byte[] ticket, byte[] outerMac, Cryptography session_criptoManager) {
 		this.Nc = Nc;
 		this.a = a;
 		this.b = b;
 		this.Ks = Ks;
 		this.ticket = ticket;
 		this.outerMac = outerMac;
-		//this.criptoManager = criptoManager;
+		this.session_criptoManager = session_criptoManager;
 	}
 
 	public byte getPayloadType() {
@@ -71,11 +73,11 @@ public class NS3 implements Payload { // A -> B : {Nc, A, B, Ks }KB
 	}
 
 	public byte[] serialize() {
-		return ArrayUtils.concat(this.ticket, this.outerMac);
+		return ArrayUtils.concat(ArrayUtils.intToByteArray(this.outerMac.length), ArrayUtils.concat(this.ticket, this.outerMac));
 	}
 
 	public short size() {
-		return (short) (ticket.length + outerMac.length);
+		return (short) (Integer.BYTES + ticket.length + outerMac.length);
 	}
 
 	// TODO handle bad macs
@@ -88,57 +90,57 @@ public class NS3 implements Payload { // A -> B : {Nc, A, B, Ks }KB
 		ByteArrayInputStream byteIn = new ByteArrayInputStream(rawPayload);
 		DataInputStream dataIn = new DataInputStream(byteIn);
 		
-		// Separar o MAC -> como? Não sabemos o tipo de mac nem o seu length nem o lenght do ticket
-
-		//read a
-		int a_size = dataIn.readInt();
-		byte[] a  = new byte[a_size];
-		dataIn.read(a, 0, a_size);
+		int outerMacSize = dataIn.readInt();
+		byte[] outerMac = new byte[outerMacSize];
+		System.arraycopy(rawPayload, rawPayload.length-outerMacSize, outerMac, 0, outerMacSize);
 		
-		//read b
-		int b_size = dataIn.readInt();
-		byte[] b  = new byte[b_size];
-		dataIn.read(b, 0, b_size);
-
-		long Na = dataIn.readLong();
+		byte[] ticket = new byte[rawPayload.length-Integer.BYTES-outerMacSize];
+		System.arraycopy(rawPayload, Integer.BYTES, ticket, 0, ticket.length);
 
 		dataIn.close();
 		byteIn.close();
 		
-		// TODO: Isto não pode estar assim. Esta info deveria vir toda de fora
-		KeyStore key_store = CryptographyUtils.loadKeyStrore("./configs/kdc/kdc-keystore.p12", "SRSC1819", "PKCS12");
-		SecretKey kma = CryptographyUtils.getKey(key_store, "SRSC1819", "Km" + new String(a));
-		Mac outerMacA = AbstractCryptography.buildMac("HMACSHA256", kma); // TODO: passar para CryptographyUtils
-		SecretKey ka = CryptographyUtils.getKey(key_store, "SRSC1819", "K" + new String(a));
-		byte[] iv = new byte[] {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15};
-		Cipher cipherA = AbstractCryptography.buildCipher("AES/CTR/PKCS5Padding", Cipher.DECRYPT_MODE, ka, iv);
+		byte[] clearText = criptoManager.decrypt(ticket); // this cryptoManager has to have Kb
 		
-		SecretKey kmb = CryptographyUtils.getKey(key_store, "SRSC1819", "Km" + new String(b));
-		Mac outerMacB = AbstractCryptography.buildMac("HMACSHA256", kmb); // TODO: passar para CryptographyUtils
-		SecretKey kb = CryptographyUtils.getKey(key_store, "SRSC1819", "K" + new String(b));
-		Cipher cipherB = AbstractCryptography.buildCipher("AES/CTR/PKCS5Padding", Cipher.DECRYPT_MODE, kb, iv);
+		byteIn = new ByteArrayInputStream(clearText);
+		dataIn = new DataInputStream(byteIn);
 		
-		Cryptography criptoManagerA = new CryptographyHash(cipherA, null, outerMacA);
-		Cryptography criptoManagerB = new CryptographyHash(cipherB, null, outerMacB);
+		long Nc = dataIn.readInt();
 		
-		byte[][] messageParts = criptoManagerA.splitOuterMac(rawPayload);
-		if (!criptoManagerA.validateOuterMac(messageParts[0], messageParts[1]))
+		int length = dataIn.readInt();
+		byte[] a = new byte[length];
+		dataIn.read(a, 0, a.length);
+		
+		length = dataIn.readInt();
+		byte[] b = new byte[length];
+		dataIn.read(b, 0, b.length);
+		
+		length = dataIn.readInt();
+		byte[] Ks = new byte[length];
+		dataIn.read(Ks, 0, Ks.length);
+		
+		dataIn.close();
+		byteIn.close();
+		
+		Cryptography session_cryptoManager = UDP_KDC_Server.deserializeSessionParameters(Ks);
+		
+		/*byte[][] messageParts = session_cryptoManager.splitOuterMac(rawPayload);
+		if (!session_cryptoManager.validateOuterMac(messageParts[0], messageParts[1]))
+			throw new InvalidMacException("Invalid Outter Mac");*/
+		
+		if (!session_cryptoManager.validateOuterMac(ticket, outerMac))
 			throw new InvalidMacException("Invalid Outter Mac");
 
-		return new NS3(a, b, Na, messageParts[1], criptoManagerA, criptoManagerB); // Falta a msg
+		return new NS3(Nc, a, b, Ks, ticket, outerMac, session_cryptoManager); // Falta a msg
 	}	
 	
-	public Cryptography getCryptoManagerA() {
-		return this.criptoManagerA;
-	}
-	
-	public Cryptography getCryptoManagerB() { // TODO: ter aqui o B ?
-		return this.criptoManagerB;
+	public Cryptography getSessionCryptoManager() {
+		return this.session_criptoManager;
 	}
 
 	@Override
 	public byte[] getMessage() {
-		return message;
+		return null;
 	}
 	
 	public byte[] getA() {
@@ -148,9 +150,21 @@ public class NS3 implements Payload { // A -> B : {Nc, A, B, Ks }KB
 	public byte[] getB() {
 		return b;
 	}
-	
-	public long getNa() {
-		return na;
+
+	public long getNc() {
+		return Nc;
+	}
+
+	public byte[] getKs() {
+		return Ks;
+	}
+
+	public byte[] getTicket() {
+		return ticket;
+	}
+
+	public byte[] getOuterMac() {
+		return outerMac;
 	}
 	
 }

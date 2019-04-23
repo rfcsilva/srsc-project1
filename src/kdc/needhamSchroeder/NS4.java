@@ -32,7 +32,6 @@ public class NS4 implements Payload {
 		nb_bytes = computeNbBytes(nb);
 		cipherText = cryptoManager.encrypt(nb_bytes);
 		outermac = cryptoManager.computeOuterMac(nb_bytes);
-		
 	}	
 	
 	private NS4(long nb, byte[] cipherText, byte[] outermac) throws IOException {
