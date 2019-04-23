@@ -8,8 +8,11 @@ import cryptography.CryptographyUtils;
 public class Test {
 
 	public static void main(String[] args) throws Exception {
-		Cipher cipher =	Cipher.getInstance("AES/ECB/NoPadding");
+		Cipher cipher =	Cipher.getInstance("AES/CTR/PKCS5Padding");
 		SecretKey ks = CryptographyUtils.generateKey("AES", 256);
+		
+		
+		
 		cipher.init(Cipher.ENCRYPT_MODE, ks);
 		
 		System.out.println(Base64.getEncoder().encodeToString(ks.getEncoded()));
@@ -17,9 +20,9 @@ public class Test {
 		
 		System.out.println(cipher.getBlockSize());
 		
-		//byte[] plaintext = "Olá".getBytes();
-		byte[] plaintext = new byte[16];
-		System.arraycopy("Ola".getBytes(), 0, plaintext, 0, "Ola".length());
+		byte[] plaintext = "Olá".getBytes();
+		//byte[] plaintext = new byte[16];
+		//System.arraycopy("Ola".getBytes(), 0, plaintext, 0, "Ola".length());
 		
 		byte[] cipherText = new byte[cipher.getOutputSize(plaintext.length)];
 		cipher.update(plaintext, 0, plaintext.length, cipherText, 0);

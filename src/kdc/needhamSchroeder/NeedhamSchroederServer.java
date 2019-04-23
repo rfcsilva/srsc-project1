@@ -31,10 +31,12 @@ public class NeedhamSchroederServer implements KDCServer {
 
 			byte[] buffer = new byte[4 * 1024];
 			DatagramPacket p = new DatagramPacket(buffer, buffer.length);
-
+			
 			inSocket.receive(p);
 
 			byte[] reply = Arrays.copyOfRange(p.getData(), 0, p.getLength());
+			
+			
 
 			System.out.println(new String(reply)); // temp
 			
