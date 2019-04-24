@@ -1,0 +1,5 @@
+TODO LIST:
+ - Implementar os Nonces
+ - Lindar com Excepções
+ - Dinheiro
+ - Tirar os martelamentos do código
