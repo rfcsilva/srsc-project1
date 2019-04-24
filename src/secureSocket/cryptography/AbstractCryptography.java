@@ -141,7 +141,7 @@ public abstract class AbstractCryptography implements Cryptography {
 		int ctLength = cipher.update(plaintext, 0, plaintext.length, cipherText, 0);
 		ctLength += cipher.doFinal(cipherText, ctLength);	
 		
-		return Arrays.copyOfRange(cipherText, 0, ctLength);
+		return cipherText;
 	}
 
 	@Override

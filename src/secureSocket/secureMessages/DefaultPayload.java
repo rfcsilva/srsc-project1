@@ -111,6 +111,7 @@ public class DefaultPayload implements Payload {
 		else {
 			byte[] plainText = criptoManager.decrypt(messageParts[0]);
 			byte[][] payloadParts = criptoManager.splitIntegrityProof(plainText);
+			
 			if (!criptoManager.validateIntegrityProof(payloadParts[0], payloadParts[1]))
 					throw new InvalidMacException("Invalid Inner Mac");
 			else {

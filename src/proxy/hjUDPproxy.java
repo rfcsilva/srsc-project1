@@ -57,7 +57,7 @@ class hjUDPproxy {
 		Set<SocketAddress> outSocketAddressSet = Arrays.stream(destinations.split(",")).map(s -> parseSocketAddress(s)).collect(Collectors.toSet());
 
 		// Create inSocket 
-		Cryptography cryptoManager = AbstractCryptography.loadFromConfig(CIPHERSUITE_CONFIG_PATH, Cipher.ENCRYPT_MODE);
+		Cryptography cryptoManager = AbstractCryptography.loadFromConfig(CIPHERSUITE_CONFIG_PATH, Cipher.DECRYPT_MODE);
 		SecureDatagramSocket inSocket = new SecureDatagramSocket(inSocketAddress, cryptoManager);
 		
 		DatagramSocket outSocket = new DatagramSocket();
