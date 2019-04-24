@@ -11,6 +11,7 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
 
@@ -85,7 +86,7 @@ public class NS3 implements Payload { // A -> B : {Nc, A, B, Ks }KB
 	public static Payload deserialize(byte[] rawPayload, Cryptography criptoManager)
 			throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException,
 			InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException,
-			UnrecoverableEntryException, KeyStoreException, CertificateException, IOException, InvalidMacException, ReplayedNonceException, BrokenIntegrityException {
+			UnrecoverableEntryException, KeyStoreException, CertificateException, IOException, InvalidMacException, ReplayedNonceException, BrokenIntegrityException, NoSuchProviderException {
 
 		ByteArrayInputStream byteIn = new ByteArrayInputStream(rawPayload);
 		DataInputStream dataIn = new DataInputStream(byteIn);

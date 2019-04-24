@@ -7,6 +7,7 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
 import java.util.Base64;
@@ -37,7 +38,7 @@ public class NeedhamSchroederServer implements KDCServer {
 	}
 
 	@Override
-	public Cryptography getSessionParameters() throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException { // TODO: isto precisa de outo nome
+	public Cryptography getSessionParameters() throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException, NoSuchProviderException { // TODO: isto precisa de outo nome
 
 		SecureDatagramSocket inSocket = new SecureDatagramSocket(b_addr, AbstractCryptography.loadFromConfig(PATH_TO_CONFIG));
 		inSocket.setTimeout(5*1000);

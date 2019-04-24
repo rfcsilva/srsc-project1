@@ -9,6 +9,7 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
@@ -62,9 +63,9 @@ public abstract class AbstractCryptography implements Cryptography {
 	
 	public static Cipher buildCipher(String cipherAlgorithm, int cipherMode, SecretKey key, byte[] iv, int tagSize)
 			throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException,
-			InvalidAlgorithmParameterException {
+			InvalidAlgorithmParameterException, NoSuchProviderException {
 		Cipher cipher = Cipher.getInstance(cipherAlgorithm);
-
+		
 		System.out.println(cipherAlgorithm);
 		System.out.println(tagSize);
 		System.out.println(key.getEncoded().length*8);

@@ -8,6 +8,7 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
 import java.util.Arrays;
@@ -53,7 +54,7 @@ public class NeedhamSchroederClient implements KDCClient {
 	private static final int TIMEOUT = 30*1000;
 	
 	@Override
-	public Cryptography getSessionParameters() throws NoSuchAlgorithmException, IOException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidChallangeReplyException {
+	public Cryptography getSessionParameters() throws NoSuchAlgorithmException, IOException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidChallangeReplyException, NoSuchProviderException {
 		
 		
 		
@@ -88,7 +89,7 @@ public class NeedhamSchroederClient implements KDCClient {
 		return null;
 	}
 	
-	private NS2 requestKeys(InetSocketAddress kdc_addr, long Na) throws IOException, InvalidChallangeReplyException {
+	private NS2 requestKeys(InetSocketAddress kdc_addr, long Na) throws IOException, InvalidChallangeReplyException, NoSuchProviderException {
 		try {
 			SecureDatagramSocket socket = new SecureDatagramSocket(cryptoManager);
 			socket.setTimeout(TIMEOUT); // 30 s -> passar a constante
@@ -129,7 +130,7 @@ public class NeedhamSchroederClient implements KDCClient {
 		return null;
 	}  
 	
-	private void shareKeys(InetSocketAddress b_addr, byte[] ticket, Cryptography session_cryptoManager) throws IOException {
+	private void shareKeys(InetSocketAddress b_addr, byte[] ticket, Cryptography session_cryptoManager) throws IOException, NoSuchProviderException {
 		try {
 			SecureDatagramSocket new_socket = new SecureDatagramSocket(session_cryptoManager);
 			new_socket.setTimeout(TIMEOUT);

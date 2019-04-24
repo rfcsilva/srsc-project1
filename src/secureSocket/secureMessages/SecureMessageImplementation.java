@@ -9,6 +9,7 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
 
@@ -49,11 +50,11 @@ public class SecureMessageImplementation implements SecureMessage {
 	}
 	
 	//TODO payload may come null if type is invalid 
-	public SecureMessageImplementation(byte[] rawContent, Cryptography cryptoManager) throws IOException, InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidMacException, ReplayedNonceException, BrokenIntegrityException {
+	public SecureMessageImplementation(byte[] rawContent, Cryptography cryptoManager) throws IOException, InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidMacException, ReplayedNonceException, BrokenIntegrityException, NoSuchProviderException {
 		deserialize(rawContent, cryptoManager);
 	}
 	
-	public void deserialize(byte[] rawContent, Cryptography cryptoManager) throws IOException, InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidMacException, ReplayedNonceException, BrokenIntegrityException {
+	public void deserialize(byte[] rawContent, Cryptography cryptoManager) throws IOException, InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidMacException, ReplayedNonceException, BrokenIntegrityException, NoSuchProviderException {
 		ByteArrayInputStream byteIn = new ByteArrayInputStream(rawContent);
 		DataInputStream dataIn = new DataInputStream(byteIn);
 		

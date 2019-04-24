@@ -15,6 +15,7 @@ import java.security.InvalidKeyException;
 import java.security.KeyStoreException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
@@ -45,7 +46,7 @@ public class UDP_KDC_Server {
 
 	static InetSocketAddress my_addr;
 
-	public static void main(String[] args) throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException {
+	public static void main(String[] args) throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException, NoSuchProviderException {
 		if(args.length < 2) {
 			System.out.println("usage: kdc <ip> <port>");
 		}
@@ -185,7 +186,7 @@ public class UDP_KDC_Server {
 		return msg;
 	}
 
-	public static Cryptography deserializeSessionParameters(byte[] rawParams) throws NoSuchAlgorithmException, IOException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException { // TODO: passar para outra class ou assim
+	public static Cryptography deserializeSessionParameters(byte[] rawParams) throws NoSuchAlgorithmException, IOException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException, NoSuchProviderException { // TODO: passar para outra class ou assim
 		ByteArrayInputStream byteIn = new ByteArrayInputStream(rawParams);
 		DataInputStream dataIn = new DataInputStream(byteIn);
 

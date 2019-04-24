@@ -11,6 +11,7 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
 import java.util.Arrays;
@@ -71,7 +72,7 @@ public class SecureDatagramSocket {
 	// TODO: FAZER OUTRO RCV que RECEBE SecureMessage -> metter setters e retronar o endereço de onde veio
 	public InetSocketAddress receive(SecureMessage sm) throws IOException, ShortBufferException, IllegalBlockSizeException,
 	BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException,
-	NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException {
+	NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, NoSuchProviderException {
 
 		byte[] buffer = new byte[4 * 1024];
 		DatagramPacket p = new DatagramPacket(buffer, buffer.length);
@@ -92,7 +93,7 @@ public class SecureDatagramSocket {
 
 	public void receive(DatagramPacket p) throws IOException, ShortBufferException, IllegalBlockSizeException,
 	BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException,
-	NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException {
+	NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, NoSuchProviderException {
 
 		byte[] message = null;
 		while (true) {
