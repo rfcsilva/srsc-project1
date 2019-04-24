@@ -58,11 +58,12 @@ class arStreamServer {
 		//KDCClient needhamClient = new NeedhamSchroederClient(kdc_addr, b_addr);
 		//Cryptography cryptoManager = needhamClient.getSessionParameters();
 		
+		Cryptography master_cryptoManager = CryptoFactory.loadFromConfig(args[3]);
 		InetSocketAddress b_addr = new InetSocketAddress( "localhost", 8889);
-		KDCServer kdc_server = new NeedhamSchroederServer(b_addr);
-		Cryptography cryptoManager = kdc_server.getSessionParameters();
+		KDCServer kdc_server = new NeedhamSchroederServer(b_addr, master_cryptoManager);
+		Cryptography session_cryptoManager = kdc_server.getSessionParameters();
 		
-		SecureDatagramSocket socket = new SecureDatagramSocket(cryptoManager);
+		SecureDatagramSocket socket = new SecureDatagramSocket(session_cryptoManager);
 		InetSocketAddress addr = new InetSocketAddress( args[1], Integer.parseInt(args[2]));
 		DatagramPacket p = new DatagramPacket(buff, buff.length, addr );
 		long t0 = System.nanoTime(); // tempo de referencia para este processo
