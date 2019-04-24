@@ -116,5 +116,3 @@ public class NeedhamSchroederServer implements KDCServer {
 	}
 
 }
-
->>>>>>> cc6d61a9ce1f975842999fcc7080759076d97adc
