@@ -108,23 +108,24 @@ public class Test {
 		                            0x00, 0x00, 0x00, 0x01, 0x04, 0x05, 0x06, 0x07,
 		                            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 };
 		        
+		        System.out.println("input : " + toHex(input, input.length) + " bytes: " + input.length);
+		        
 		        // Vamos usar AES, modo CTR sem padding com o provedor indicado
 
 		        //Cipher          cipher = Cipher.getInstance("AES/GCM/NoPadding", "BC");
 		        //Cipher          cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-		        Cipher          cipher = Cipher.getInstance("AES/CCM/NoPadding");
+		        Cipher          cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
 		        
 		        Key encryptionKey = CryptographyUtils.generateKey("AES", 192); // Geração de chaves está correta
-		        SecureRandom rand = new SecureRandom();
+		        /*SecureRandom rand = new SecureRandom();
 				byte[] nonce = new byte[12];
-				rand.nextBytes(nonce);
+				rand.nextBytes(nonce);*/
+		        byte[] nonce = CryptographyUtils.createGenericIvForAES(12).getIV();
 
-
-		        
 		        // Cifrar com a chave gerada
 		        
-		        //cipher.init(Cipher.ENCRYPT_MODE, encryptionKey, new IvParameterSpec(ivBytes));
-		        cipher.init(Cipher.ENCRYPT_MODE, encryptionKey, new IvParameterSpec(nonce));
+		        cipher.init(Cipher.ENCRYPT_MODE, encryptionKey, new IvParameterSpec(ivBytes));
+		        //cipher.init(Cipher.ENCRYPT_MODE, encryptionKey, new IvParameterSpec(nonce));
 		        //cipher.init(Cipher.ENCRYPT_MODE, encryptionKey, new GCMParameterSpec(128, nonce));
 		        //cipher.init(Cipher.ENCRYPT_MODE, encryptionKey);
 		        
@@ -139,9 +140,9 @@ public class Test {
 		        // Decifrar com a chave gerada
 		        
 		        Key	decryptionKey = new SecretKeySpec(encryptionKey.getEncoded(), encryptionKey.getAlgorithm());
-		        //cipher.init(Cipher.DECRYPT_MODE, decryptionKey, new IvParameterSpec(ivBytes));
+		        cipher.init(Cipher.DECRYPT_MODE, decryptionKey, new IvParameterSpec(ivBytes));
 		        //cipher.init(Cipher.DECRYPT_MODE, decryptionKey, new GCMParameterSpec(128, nonce));
-		        cipher.init(Cipher.DECRYPT_MODE, decryptionKey, new IvParameterSpec(nonce));
+		        //cipher.init(Cipher.DECRYPT_MODE, decryptionKey, new IvParameterSpec(nonce));
 		        
 		       // cipher.init(Cipher.DECRYPT_MODE, decryptionKey);
 		        

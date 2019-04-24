@@ -109,7 +109,12 @@ public class DefaultPayload implements Payload {
 		else {
 			byte[] plainText = criptoManager.decrypt(messageParts[0]);
 			byte[][] payloadParts = criptoManager.splitIntegrityProof(plainText);
-			if (!criptoManager.validateIntegrityProof(payloadParts[0], payloadParts[1]))
+			
+			System.out.println("plainText: " +new String(plainText));
+			System.out.println("parts[0]: " + new String(payloadParts[0]));
+			System.out.println("parts[1]: " +new String(payloadParts[1]));
+			
+			if (/*!criptoManager.validateIntegrityProof(payloadParts[0], payloadParts[1])*/  false)
 					throw new BrokenIntegrityException("Invalid Inner Integrity Proof");
 			else {
 				ByteArrayInputStream byteIn = new ByteArrayInputStream(payloadParts[0]);

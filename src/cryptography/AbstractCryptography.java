@@ -12,6 +12,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
+import java.util.Arrays;
 import java.util.Properties;
 
 import javax.crypto.BadPaddingException;
@@ -64,11 +65,15 @@ public abstract class AbstractCryptography implements Cryptography {
 			InvalidAlgorithmParameterException {
 		Cipher cipher = Cipher.getInstance(cipherAlgorithm);
 
+		System.out.println(cipherAlgorithm);
+		System.out.println(tagSize);
+		System.out.println(key.getEncoded().length*8);
+		
 		if (iv != null && iv.length > 0) {
 			if(tagSize > 0 && cipherAlgorithm.contains("GCM")) {
 				cipher.init(cipherMode, key, new GCMParameterSpec(tagSize, iv));
-			}
-			cipher.init(cipherMode, key, new IvParameterSpec(iv));
+			} else
+				cipher.init(cipherMode, key, new IvParameterSpec(iv));
 		} else
 			cipher.init(cipherMode, key);
 
@@ -200,7 +205,11 @@ public abstract class AbstractCryptography implements Cryptography {
 		byte[] plainText = new byte[decryptCipher.getOutputSize(cipherText.length)];
 		int ptLength = decryptCipher.update(cipherText, 0, cipherText.length, plainText, 0);
 		ptLength += decryptCipher.doFinal(plainText, ptLength);
-		return plainText;
+		
+		
+		return Arrays.copyOfRange(plainText, 0, ptLength);
+		
+		//return plainText;
 	}
 
 	@Override

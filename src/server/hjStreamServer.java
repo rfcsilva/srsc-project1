@@ -46,11 +46,11 @@ class hjStreamServer {
 		KDCClient needhamClient = new NeedhamSchroederClient(kdc_addr, b_addr);
 		Cryptography cryptoManager = needhamClient.getSessionParameters();
 		
-		System.out.println("BINA1: " + (((CryptographyDoubleMac)cryptoManager).getInnerMac()== null));
+		//System.out.println("BINA1: " + (((CryptographyDoubleMac)cryptoManager).getInnerMac()== null));
 		
 		SecureDatagramSocket socket = new SecureDatagramSocket(cryptoManager);
 		
-		System.out.println("BINA2: " + (((CryptographyDoubleMac)cryptoManager).getInnerMac()== null));
+		//System.out.println("BINA2: " + (((CryptographyDoubleMac)cryptoManager).getInnerMac()== null));
 		
 		DatagramPacket p = new DatagramPacket(buff, buff.length, b_addr );
 		long t0 = System.nanoTime(); // tempo de referencia para este processo

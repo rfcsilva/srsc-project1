@@ -93,7 +93,7 @@ public class UDP_KDC_Server {
 
 	
 	// TODO: secalhar ir para o CryptoMAnager?
-	private static byte[] buildSessionParameters(String path) throws NoSuchAlgorithmException, IOException { // TODO: passar para outra class ou assim
+	public static byte[] buildSessionParameters(String path) throws NoSuchAlgorithmException, IOException { // TODO: passar para outra class ou assim
 		InputStream inputStream = new FileInputStream(path);
 		Properties ciphersuit_properties = new Properties();
 		ciphersuit_properties.load(inputStream);
@@ -120,7 +120,8 @@ public class UDP_KDC_Server {
 			iv = new byte[0];
 
 		String aux = ciphersuit_properties.getProperty("tag-size");
-		int tagSize = aux == null ? 0 : Integer.parseInt(aux);
+		int tagSize = (aux == null) ? 0 : Integer.parseInt(aux);
+		System.out.println("tagSize: " + tagSize);
 		
 		// Outer Mac Suite
 		String outerMacAlgorithm = ciphersuit_properties.getProperty("outer-mac-ciphersuite");
@@ -236,9 +237,8 @@ public class UDP_KDC_Server {
 			cryptoManager = new CryptographyDoubleMac(encryptCipher, decryptCipher, secureRandom, innerMac, outerMac);
 		}
 		
-		System.out.println("BINA3: " + (((CryptographyDoubleMac)cryptoManager).getInnerMac()== null));
+		//System.out.println("BINA3: " + (((CryptographyDoubleMac)cryptoManager).getInnerMac() == null));
 
 		return cryptoManager;
 	}
-
 }
