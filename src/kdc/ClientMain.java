@@ -9,7 +9,6 @@ public class ClientMain {
 
 	public static void main(String[] args) throws Exception {
 
-		InetSocketAddress a_addt = new InetSocketAddress("localhost", 5555);
 		InetSocketAddress kdc_addr = new InetSocketAddress("localhost", 8888);
 		InetSocketAddress b_addr = new InetSocketAddress("localhost", 6666);
 		

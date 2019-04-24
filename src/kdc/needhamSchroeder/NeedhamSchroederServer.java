@@ -90,14 +90,14 @@ public class NeedhamSchroederServer implements KDCServer {
 				SecureMessage sm = new SecureMessageImplementation(ns4);
 				new_socket.send(sm, addr);
 				System.out.println("Nb: " + Nb);
-
-				sm = new SecureMessageImplementation();
-				InetSocketAddress addr2 = new_socket.receive(sm);
+				
+				SecureMessage sm2 = new SecureMessageImplementation();
+				InetSocketAddress addr2 = new_socket.receive(sm2);
 				System.out.println("Received Challenge answer.");
 
-				NS4 ns5 = (NS4) sm.getPayload();
+				NS4 ns5 = (NS4) sm2.getPayload();
 				System.out.println("Nb_rcv: " + ns5.getNb());
-				System.out.println("Nb: " + Nb);
+				//System.out.println("Nb: " + Nb);
 				
 				if(ns5.getNb() == (Nb+1)) {			
 					System.out.println("Valid Challenge Answer.");
@@ -117,3 +117,4 @@ public class NeedhamSchroederServer implements KDCServer {
 
 }
 
+>>>>>>> cc6d61a9ce1f975842999fcc7080759076d97adc

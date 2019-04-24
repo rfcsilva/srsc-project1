@@ -36,7 +36,7 @@ public class NS4 implements Payload {
 	
 	private NS4(long nb, byte[] cipherText, byte[] outermac) throws IOException {
 		this.nb = nb;
-		this.nb_bytes = computeNbBytes(nb); 
+		this.nb_bytes = computeNbBytes(nb);
 		this.cipherText = cipherText;
 		this.outermac = outermac;
 	}
@@ -81,7 +81,9 @@ public class NS4 implements Payload {
 		if (!cryptoManager.validateOuterMac(messageParts[0], messageParts[1]))
 			throw new InvalidMacException("Invalid Outter Mac");
 		else {
-			ByteArrayInputStream byteIn = new ByteArrayInputStream(messageParts[0]);
+			byte[] plainText = cryptoManager.decrypt(messageParts[0]);
+			ByteArrayInputStream byteIn = new ByteArrayInputStream(plainText);
+
 			DataInputStream dataIn = new DataInputStream(byteIn);
 
 			long nb = dataIn.readLong();
