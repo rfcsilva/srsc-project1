@@ -19,8 +19,8 @@ import javax.crypto.ShortBufferException;
 
 import cryptography.nonce.NonceManager;
 import secureSocket.cryptography.Cryptography;
-import secureSocket.cryptography.CryptographyDoubleMac;
 import secureSocket.exceptions.InvalidMacException;
+import secureSocket.exceptions.InvalidPayloadTypeException;
 import secureSocket.exceptions.ReplayedNonceException;
 import util.ArrayUtils;
 
@@ -43,8 +43,7 @@ public class SecureMessageImplementation implements SecureMessage {
 		this.payload = payload;
 	}
 	
-	//TODO payload may come null if type is invalid 
-	public SecureMessageImplementation(byte[] rawContent, Cryptography cryptoManager, NonceManager nonceManager) throws IOException, InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidMacException, ReplayedNonceException {
+	public SecureMessageImplementation(byte[] rawContent, Cryptography cryptoManager, NonceManager nonceManager) throws IOException, InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidMacException, ReplayedNonceException, InvalidPayloadTypeException {
 		
 		ByteArrayInputStream byteIn = new ByteArrayInputStream(rawContent);
 		DataInputStream dataIn = new DataInputStream(byteIn);

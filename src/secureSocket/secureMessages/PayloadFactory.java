@@ -15,23 +15,19 @@ import javax.crypto.ShortBufferException;
 
 import cryptography.nonce.NonceManager;
 import secureSocket.cryptography.Cryptography;
-import secureSocket.cryptography.CryptographyDoubleMac;
 import secureSocket.exceptions.InvalidMacException;
+import secureSocket.exceptions.InvalidPayloadTypeException;
 import secureSocket.exceptions.ReplayedNonceException;
 
 public class PayloadFactory {
 
-	public static Payload buildPayload(byte payloadType, byte[] rawPayload, Cryptography cryptoManager, NonceManager nonceManager) throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException, InvalidMacException, ReplayedNonceException {
+	public static Payload buildPayload(byte payloadType, byte[] rawPayload, Cryptography cryptoManager, NonceManager nonceManager) throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException, InvalidMacException, ReplayedNonceException, InvalidPayloadTypeException {
 
 		switch(payloadType) {
-
 		case DefaultPayload.TYPE:
 			return DefaultPayload.deserialize(rawPayload, cryptoManager, nonceManager);	
 		default: 
-			return null; // TODO: Deveria fazer um throw
+			throw new InvalidPayloadTypeException("type: " + payloadType);
 		}
 	}
-
-
-
 }

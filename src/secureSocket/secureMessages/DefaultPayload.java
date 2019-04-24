@@ -11,7 +11,6 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
-import java.util.Base64;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -20,18 +19,13 @@ import javax.crypto.ShortBufferException;
 
 import cryptography.nonce.NonceManager;
 import secureSocket.cryptography.Cryptography;
-import secureSocket.cryptography.CryptographyDoubleMac;
 import secureSocket.exceptions.InvalidMacException;
 import secureSocket.exceptions.ReplayedNonceException;
 import util.ArrayUtils;
 
-// TODO : find better name for the class
 public class DefaultPayload implements Payload {
 
 	public static final byte TYPE = 0x01;
-
-	// Encryption support
-	// private static Cryptography2 criptoService;
 
 	// Payload data
 	private long id;
@@ -50,8 +44,6 @@ public class DefaultPayload implements Payload {
 		this.id = id;
 		this.nonce = nonce;
 		byte[] Mp = buildMp(id, nonce, message);
-
-		// this.criptoService = criptoService;
 
 		this.innerIntegrityProof = criptoManager.computeIntegrityProof(Mp);
 		this.cipherText = criptoManager.encrypt(ArrayUtils.concat(Mp, this.innerIntegrityProof));
@@ -98,9 +90,7 @@ public class DefaultPayload implements Payload {
 		return (short) (cipherText.length + outterMac.length);
 	}
 
-	// TODO handle bad macs
-	// TODO : retornar Payload ou DEfaultPayload?
-	public static Payload deserialize(byte[] rawPayload, Cryptography criptoManager, NonceManager nonceManager)
+	public static DefaultPayload deserialize(byte[] rawPayload, Cryptography criptoManager, NonceManager nonceManager)
 			throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException,
 			InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException,
 			UnrecoverableEntryException, KeyStoreException, CertificateException, IOException, InvalidMacException, ReplayedNonceException {

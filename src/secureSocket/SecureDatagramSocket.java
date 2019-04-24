@@ -15,7 +15,6 @@ import java.security.cert.CertificateException;
 import java.util.Arrays;
 
 import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
@@ -23,19 +22,15 @@ import javax.crypto.ShortBufferException;
 import cryptography.nonce.CounterNonceManager;
 import cryptography.nonce.NonceManager;
 import secureSocket.cryptography.Cryptography;
-import secureSocket.cryptography.AbstractCryptography;
-import secureSocket.cryptography.CryptographyDoubleMac;
 import secureSocket.exceptions.*;
 import secureSocket.secureMessages.DefaultPayload;
 import secureSocket.secureMessages.Payload;
 import secureSocket.secureMessages.SecureMessage;
 import secureSocket.secureMessages.SecureMessageImplementation;
-import util.Utils;
 
 public class SecureDatagramSocket {
 
 	private static final long INITIAL_ID  = 1L;
-	//private static final byte VERSION_RELEASE = 0x01;
 	
 	private DatagramSocket socket;
 	private Cryptography cryptoManager;
@@ -46,10 +41,8 @@ public class SecureDatagramSocket {
 			MulticastSocket ms = new MulticastSocket(port);
 			ms.joinGroup(laddr);
 			socket = ms;
-			//cryptoManager = AbstractCryptography.loadFromConfig(CIPHERSUITE_CONFIG_PATH, Cipher.DECRYPT_MODE);
 		} else {
 			socket = new DatagramSocket(port, laddr);
-			//cryptoManager = AbstractCryptography.loadFromConfig(CIPHERSUITE_CONFIG_PATH, Cipher.DECRYPT_MODE);
 		}
 		this.cryptoManager = cryptoManager;
 		this.nonceManager = nonceManager;
@@ -73,7 +66,6 @@ public class SecureDatagramSocket {
 	
 	public SecureDatagramSocket(Cryptography cryptoManager, NonceManager nonceManager) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException {
 		socket = new DatagramSocket();
-		//cryptoManager = AbstractCryptography.loadFromConfig(CIPHERSUITE_CONFIG_PATH, Cipher.ENCRYPT_MODE);
 		this.cryptoManager = cryptoManager;
 		this.nonceManager = nonceManager;
 	}
@@ -83,7 +75,7 @@ public class SecureDatagramSocket {
 	
 	public void receive(DatagramPacket p) throws IOException, ShortBufferException, IllegalBlockSizeException,
 		BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException,
-		NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException {
+		NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidPayloadTypeException {
 
 		byte[] message = null;
 		while (true) {
@@ -104,7 +96,6 @@ public class SecureDatagramSocket {
 
 	public void send(DatagramPacket p) throws IOException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, ShortBufferException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException {
 		byte[] message = Arrays.copyOfRange(p.getData(), 0, p.getLength());
-		//Payload payload = new DefaultPayload(INITIAL_ID, Utils.getNonce(), message, cryptoManager);
 		Payload payload = new DefaultPayload(INITIAL_ID, nonceManager.getNonce(), message, cryptoManager);
 		SecureMessage sm = new SecureMessageImplementation(payload);
 		byte[] secureMessageBytes = sm.serialize();
