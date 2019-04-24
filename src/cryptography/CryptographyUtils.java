@@ -88,7 +88,6 @@ public class CryptographyUtils {
 	}
 
 	public static SecretKey generateKey(String algorithm, int size) throws NoSuchAlgorithmException {
-		
 		KeyGenerator    generator = KeyGenerator.getInstance(algorithm);
         generator.init(size);
         return generator.generateKey();

@@ -103,16 +103,25 @@ public class UDP_KDC_Server {
 
 		SecureRandom sr = java.security.SecureRandom.getInstance(secureRandomAlgorithm);
 
-		int messageNumber = 1; // TODO : Descobrir o que é isto
-
 		// Cipher Suite
 		String cipherAlgorithm = ciphersuit_properties.getProperty("session-ciphersuite"); 
 		String session_key_gen_alg = ciphersuit_properties.getProperty("session-key-gen-alg"); 
 		int session_key_size = Integer.parseInt(ciphersuit_properties.getProperty("session-key-size"));
 		SecretKey ks = CryptographyUtils.generateKey(session_key_gen_alg, session_key_size); // Session key
-		boolean useIv = Boolean.parseBoolean(ciphersuit_properties.getProperty("use-iv"));
-		byte[] iv = useIv ? CryptographyUtils.createCtrIvForAES(messageNumber, sr).getIV() : null; // null?
+		int ivSize = Integer.parseInt(ciphersuit_properties.getProperty("iv-size"));
+		
+		byte[] iv = null;
+		if(cipherAlgorithm.contains("CTR")) {
+			int messageNumber = 1; // TODO : Descobrir o que é isto
+			iv = CryptographyUtils.createCtrIvForAES(messageNumber, sr).getIV();
+		} else if( ivSize > 0 ) {
+				iv = CryptographyUtils.createGenericIvForAES(ivSize).getIV();
+		} else
+			iv = new byte[0];
 
+		String aux = ciphersuit_properties.getProperty("tag-size");
+		int tagSize = aux == null ? 0 : Integer.parseInt(aux);
+		
 		// Outer Mac Suite
 		String outerMacAlgorithm = ciphersuit_properties.getProperty("outer-mac-ciphersuite");
 		String outer_key_gen_alg = ciphersuit_properties.getProperty("outer-mac-key-gen-alg");
@@ -143,6 +152,8 @@ public class UDP_KDC_Server {
 
 		dataOut.writeInt(iv.length);
 		dataOut.write(iv, 0, iv.length);
+		
+		dataOut.writeInt(tagSize);
 
 		dataOut.writeUTF(outerMacAlgorithm);
 		dataOut.writeUTF(outer_key_gen_alg);
@@ -189,6 +200,8 @@ public class UDP_KDC_Server {
 		length = dataIn.readInt();
 		byte[] iv = new byte[length];
 		dataIn.read(iv, 0, length);
+		
+		int tagSize = dataIn.readInt();
 
 		String outerMacAlgorithm = dataIn.readUTF();
 		String outer_key_alg = dataIn.readUTF();
@@ -200,8 +213,8 @@ public class UDP_KDC_Server {
 		boolean useHash = dataIn.readBoolean();
 
 		Cryptography cryptoManager = null;
-		Cipher encryptCipher = AbstractCryptography.buildCipher(cipherAlgorithm, Cipher.ENCRYPT_MODE, ks, iv);
-		Cipher decryptCipher = AbstractCryptography.buildCipher(cipherAlgorithm, Cipher.DECRYPT_MODE, ks, iv);
+		Cipher encryptCipher = AbstractCryptography.buildCipher(cipherAlgorithm, Cipher.ENCRYPT_MODE, ks, iv, tagSize);
+		Cipher decryptCipher = AbstractCryptography.buildCipher(cipherAlgorithm, Cipher.DECRYPT_MODE, ks, iv, tagSize);
 		Mac outerMac = AbstractCryptography.buildMac(outerMacAlgorithm, kms);
 		SecureRandom secureRandom = AbstractCryptography.buildSecureRandom(secureRandomAlgorithm);
 		

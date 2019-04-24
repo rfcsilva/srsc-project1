@@ -21,6 +21,7 @@ import javax.crypto.Mac;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.ShortBufferException;
+import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
 
 import util.ArrayUtils;
@@ -50,10 +51,44 @@ public abstract class AbstractCryptography implements Cryptography {
 			InvalidAlgorithmParameterException {
 		Cipher cipher = Cipher.getInstance(cipherAlgorithm);
 
-		if (iv != null)
+		if (iv != null && iv.length > 0)
 			cipher.init(cipherMode, key, new IvParameterSpec(iv));
 		else
 			cipher.init(cipherMode, key);
+
+		return cipher;
+	}
+	
+	public static Cipher buildCipher(String cipherAlgorithm, int cipherMode, SecretKey key, byte[] iv, int tagSize)
+			throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException,
+			InvalidAlgorithmParameterException {
+		Cipher cipher = Cipher.getInstance(cipherAlgorithm);
+
+		if (iv != null && iv.length > 0) {
+			if(tagSize > 0 && cipherAlgorithm.contains("GCM")) {
+				cipher.init(cipherMode, key, new GCMParameterSpec(tagSize, iv));
+			}
+			cipher.init(cipherMode, key, new IvParameterSpec(iv));
+		} else
+			cipher.init(cipherMode, key);
+
+		return cipher;
+	}
+	
+	public static Cipher buildGCMCipher(String cipherAlgorithm, int cipherMode, SecretKey key, byte[] iv, int tagSize)
+			throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException,
+			InvalidAlgorithmParameterException {
+		Cipher cipher = Cipher.getInstance(cipherAlgorithm);
+		cipher.init(cipherMode, key, new GCMParameterSpec(tagSize, iv));
+		return cipher;
+	}
+	
+	public static Cipher buildCipher(String cipherAlgorithm, int cipherMode, SecretKey key)
+			throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException,
+			InvalidAlgorithmParameterException {
+		Cipher cipher = Cipher.getInstance(cipherAlgorithm);
+
+		cipher.init(cipherMode, key);
 
 		return cipher;
 	}
@@ -154,8 +189,8 @@ public abstract class AbstractCryptography implements Cryptography {
 	public byte[] encrypt(byte[] plaintext) throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException,
 			InvalidAlgorithmParameterException, ShortBufferException {
 		byte[] cipherText = new byte[encryptCipher.getOutputSize(plaintext.length)];
-		encryptCipher.update(plaintext, 0, plaintext.length, cipherText, 0);
-		encryptCipher.doFinal();
+		int ctLength = encryptCipher.update(plaintext, 0, plaintext.length, cipherText, 0);
+		ctLength += encryptCipher.doFinal(cipherText, ctLength);	
 		return cipherText;
 	}
 
