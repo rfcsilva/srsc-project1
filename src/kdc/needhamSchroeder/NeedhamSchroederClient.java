@@ -141,7 +141,11 @@ public class NeedhamSchroederClient implements KDCClient {
 			System.out.println("Received Challenge.");
 			
 			NS4 ns4 = ((NS4)sm.getPayload());
-			long Nb_1 = ns4.getNb() + 1;
+			System.out.println("Nb: " + ns4.getNb());
+			
+			long Nb_1 = (ns4.getNb() + 1);
+			
+			System.out.println("Nb_1: " + Nb_1);
 			
 			System.out.println("Sending Challenge result ...");
 			ns4 = new NS4(Nb_1, session_cryptoManager);

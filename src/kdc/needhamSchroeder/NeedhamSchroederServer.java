@@ -58,6 +58,8 @@ public class NeedhamSchroederServer implements KDCServer {
 				SecureMessage sm = new SecureMessageImplementation();
 				InetSocketAddress addr = inSocket.receive(sm);
 
+				System.out.println("Received Ticket.");
+				
 				NS3 ns3 = (NS3) sm.getPayload();
 
 				processRequest(ns3, addr, results, finished);
@@ -74,11 +76,8 @@ public class NeedhamSchroederServer implements KDCServer {
 	private void processRequest(NS3 ns3, InetSocketAddress addr, ConcurrentHashMap<String, Cryptography> results, AtomicBoolean finished) {
 		new Thread(() -> {
 			try {
-				System.out.println("Received Ticket.");
-
 				System.out.println("Sending Challenge...");
 				Cryptography session_cryptoManager = UDP_KDC_Server.deserializeSessionParameters(ns3.getKs());
-
 
 				System.out.println(Base64.getEncoder().encodeToString(ns3.getKs()) + " \n"
 						+ Base64.getEncoder().encodeToString(ns3.getTicket()));
@@ -90,13 +89,14 @@ public class NeedhamSchroederServer implements KDCServer {
 				NS4 ns4 = new NS4(Nb, session_cryptoManager);
 				SecureMessage sm = new SecureMessageImplementation(ns4);
 				new_socket.send(sm, addr);
-				System.out.println(Nb);
+				System.out.println("Nb: " + Nb);
 
 				InetSocketAddress addr2 = new_socket.receive(sm);
 				System.out.println("Received Challenge answer.");
 
 				NS4 ns5 = (NS4) sm.getPayload();
-				System.out.println(ns5.getNb());
+				System.out.println("Nb_rcv: " + ns5.getNb());
+				System.out.println("Nb: " + Nb);
 				
 				if(ns5.getNb() == (Nb+1)) {			
 					System.out.println("Valid Challenge Answer.");
