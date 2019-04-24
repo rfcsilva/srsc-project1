@@ -48,7 +48,7 @@ public class SecureDatagramSocket {
 			cryptoManager = AbstractCryptography.loadFromConfig(CIPHERSUITE_CONFIG_PATH, Cipher.DECRYPT_MODE);
 		} else {
 			socket = new DatagramSocket(port, laddr);
-			cryptoManager = CryptographyDoubleMac.loadFromConfig(CIPHERSUITE_CONFIG_PATH, Cipher.DECRYPT_MODE);
+			cryptoManager = AbstractCryptography.loadFromConfig(CIPHERSUITE_CONFIG_PATH, Cipher.DECRYPT_MODE);
 		}
 	}
 
@@ -58,7 +58,7 @@ public class SecureDatagramSocket {
 
 	public SecureDatagramSocket() throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException {
 		socket = new DatagramSocket();
-		cryptoManager = CryptographyDoubleMac.loadFromConfig(CIPHERSUITE_CONFIG_PATH, Cipher.ENCRYPT_MODE);
+		cryptoManager = AbstractCryptography.loadFromConfig(CIPHERSUITE_CONFIG_PATH, Cipher.ENCRYPT_MODE);
 	}
 
 	public void close() throws IOException {
