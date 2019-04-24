@@ -13,6 +13,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
 import java.util.Arrays;
+import java.util.concurrent.BrokenBarrierException;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -68,8 +69,8 @@ public class SecureDatagramSocket {
 		socket = new DatagramSocket();
 		this.cryptoManager = cryptoManager;
 		this.nonceManager = nonceManager;
-
 	}
+	
 	public void close() throws IOException {
 		socket.close();
 	}
@@ -83,11 +84,10 @@ public class SecureDatagramSocket {
 			try {
 				socket.receive(p);
 				byte[] secureMessageBytes = Arrays.copyOfRange(p.getData(), 0, p.getLength());
-				SecureMessage sm = new SecureMessageImplementation(secureMessageBytes, cryptoManager, nonceManager); // TODO: isto não deveria ser um método estático?
-				
-				message = sm.getPayload().getMessage();
+				SecureMessage sm = new SecureMessageImplementation(secureMessageBytes, cryptoManager, nonceManager);
+				message = ((DefaultPayload) sm.getPayload()).getMessage();
 				break;
-			} catch (InvalidMacException | ReplayedNonceException e) {
+			} catch (InvalidMacException | ReplayedNonceException | BrokenBarrierException e) {
 				System.err.println(e.getMessage());
 			}
 		}

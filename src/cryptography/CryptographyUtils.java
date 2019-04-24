@@ -74,19 +74,6 @@ public class CryptographyUtils {
 		return buffer.getLong();
 	}
 	
-	
-	// TODO: Substituir este nonce pelo de cima
-	public static long getNonce() throws NoSuchAlgorithmException {
-		
-		SecureRandom sr = SecureRandom.getInstance("sha1PRNG");
-		int size = Long.BYTES + 1;
-		byte[] tmp = new byte[size];
-		sr.nextBytes(tmp);
-
-		ByteBuffer buffer = ByteBuffer.wrap(tmp);
-		return buffer.getLong();
-	}
-
 	public static SecretKey generateKey(String algorithm, int size) throws NoSuchAlgorithmException {
 		KeyGenerator    generator = KeyGenerator.getInstance(algorithm);
         generator.init(size);
@@ -113,5 +100,6 @@ public class CryptographyUtils {
 		SecretKeyEntry entry = (KeyStore.SecretKeyEntry)ks.getEntry(alias, ks_pp);
 		return entry.getSecretKey();
 	}
+	
 	
 }

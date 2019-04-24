@@ -5,7 +5,7 @@
 * that can play in real time the transmitted movies
 */
 
-package server;
+package stream;
 
 import java.io.*;
 import java.net.*;

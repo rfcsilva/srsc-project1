@@ -11,6 +11,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
+import java.util.concurrent.BrokenBarrierException;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -93,7 +94,7 @@ public class DefaultPayload implements Payload {
 	public static DefaultPayload deserialize(byte[] rawPayload, Cryptography criptoManager, NonceManager nonceManager)
 			throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException,
 			InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException,
-			UnrecoverableEntryException, KeyStoreException, CertificateException, IOException, InvalidMacException, ReplayedNonceException {
+			UnrecoverableEntryException, KeyStoreException, CertificateException, IOException, InvalidMacException, ReplayedNonceException, BrokenBarrierException {
 
 		byte[][] messageParts = criptoManager.splitOuterMac(rawPayload);
 		if (!criptoManager.validateOuterMac(messageParts[0], messageParts[1]))
@@ -103,7 +104,7 @@ public class DefaultPayload implements Payload {
 			byte[][] payloadParts = criptoManager.splitIntegrityProof(plainText);
 			
 			if (!criptoManager.validateIntegrityProof(payloadParts[0], payloadParts[1]))
-					throw new InvalidMacException("Invalid Inner Mac");
+					throw new BrokenBarrierException("Invalid Inner Mac");
 			else {
 				ByteArrayInputStream byteIn = new ByteArrayInputStream(payloadParts[0]);
 				DataInputStream dataIn = new DataInputStream(byteIn);
@@ -128,7 +129,6 @@ public class DefaultPayload implements Payload {
 		}	
 	}
 
-	@Override
 	public byte[] getMessage() {
 		return message;
 	}
