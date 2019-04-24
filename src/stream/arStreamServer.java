@@ -20,7 +20,7 @@ import cryptography.CryptoFactory;
 import cryptography.Cryptography;
 import secureSocket.SecureDatagramSocket;
 
-class hjStreamServer {
+class arStreamServer {
 
 	static public void main( String []args ) {
 		if (args.length != 4)

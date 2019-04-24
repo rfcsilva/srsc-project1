@@ -40,7 +40,7 @@ import cryptography.Cryptography;
 import secureSocket.SecureDatagramSocket;
 import secureSocket.exceptions.InvalidPayloadTypeException;
 
-class hjUDPproxy {
+class arUDPproxy {
 
 	@SuppressWarnings("resource")
 	public static void main(String[] args) {
