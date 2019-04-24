@@ -90,6 +90,7 @@ public class NeedhamSchroederServer implements KDCServer {
 				System.out.println("Nb: " + Nb);
 				
 				SecureMessage sm2 = new SecureMessageImplementation();
+				new_socket.receive(sm2);
 				System.out.println("Received Challenge answer.");
 
 				NS4 ns5 = (NS4) sm2.getPayload();
