@@ -7,12 +7,11 @@
 
 package stream;
 
-import java.io.*;
-import java.net.*;
+import java.io.DataInputStream;
+import java.io.FileInputStream;
+import java.net.DatagramPacket;
+import java.net.InetSocketAddress;
 
-import javax.crypto.Cipher;
-
-import cryptography.AbstractCryptography;
 import cryptography.CryptoFactory;
 import cryptography.Cryptography;
 import secureSocket.SecureDatagramSocket;

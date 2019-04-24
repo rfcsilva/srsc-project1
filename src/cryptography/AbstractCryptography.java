@@ -2,6 +2,7 @@ package cryptography;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
+import java.security.SecureRandom;
 import java.util.Arrays;
 
 import javax.crypto.BadPaddingException;
@@ -15,11 +16,13 @@ public abstract class AbstractCryptography implements Cryptography {
 	private Cipher encryptCipher;
 	private Cipher decryptCipher;
 	private Mac outerMac;
+	private SecureRandom secureRandom;
 
 
-	public AbstractCryptography(Cipher encryptCipher, Cipher decryptCipher, Mac outerMac) {
+	public AbstractCryptography(Cipher encryptCipher, Cipher decryptCipher, Mac outerMac, SecureRandom sr) {
 		this.encryptCipher = encryptCipher;
 		this.decryptCipher = decryptCipher;
+		this.secureRandom = sr;
 		this.outerMac = outerMac;
 	}
 
@@ -37,6 +40,11 @@ public abstract class AbstractCryptography implements Cryptography {
 	@Override
 	public Mac getOuterMac() {
 		return outerMac;
+	}
+	
+	@Override
+	public SecureRandom getSecureRandom() {
+		return secureRandom;
 	}
 
 	@Override

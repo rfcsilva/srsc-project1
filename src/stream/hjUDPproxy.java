@@ -22,18 +22,13 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.MulticastSocket;
 import java.net.InetSocketAddress;
-import java.net.InetAddress;
 import java.net.SocketAddress;
 import java.util.Arrays;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.crypto.Cipher;
-
-import cryptography.AbstractCryptography;
 import cryptography.CryptoFactory;
 import cryptography.Cryptography;
 import secureSocket.SecureDatagramSocket;
@@ -42,13 +37,9 @@ class hjUDPproxy {
 	
 	private static final String CIPHERSUITE_CONFIG_PATH = "configs/server/ciphersuite.conf";
 	
+	@SuppressWarnings("resource")
 	public static void main(String[] args) throws Exception {
 		InputStream inputStream = new FileInputStream("configs/proxy/config.properties");
-		if (inputStream == null) {
-			System.err.println("Configuration file not found!");
-			System.exit(1);
-		}
-		
 		Properties properties = new Properties();
 		properties.load(inputStream);
 		String remote = properties.getProperty("remote");

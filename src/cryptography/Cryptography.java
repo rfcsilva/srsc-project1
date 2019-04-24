@@ -2,6 +2,7 @@ package cryptography;
 
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.SecureRandom;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -32,5 +33,7 @@ public interface Cryptography {
 	Cipher getEncryptCipher();
 
 	Cipher getDecryptCipher();
+
+	SecureRandom getSecureRandom();
 }
 
