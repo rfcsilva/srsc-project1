@@ -42,22 +42,23 @@ public abstract class AbstractCryptography implements Cryptography {
 	@Override
 	public byte[] encrypt(byte[] plaintext) throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException,
 			InvalidAlgorithmParameterException, ShortBufferException {
+
 		byte[] cipherText = new byte[encryptCipher.getOutputSize(plaintext.length)];
 		int ctLength = encryptCipher.update(plaintext, 0, plaintext.length, cipherText, 0);
 		ctLength += encryptCipher.doFinal(cipherText, ctLength);	
+
 		return cipherText;
 	}
 
 	@Override
 	public byte[] decrypt(byte[] cipherText)
 			throws ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
+
 		byte[] plainText = new byte[decryptCipher.getOutputSize(cipherText.length)];
 		int ptLength = decryptCipher.update(cipherText, 0, cipherText.length, plainText, 0);
 		ptLength += decryptCipher.doFinal(plainText, ptLength);
-		
+
 		return Arrays.copyOfRange(plainText, 0, ptLength);
-		
-		//return plainText;
 	}
 
 	@Override

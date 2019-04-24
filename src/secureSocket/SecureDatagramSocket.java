@@ -19,61 +19,72 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
-import secureSocket.cryptography.CryptoFactory;
+
+import cryptography.nonce.CounterNonceManager;
+import cryptography.nonce.NonceManager;
 import secureSocket.cryptography.Cryptography;
-import secureSocket.exceptions.InvalidMacException;
-import secureSocket.exceptions.ReplayedNonceException;
+import secureSocket.exceptions.*;
 import secureSocket.secureMessages.DefaultPayload;
 import secureSocket.secureMessages.Payload;
 import secureSocket.secureMessages.SecureMessage;
 import secureSocket.secureMessages.SecureMessageImplementation;
-import util.Utils;
 
 public class SecureDatagramSocket {
-	
-	private static final String CIPHERSUITE_CONFIG_PATH = "configs/server/ciphersuite.conf";
 
-	private static final long INITIAL_ID  = 0L;
-	private static final byte VERSION_RELEASE = 0x01;
+	private static final long INITIAL_ID  = 1L;
 	
 	private DatagramSocket socket;
 	private Cryptography cryptoManager;
+	private NonceManager nonceManager;
 	
-	public SecureDatagramSocket(int port, InetAddress laddr) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException {
+	public SecureDatagramSocket(int port, InetAddress laddr, Cryptography cryptoManager, NonceManager nonceManager) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException {
 		if( laddr.isMulticastAddress() ) {
 			MulticastSocket ms = new MulticastSocket(port);
 			ms.joinGroup(laddr);
 			socket = ms;
-			cryptoManager = CryptoFactory.loadFromConfig(CIPHERSUITE_CONFIG_PATH);
 		} else {
 			socket = new DatagramSocket(port, laddr);
-			cryptoManager = CryptoFactory.loadFromConfig(CIPHERSUITE_CONFIG_PATH);
 		}
+		this.cryptoManager = cryptoManager;
+		this.nonceManager = nonceManager;
+	}
+	
+	public SecureDatagramSocket(int port, InetAddress inAddr, Cryptography cryptoManager) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException {
+		this(port, inAddr, cryptoManager, new CounterNonceManager());
+	}
+	
+	public SecureDatagramSocket(InetSocketAddress addr, Cryptography cryptoManager) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException {
+		this(addr.getPort(), addr.getAddress(), cryptoManager);
+	}
+	
+	public SecureDatagramSocket(InetSocketAddress addr, Cryptography cryptoManager, NonceManager nonceManager) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException {
+		this(addr.getPort(), addr.getAddress(), cryptoManager, nonceManager);
 	}
 
-	public SecureDatagramSocket(InetSocketAddress addr) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException {
-		this(addr.getPort(), addr.getAddress());
+	public SecureDatagramSocket(Cryptography cryptoManager) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException {
+		this(cryptoManager, new CounterNonceManager());
 	}
-
-	public SecureDatagramSocket() throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException {
+	
+	public SecureDatagramSocket(Cryptography cryptoManager, NonceManager nonceManager) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException {
 		socket = new DatagramSocket();
-		cryptoManager = CryptoFactory.loadFromConfig(CIPHERSUITE_CONFIG_PATH);
-	}
+		this.cryptoManager = cryptoManager;
+		this.nonceManager = nonceManager;
 
+	}
 	public void close() throws IOException {
 		socket.close();
 	}
 	
 	public void receive(DatagramPacket p) throws IOException, ShortBufferException, IllegalBlockSizeException,
 		BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException,
-		NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException {
+		NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidPayloadTypeException {
 
 		byte[] message = null;
 		while (true) {
 			try {
 				socket.receive(p);
 				byte[] secureMessageBytes = Arrays.copyOfRange(p.getData(), 0, p.getLength());
-				SecureMessage sm = new SecureMessageImplementation(secureMessageBytes, cryptoManager);
+				SecureMessage sm = new SecureMessageImplementation(secureMessageBytes, cryptoManager, nonceManager); // TODO: isto não deveria ser um método estático?
 				
 				message = sm.getPayload().getMessage();
 				break;
@@ -87,8 +98,8 @@ public class SecureDatagramSocket {
 
 	public void send(DatagramPacket p) throws IOException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, ShortBufferException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException {
 		byte[] message = Arrays.copyOfRange(p.getData(), 0, p.getLength());
-		Payload payload = new DefaultPayload(INITIAL_ID, Utils.getNonce(), message, cryptoManager);
-		SecureMessage sm = new SecureMessageImplementation(VERSION_RELEASE, payload);
+		Payload payload = new DefaultPayload(INITIAL_ID, nonceManager.getNonce(), message, cryptoManager);
+		SecureMessage sm = new SecureMessageImplementation(payload);
 		byte[] secureMessageBytes = sm.serialize();
 		p.setData(secureMessageBytes);
 		p.setLength(secureMessageBytes.length);

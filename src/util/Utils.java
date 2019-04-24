@@ -5,6 +5,7 @@ import java.security.NoSuchAlgorithmException;
 
 public class Utils {
 
+	// TODO: Isto já não deveria existir
 	public static long getNonce() throws NoSuchAlgorithmException {
 		
 		java.security.SecureRandom sr;
