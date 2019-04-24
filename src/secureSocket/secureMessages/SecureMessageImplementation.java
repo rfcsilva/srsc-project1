@@ -17,6 +17,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
+import cryptography.nonce.NonceManager;
 import secureSocket.cryptography.Cryptography;
 import secureSocket.cryptography.CryptographyDoubleMac;
 import secureSocket.exceptions.InvalidMacException;
@@ -25,22 +26,25 @@ import util.ArrayUtils;
 
 public class SecureMessageImplementation implements SecureMessage {
 	
+	private static final byte VERSION_RELEASE = 0x01;
 	private static final byte SEPARATOR = 0x00;
 	private byte versionRelease, payloadType;
 	private short payloadSize;
 	private Payload payload;
 	
+	public SecureMessageImplementation(Payload payload) {
+		this(VERSION_RELEASE, payload);
+	}
+	
 	public SecureMessageImplementation(byte versionRelease, Payload payload) {
-		
 		this.versionRelease = versionRelease;
 		payloadType = payload.getPayloadType();
 		this.payloadSize = payload.size();
 		this.payload = payload;
-		
 	}
 	
 	//TODO payload may come null if type is invalid 
-	public SecureMessageImplementation(byte[] rawContent, Cryptography cryptoManager) throws IOException, InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidMacException, ReplayedNonceException {
+	public SecureMessageImplementation(byte[] rawContent, Cryptography cryptoManager, NonceManager nonceManager) throws IOException, InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidMacException, ReplayedNonceException {
 		
 		ByteArrayInputStream byteIn = new ByteArrayInputStream(rawContent);
 		DataInputStream dataIn = new DataInputStream(byteIn);
@@ -52,7 +56,7 @@ public class SecureMessageImplementation implements SecureMessage {
 		payloadSize = dataIn.readShort();
 		byte[] rawPayload = new byte[ payloadSize ];
 		dataIn.read(rawPayload, 0, payloadSize);
-		payload = PayloadFactory.buildPayload(payloadType, rawPayload, cryptoManager );
+		payload = PayloadFactory.buildPayload(payloadType, rawPayload, cryptoManager, nonceManager );
 		
 		dataIn.close();
 		byteIn.close();

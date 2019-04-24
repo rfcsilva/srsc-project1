@@ -18,6 +18,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
+import cryptography.nonce.NonceManager;
 import secureSocket.cryptography.Cryptography;
 import secureSocket.cryptography.CryptographyDoubleMac;
 import secureSocket.exceptions.InvalidMacException;
@@ -99,7 +100,7 @@ public class DefaultPayload implements Payload {
 
 	// TODO handle bad macs
 	// TODO : retornar Payload ou DEfaultPayload?
-	public static Payload deserialize(byte[] rawPayload, Cryptography criptoManager)
+	public static Payload deserialize(byte[] rawPayload, Cryptography criptoManager, NonceManager nonceManager)
 			throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException,
 			InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException,
 			UnrecoverableEntryException, KeyStoreException, CertificateException, IOException, InvalidMacException, ReplayedNonceException {
@@ -127,7 +128,10 @@ public class DefaultPayload implements Payload {
 
 				dataIn.close();
 				byteIn.close();
-
+				
+				if( nonceManager.verifyReplay(nonce) )
+					throw new ReplayedNonceException("Nonce " + nonce + " was replayed!");
+				
 				return payload;
 			}
 		}	
