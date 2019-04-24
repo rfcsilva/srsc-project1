@@ -1,6 +1,8 @@
 package cryptography;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -25,6 +27,7 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 
 import util.ArrayUtils;
 
@@ -261,6 +264,66 @@ public class CryptoFactory {
 		return msg;
 
 
+	}
+	
+	public static Cryptography dessrialize(byte[] rawParams ) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, NoSuchProviderException {
+		
+		ByteArrayInputStream byteIn = new ByteArrayInputStream(rawParams);
+		DataInputStream dataIn = new DataInputStream(byteIn);
+
+		String secureRandomAlgorithm = dataIn.readUTF();
+
+		String cipherAlgorithm = dataIn.readUTF();
+		String session_key_alg = dataIn.readUTF();
+		int length = dataIn.readInt();
+		byte[] ks_encoded = new byte[length];
+		dataIn.read(ks_encoded, 0, length);
+		SecretKey ks = new SecretKeySpec(ks_encoded, session_key_alg);
+
+		length = dataIn.readInt();
+		byte[] iv = new byte[length];
+		dataIn.read(iv, 0, length);
+		
+		int tagSize = dataIn.readInt();
+
+		String outerMacAlgorithm = dataIn.readUTF();
+		String outer_key_alg = dataIn.readUTF();
+		length = dataIn.readInt();
+		byte[] outer_mac_key_encoded = new byte[length];
+		dataIn.read(outer_mac_key_encoded, 0, length);
+		SecretKey kms = new SecretKeySpec(outer_mac_key_encoded, outer_key_alg);
+
+		boolean useHash = dataIn.readBoolean();
+
+		Cryptography cryptoManager = null;
+		Cipher encryptCipher = CryptoFactory.buildCipher(cipherAlgorithm, Cipher.ENCRYPT_MODE, ks, iv, tagSize);
+		Cipher decryptCipher = CryptoFactory.buildCipher(cipherAlgorithm, Cipher.DECRYPT_MODE, ks, iv, tagSize);
+		Mac outerMac = CryptoFactory.buildMac(outerMacAlgorithm, kms);
+		SecureRandom secureRandom = CryptoFactory.generateRandom(secureRandomAlgorithm);
+		
+		if(useHash) {
+			String hashAlgorithm = dataIn.readUTF();
+			MessageDigest innerHash = CryptoFactory.buildHash(hashAlgorithm);
+
+			cryptoManager = new CryptographyHash(encryptCipher, decryptCipher, secureRandom, innerHash, outerMac);
+		} else {
+			String innerMacAlgorithm = dataIn.readUTF();
+			String inner_key_alg = dataIn.readUTF();
+			length = dataIn.readInt();
+			byte[] inner_mac_key_encoded = new byte[length];
+			dataIn.read(inner_mac_key_encoded, 0, length);
+			SecretKey kms2 = new SecretKeySpec(inner_mac_key_encoded, inner_key_alg);
+
+			Mac innerMac = CryptoFactory.buildMac(innerMacAlgorithm, kms2);
+
+			cryptoManager = new CryptographyDoubleMac(encryptCipher, decryptCipher, secureRandom, innerMac, outerMac);
+		}
+		
+		//System.out.println("BINA3: " + (((CryptographyDoubleMac)cryptoManager).getInnerMac() == null));
+
+		return cryptoManager;
+		
+		
 	}
 
 
