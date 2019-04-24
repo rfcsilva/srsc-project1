@@ -1,4 +1,4 @@
-package kdc;
+package stream;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -35,6 +35,7 @@ import cryptography.Cryptography;
 import cryptography.CryptographyDoubleMac;
 import cryptography.CryptographyHash;
 import cryptography.CryptographyUtils;
+import kdc.KDC;
 import kdc.needhamSchroeder.NS1;
 import kdc.needhamSchroeder.NeedhamSchroederKDC;
 import secureSocket.exceptions.InvalidPayloadTypeException;

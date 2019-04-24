@@ -17,11 +17,11 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
 import cryptography.Cryptography;
-import kdc.UDP_KDC_Server;
 import secureSocket.exceptions.BrokenIntegrityException;
 import secureSocket.exceptions.InvalidMacException;
 import secureSocket.exceptions.ReplayedNonceException;
 import secureSocket.secureMessages.Payload;
+import stream.UDP_KDC_Server;
 import util.ArrayUtils;
 
 // TODO : find better name for the class

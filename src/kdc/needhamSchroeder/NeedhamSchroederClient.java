@@ -22,13 +22,13 @@ import cryptography.CryptoFactory;
 import cryptography.Cryptography;
 import cryptography.CryptographyUtils;
 import kdc.KDCClient;
-import kdc.UDP_KDC_Server;
 import kdc.needhamSchroeder.exceptions.InvalidChallangeReplyException;
 import secureSocket.SecureDatagramSocket;
 import secureSocket.exceptions.InvalidPayloadTypeException;
 import secureSocket.secureMessages.Payload;
 import secureSocket.secureMessages.SecureMessage;
 import secureSocket.secureMessages.SecureMessageImplementation;
+import stream.UDP_KDC_Server;
 
 
 public class NeedhamSchroederClient implements KDCClient {

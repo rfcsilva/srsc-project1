@@ -37,6 +37,8 @@ import java.util.stream.Collectors;
 
 import cryptography.CryptoFactory;
 import cryptography.Cryptography;
+import kdc.KDCServer;
+import kdc.needhamSchroeder.NeedhamSchroederServer;
 import secureSocket.SecureDatagramSocket;
 import secureSocket.exceptions.InvalidPayloadTypeException;
 
@@ -75,7 +77,8 @@ class arUDPproxy {
 		SecureDatagramSocket inSocket;
 		DatagramSocket outSocket;
 		try {
-			cryptoManager = CryptoFactory.loadFromConfig(args[0]);
+			KDCServer kdc_server = new NeedhamSchroederServer(inSocketAddress);
+			cryptoManager = kdc_server.getSessionParameters();
 			inSocket = new SecureDatagramSocket(inSocketAddress, cryptoManager);
 			outSocket = new DatagramSocket();
 			byte[] buffer = new byte[4 * 1024];

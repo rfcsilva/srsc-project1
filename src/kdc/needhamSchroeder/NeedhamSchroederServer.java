@@ -24,11 +24,11 @@ import cryptography.CryptoFactory;
 import cryptography.Cryptography;
 import cryptography.CryptographyUtils;
 import kdc.KDCServer;
-import kdc.UDP_KDC_Server;
 import secureSocket.SecureDatagramSocket;
 import secureSocket.exceptions.InvalidPayloadTypeException;
 import secureSocket.secureMessages.SecureMessage;
 import secureSocket.secureMessages.SecureMessageImplementation;
+import stream.UDP_KDC_Server;
 
 public class NeedhamSchroederServer implements KDCServer {
 

@@ -18,6 +18,8 @@ import java.security.NoSuchAlgorithmException;
 
 import cryptography.CryptoFactory;
 import cryptography.Cryptography;
+import kdc.KDCClient;
+import kdc.needhamSchroeder.NeedhamSchroederClient;
 import secureSocket.SecureDatagramSocket;
 
 class arStreamServer {
@@ -41,11 +43,20 @@ class arStreamServer {
 			System.exit(-1);
 		}
 		
+		
+		
 		try {
 		byte[] buff = new byte[65000];
 		//MulticastSocket s = new MulticastSocket();
 		//DatagramSocket s = new DatagramSocket();
-		Cryptography cryptoManager = CryptoFactory.loadFromConfig(args[3]);
+		//Cryptography cryptoManager = CryptoFactory.loadFromConfig(args[3]);
+		
+		InetSocketAddress b_addr = new InetSocketAddress( args[1], Integer.parseInt(args[2]));
+		InetSocketAddress kdc_addr = new InetSocketAddress("localhost", 8888); // TODO: ler das configs
+		
+		KDCClient needhamClient = new NeedhamSchroederClient(kdc_addr, b_addr);
+		Cryptography cryptoManager = needhamClient.getSessionParameters();
+		
 		SecureDatagramSocket socket = new SecureDatagramSocket(cryptoManager);
 		InetSocketAddress addr = new InetSocketAddress( args[1], Integer.parseInt(args[2]));
 		DatagramPacket p = new DatagramPacket(buff, buff.length, addr );
