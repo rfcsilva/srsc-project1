@@ -24,6 +24,8 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 
+import util.ArrayUtils;
+
 public class CryptoFactory {
 
 	private static final String HASH_CIPHERSUITE = "hash-ciphersuite";
@@ -87,7 +89,12 @@ public class CryptoFactory {
 
 
 		//Generate IV
-		byte[] iv = generateIv(ciphersuit_properties.getProperty(SESSION_CIPHERSUITE), Integer.parseInt(ciphersuit_properties.getProperty(IV_SIZE)), sr);
+		String ivString = ciphersuit_properties.getProperty("iv");
+		byte[] iv;
+		if(ivString != null)
+			iv = ArrayUtils.unparse(ivString);
+		else
+			iv = generateIv(ciphersuit_properties.getProperty(SESSION_CIPHERSUITE), Integer.parseInt(ciphersuit_properties.getProperty(IV_SIZE)), sr);
 
 		//Build encrypt Cipher 
 		Cipher encryptCipher = null, decryptCipher = null;

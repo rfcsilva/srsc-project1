@@ -19,6 +19,5 @@ public class Utils {
 
 		ByteBuffer buffer = ByteBuffer.wrap(tmp);
 		return buffer.getLong();
-
 	}
 }
