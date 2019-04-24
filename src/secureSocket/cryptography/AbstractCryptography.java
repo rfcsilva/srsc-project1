@@ -125,10 +125,11 @@ public abstract class AbstractCryptography implements Cryptography {
 	}
 
 	@Override
-	public byte[] encrypt(byte[] plaintext) throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, ShortBufferException {
+	public byte[] encrypt(byte[] plaintext) throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException,
+			InvalidAlgorithmParameterException, ShortBufferException {
 		byte[] cipherText = new byte[cipher.getOutputSize(plaintext.length)];
-		cipher.update(plaintext, 0, plaintext.length, cipherText, 0);
-		cipher.doFinal();
+		int ctLength = cipher.update(plaintext, 0, plaintext.length, cipherText, 0);
+		ctLength += cipher.doFinal(cipherText, ctLength);	
 		return cipherText;
 	}
 
