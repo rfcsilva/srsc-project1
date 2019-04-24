@@ -12,6 +12,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableEntryException;
 import java.security.KeyStore.SecretKeyEntry;
 import java.security.cert.CertificateException;
+import java.util.Arrays;
 import java.util.Properties;
 
 import javax.crypto.BadPaddingException;
@@ -143,11 +144,16 @@ public abstract class AbstractCryptography implements Cryptography {
 	}
 
 	@Override
-	public byte[] decrypt(byte[] cipherText) throws ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
+	public byte[] decrypt(byte[] cipherText)
+			throws ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
 		byte[] plainText = new byte[cipher.getOutputSize(cipherText.length)];
 		int ptLength = cipher.update(cipherText, 0, cipherText.length, plainText, 0);
 		ptLength += cipher.doFinal(plainText, ptLength);
-		return plainText;
+		
+		
+		return Arrays.copyOfRange(plainText, 0, ptLength);
+		
+		//return plainText;
 	}
 
 	@Override
