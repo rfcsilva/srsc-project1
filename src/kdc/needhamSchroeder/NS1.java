@@ -21,7 +21,7 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.ShortBufferException;
 
-import cryptography.AbstractCryptography;
+import cryptography.CryptoFactory;
 import cryptography.Cryptography;
 import cryptography.CryptographyHash;
 import cryptography.CryptographyUtils;
@@ -133,17 +133,17 @@ public class NS1 implements Payload {
 		// TODO: Isto não pode estar assim. Esta info deveria vir toda de fora
 		KeyStore key_store = CryptographyUtils.loadKeyStrore("./configs/kdc/kdc-keystore.p12", "SRSC1819", "PKCS12");
 		SecretKey kma = CryptographyUtils.getKey(key_store, "SRSC1819", "Km" + new String(a));
-		Mac outerMacA = AbstractCryptography.buildMac("HMACSHA256", kma); // TODO: passar para CryptographyUtils
+		Mac outerMacA = CryptoFactory.buildMac("HMACSHA256", kma); // TODO: passar para CryptographyUtils
 		SecretKey ka = CryptographyUtils.getKey(key_store, "SRSC1819", "K" + new String(a));
 		byte[] iv = new byte[] {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15};
-		Cipher encryptCipherA = AbstractCryptography.buildCipher("AES/CTR/PKCS5Padding", Cipher.ENCRYPT_MODE, ka, iv);
-		Cipher decryptCipherA = AbstractCryptography.buildCipher("AES/CTR/PKCS5Padding", Cipher.DECRYPT_MODE, ka, iv);
+		Cipher encryptCipherA = CryptoFactory.buildCipher("AES/CTR/PKCS5Padding", Cipher.ENCRYPT_MODE, ka, iv);
+		Cipher decryptCipherA = CryptoFactory.buildCipher("AES/CTR/PKCS5Padding", Cipher.DECRYPT_MODE, ka, iv);
 		
 		SecretKey kmb = CryptographyUtils.getKey(key_store, "SRSC1819", "Km" + new String(b));
-		Mac outerMacB = AbstractCryptography.buildMac("HMACSHA256", kmb); // TODO: passar para CryptographyUtils
+		Mac outerMacB = CryptoFactory.buildMac("HMACSHA256", kmb); // TODO: passar para CryptographyUtils
 		SecretKey kb = CryptographyUtils.getKey(key_store, "SRSC1819", "K" + new String(b));
-		Cipher encryptCipherB = AbstractCryptography.buildCipher("AES/CTR/PKCS5Padding", Cipher.ENCRYPT_MODE, kb, iv);
-		Cipher decryptCipherB = AbstractCryptography.buildCipher("AES/CTR/PKCS5Padding", Cipher.DECRYPT_MODE, kb, iv);
+		Cipher encryptCipherB = CryptoFactory.buildCipher("AES/CTR/PKCS5Padding", Cipher.ENCRYPT_MODE, kb, iv);
+		Cipher decryptCipherB = CryptoFactory.buildCipher("AES/CTR/PKCS5Padding", Cipher.DECRYPT_MODE, kb, iv);
 		
 		Cryptography criptoManagerA = new CryptographyHash(encryptCipherA, decryptCipherA, null, null, outerMacA);
 		Cryptography criptoManagerB = new CryptographyHash(encryptCipherB, decryptCipherB, null, null, outerMacB);
@@ -161,11 +161,6 @@ public class NS1 implements Payload {
 	
 	public Cryptography getCryptoManagerB() { // TODO: ter aqui o B ?
 		return this.criptoManagerB;
-	}
-
-	@Override
-	public byte[] getMessage() {
-		return message;
 	}
 	
 	public byte[] getA() {

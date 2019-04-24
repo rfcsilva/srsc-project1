@@ -11,6 +11,7 @@ import java.security.NoSuchProviderException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
 import java.util.Base64;
+import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -19,12 +20,13 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
-import cryptography.AbstractCryptography;
+import cryptography.CryptoFactory;
 import cryptography.Cryptography;
 import cryptography.CryptographyUtils;
 import kdc.KDCServer;
 import kdc.UDP_KDC_Server;
 import secureSocket.SecureDatagramSocket;
+import secureSocket.exceptions.InvalidPayloadTypeException;
 import secureSocket.secureMessages.SecureMessage;
 import secureSocket.secureMessages.SecureMessageImplementation;
 
@@ -38,9 +40,9 @@ public class NeedhamSchroederServer implements KDCServer {
 	}
 
 	@Override
-	public Cryptography getSessionParameters() throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException, NoSuchProviderException { // TODO: isto precisa de outo nome
+	public Cryptography getSessionParameters() throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException { // TODO: isto precisa de outo nome
 
-		SecureDatagramSocket inSocket = new SecureDatagramSocket(b_addr, AbstractCryptography.loadFromConfig(PATH_TO_CONFIG));
+		SecureDatagramSocket inSocket = new SecureDatagramSocket(b_addr, CryptoFactory.loadFromConfig(PATH_TO_CONFIG));
 		inSocket.setTimeout(5*1000);
 
 		AtomicBoolean finished = new AtomicBoolean(false);
@@ -88,7 +90,6 @@ public class NeedhamSchroederServer implements KDCServer {
 				System.out.println("Nb: " + Nb);
 				
 				SecureMessage sm2 = new SecureMessageImplementation();
-				InetSocketAddress addr2 = new_socket.receive(sm2);
 				System.out.println("Received Challenge answer.");
 
 				NS4 ns5 = (NS4) sm2.getPayload();

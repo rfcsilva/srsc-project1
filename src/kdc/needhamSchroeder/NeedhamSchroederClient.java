@@ -1,7 +1,6 @@
 package kdc.needhamSchroeder;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
 import java.net.InetSocketAddress;
 import java.net.SocketTimeoutException;
 import java.security.InvalidAlgorithmParameterException;
@@ -11,23 +10,22 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
-import java.util.Arrays;
 import java.util.Base64;
+import java.util.concurrent.BrokenBarrierException;
 
 import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
-import cryptography.AbstractCryptography;
+import cryptography.CryptoFactory;
 import cryptography.Cryptography;
 import cryptography.CryptographyUtils;
 import kdc.KDCClient;
 import kdc.UDP_KDC_Server;
 import kdc.needhamSchroeder.exceptions.InvalidChallangeReplyException;
 import secureSocket.SecureDatagramSocket;
-import secureSocket.secureMessages.ClearPayload;
+import secureSocket.exceptions.InvalidPayloadTypeException;
 import secureSocket.secureMessages.Payload;
 import secureSocket.secureMessages.SecureMessage;
 import secureSocket.secureMessages.SecureMessageImplementation;
@@ -40,13 +38,11 @@ public class NeedhamSchroederClient implements KDCClient {
 	private Cryptography cryptoManager;
 	private InetSocketAddress kdc_addr;
 	private InetSocketAddress b_addr;
-	private SecureDatagramSocket socket;
-	
 	public NeedhamSchroederClient(InetSocketAddress kdc_addr, InetSocketAddress b_addr) throws InvalidKeyException, NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, CertificateException, NoSuchPaddingException, InvalidAlgorithmParameterException, IOException {
 		this.kdc_addr = kdc_addr;
 		this.b_addr = b_addr;
-		cryptoManager = AbstractCryptography.loadFromConfig(PATH_TO_CONFIG);
-		socket = new SecureDatagramSocket(cryptoManager);
+		cryptoManager = CryptoFactory.loadFromConfig(PATH_TO_CONFIG);
+		new SecureDatagramSocket(cryptoManager);
 	}
 	
 	private int max_tries = 3;
@@ -54,7 +50,7 @@ public class NeedhamSchroederClient implements KDCClient {
 	private static final int TIMEOUT = 30*1000;
 	
 	@Override
-	public Cryptography getSessionParameters() throws NoSuchAlgorithmException, IOException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidChallangeReplyException, NoSuchProviderException {
+	public Cryptography getSessionParameters() throws NoSuchAlgorithmException, IOException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidChallangeReplyException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException {
 		
 		
 		
@@ -89,7 +85,7 @@ public class NeedhamSchroederClient implements KDCClient {
 		return null;
 	}
 	
-	private NS2 requestKeys(InetSocketAddress kdc_addr, long Na) throws IOException, InvalidChallangeReplyException, NoSuchProviderException {
+	private NS2 requestKeys(InetSocketAddress kdc_addr, long Na) throws IOException, InvalidChallangeReplyException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException {
 		try {
 			SecureDatagramSocket socket = new SecureDatagramSocket(cryptoManager);
 			socket.setTimeout(TIMEOUT); // 30 s -> passar a constante
@@ -130,7 +126,7 @@ public class NeedhamSchroederClient implements KDCClient {
 		return null;
 	}  
 	
-	private void shareKeys(InetSocketAddress b_addr, byte[] ticket, Cryptography session_cryptoManager) throws IOException, NoSuchProviderException {
+	private void shareKeys(InetSocketAddress b_addr, byte[] ticket, Cryptography session_cryptoManager) throws IOException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException {
 		try {
 			SecureDatagramSocket new_socket = new SecureDatagramSocket(session_cryptoManager);
 			new_socket.setTimeout(TIMEOUT);

@@ -51,3 +51,4 @@ public class CryptographyHash extends AbstractCryptography {
 	}
 	
 }
+

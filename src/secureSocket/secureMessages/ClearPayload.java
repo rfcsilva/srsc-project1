@@ -1,9 +1,5 @@
 package secureSocket.secureMessages;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -18,7 +14,7 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
 import cryptography.Cryptography;
-import cryptography.CryptographyDoubleMac;
+import cryptography.nonce.NonceManager;
 import secureSocket.exceptions.InvalidMacException;
 import secureSocket.exceptions.ReplayedNonceException;
 import util.ArrayUtils;
@@ -35,7 +31,7 @@ public class ClearPayload implements Payload {
 	private byte[] message;
 	private byte[] outterMac;
 
-	public ClearPayload(byte[] message, Cryptography criptoManager)
+	public ClearPayload(byte[] message, Cryptography criptoManager, NonceManager nonceManager)
 			throws IOException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException,
 			NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException,
 			IllegalBlockSizeException, BadPaddingException, ShortBufferException {
@@ -78,11 +74,6 @@ public class ClearPayload implements Payload {
 				ClearPayload payload = new ClearPayload(messageParts[0], messageParts[1]);
 				return payload;
 			}
-	}
-
-	@Override
-	public byte[] getMessage() {
-		return message;
 	}
 
 	public byte[] getOutterMac() {

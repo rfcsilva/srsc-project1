@@ -148,12 +148,6 @@ public class NS2 implements Payload { //{Na+1, Nc, Ks , B, {Nc, A, B, Ks}KB }KA
 		return (short) (cipherText.length + outerMac.length);
 	}
 
-	@Override
-	public byte[] getMessage() { // TODO: isto só faz sentido no defualt payload, não?
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 	public long getNa_1() {
 		return Na_1;
 	}

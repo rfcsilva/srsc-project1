@@ -6,6 +6,5 @@ public interface Payload {
 	public byte[] serialize();
 	
 	public short size();
-	
-	public byte[] getMessage();
+
 }

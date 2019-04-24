@@ -11,6 +11,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
+import java.util.concurrent.BrokenBarrierException;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -18,19 +19,17 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
 import cryptography.Cryptography;
-import cryptography.CryptographyDoubleMac;
 import secureSocket.exceptions.BrokenIntegrityException;
+import cryptography.nonce.NonceManager;
+
 import secureSocket.exceptions.InvalidMacException;
 import secureSocket.exceptions.ReplayedNonceException;
 import util.ArrayUtils;
 
-// TODO : find better name for the class
 public class DefaultPayload implements Payload {
 
 	public static final byte TYPE = 0x01;
-
-	// Encryption support
-	// private static Cryptography2 criptoService;
+	//TODO: FIX NONCE MANAGER
 
 	// Payload data
 	private long id;
@@ -50,11 +49,10 @@ public class DefaultPayload implements Payload {
 		this.nonce = nonce;
 		byte[] Mp = buildMp(id, nonce, message);
 
-		// this.criptoService = criptoService;
-
 		this.innerIntegrityProof = criptoManager.computeIntegrityProof(Mp);
 		this.cipherText = criptoManager.encrypt(ArrayUtils.concat(Mp, this.innerIntegrityProof));
 		this.outterMac = criptoManager.computeOuterMac(this.cipherText);
+	
 	}
 
 	private DefaultPayload(long id, long nonce, byte[] message, byte[] ciphertext, byte[] innerMac, byte[] outterMac) {
@@ -96,12 +94,11 @@ public class DefaultPayload implements Payload {
 		return (short) (cipherText.length + outterMac.length);
 	}
 
-	// TODO handle bad macs
-	// TODO : retornar Payload ou DEfaultPayload?
-	public static Payload deserialize(byte[] rawPayload, Cryptography criptoManager)
+	public static DefaultPayload deserialize(byte[] rawPayload, Cryptography criptoManager, NonceManager nonceManager)
 			throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException,
-			InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException,
-			UnrecoverableEntryException, KeyStoreException, CertificateException, IOException, InvalidMacException, ReplayedNonceException, BrokenIntegrityException {
+			InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException,
+			KeyStoreException, CertificateException, IOException, InvalidMacException, ReplayedNonceException, BrokenBarrierException, BrokenIntegrityException {
+
 
 		byte[][] messageParts = criptoManager.splitOuterMac(rawPayload);
 		if (!criptoManager.validateOuterMac(messageParts[0], messageParts[1]))
@@ -110,11 +107,7 @@ public class DefaultPayload implements Payload {
 			byte[] plainText = criptoManager.decrypt(messageParts[0]);
 			byte[][] payloadParts = criptoManager.splitIntegrityProof(plainText);
 			
-			System.out.println("plainText: " +new String(plainText));
-			System.out.println("parts[0]: " + new String(payloadParts[0]));
-			System.out.println("parts[1]: " +new String(payloadParts[1]));
-			
-			if (/*!criptoManager.validateIntegrityProof(payloadParts[0], payloadParts[1])*/  false)
+			if (!criptoManager.validateIntegrityProof(payloadParts[0], payloadParts[1]))
 					throw new BrokenIntegrityException("Invalid Inner Integrity Proof");
 			else {
 				ByteArrayInputStream byteIn = new ByteArrayInputStream(payloadParts[0]);
@@ -131,13 +124,15 @@ public class DefaultPayload implements Payload {
 
 				dataIn.close();
 				byteIn.close();
-
+				
+				if( nonceManager.verifyReplay(nonce) )
+					throw new ReplayedNonceException("Nonce " + nonce + " was replayed!");
+				
 				return payload;
 			}
 		}	
 	}
 
-	@Override
 	public byte[] getMessage() {
 		return message;
 	}

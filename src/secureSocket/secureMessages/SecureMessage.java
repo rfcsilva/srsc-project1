@@ -4,14 +4,14 @@ import java.io.IOException;
 
 public interface SecureMessage {
 	
-	byte getVersionRelease();
+	public byte getVersionRelease();
 	
-	byte getPayloadType();
+	public byte getPayloadType();
 	
-	short getPayloadSize();
+	public short getPayloadSize();
 	
-	Payload getPayload();
+	public Payload getPayload();
 	
-	byte[] serialize() throws IOException;
+	public byte[] serialize() throws IOException;
 	
 }

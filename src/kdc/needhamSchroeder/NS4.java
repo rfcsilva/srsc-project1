@@ -7,7 +7,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
-import java.util.Base64;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -71,11 +70,6 @@ public class NS4 implements Payload {
 		return (short) (cipherText.length + outermac.length);
 	}
 
-	@Override
-	public byte[] getMessage() {
-		return nb_bytes;
-	}
-	
 	public static Payload deserialize(byte[] rawPayload, Cryptography cryptoManager) throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, IOException, InvalidMacException {
 		byte[][] messageParts = cryptoManager.splitOuterMac(rawPayload);		
 		if (!cryptoManager.validateOuterMac(messageParts[0], messageParts[1]))

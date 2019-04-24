@@ -1,32 +1,22 @@
 package kdc.needhamSchroeder;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
-import java.security.KeyStore;
 import java.security.KeyStoreException;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
 
 import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.Mac;
 import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
 import javax.crypto.ShortBufferException;
 
-import cryptography.AbstractCryptography;
 import cryptography.Cryptography;
-import cryptography.CryptographyHash;
-import cryptography.CryptographyUtils;
 import kdc.UDP_KDC_Server;
 import secureSocket.exceptions.BrokenIntegrityException;
 import secureSocket.exceptions.InvalidMacException;
@@ -141,11 +131,6 @@ public class NS3 implements Payload { // A -> B : {Nc, A, B, Ks }KB
 		return this.session_criptoManager;
 	}
 
-	@Override
-	public byte[] getMessage() {
-		return null;
-	}
-	
 	public byte[] getA() {
 		return a;
 	}
