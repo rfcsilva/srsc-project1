@@ -137,6 +137,7 @@ public class NeedhamSchroederClient implements KDCClient {
 			new_socket.send(sm, b_addr);
 			
 			// Receive Challenge
+			sm = new SecureMessageImplementation();
 			InetSocketAddress addr = new_socket.receive(sm); // TODO: trocar a função de Na+1 e assim para uma chamada a uma funçção challenge que pode ter difenets implemneações
 			System.out.println("Received Challenge.");
 			

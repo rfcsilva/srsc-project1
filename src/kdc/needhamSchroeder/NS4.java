@@ -32,7 +32,6 @@ public class NS4 implements Payload {
 		nb_bytes = computeNbBytes(nb);
 		cipherText = cryptoManager.encrypt(nb_bytes);
 		outermac = cryptoManager.computeOuterMac(cipherText);
-
 	}	
 	
 	private NS4(long nb, byte[] cipherText, byte[] outermac) throws IOException {
@@ -43,7 +42,6 @@ public class NS4 implements Payload {
 	}
 
 	private byte[] computeNbBytes(long nb) throws IOException {
-		
 		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
 		DataOutputStream dataOut = new DataOutputStream(byteOut);
 		dataOut.writeLong(nb);
@@ -79,12 +77,10 @@ public class NS4 implements Payload {
 	}
 	
 	public static Payload deserialize(byte[] rawPayload, Cryptography cryptoManager) throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, IOException, InvalidMacException {
-		
 		byte[][] messageParts = cryptoManager.splitOuterMac(rawPayload);		
 		if (!cryptoManager.validateOuterMac(messageParts[0], messageParts[1]))
 			throw new InvalidMacException("Invalid Outter Mac");
 		else {
-
 			ByteArrayInputStream byteIn = new ByteArrayInputStream(messageParts[0]);
 			DataInputStream dataIn = new DataInputStream(byteIn);
 
