@@ -222,6 +222,8 @@ public class UDP_KDC_Server {
 
 			cryptoManager = new CryptographyDoubleMac(encryptCipher, decryptCipher, secureRandom, innerMac, outerMac);
 		}
+		
+		System.out.println("BINA3: " + (((CryptographyDoubleMac)cryptoManager).getInnerMac()== null));
 
 		return cryptoManager;
 	}

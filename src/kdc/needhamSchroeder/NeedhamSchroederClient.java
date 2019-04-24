@@ -73,7 +73,7 @@ public class NeedhamSchroederClient implements KDCClient {
 				
 				System.out.println("Finished key establishment.");
 				
-				return cryptoManager;
+				return session_cryptoManager;
 		    } catch (SocketTimeoutException e) {
 		        // Try again
 		    }

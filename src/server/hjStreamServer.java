@@ -41,11 +41,16 @@ class hjStreamServer {
 		//MulticastSocket s = new MulticastSocket();
 		//DatagramSocket s = new DatagramSocket();
 		InetSocketAddress b_addr = new InetSocketAddress( args[1], Integer.parseInt(args[2]));
-		InetSocketAddress kdc_addr = new InetSocketAddress("localhost", 8888);
+		InetSocketAddress kdc_addr = new InetSocketAddress("localhost", 8888); // TODO: ler das configs
 		
 		KDCClient needhamClient = new NeedhamSchroederClient(kdc_addr, b_addr);
 		Cryptography cryptoManager = needhamClient.getSessionParameters();
+		
+		System.out.println("BINA1: " + (((CryptographyDoubleMac)cryptoManager).getInnerMac()== null));
+		
 		SecureDatagramSocket socket = new SecureDatagramSocket(cryptoManager);
+		
+		System.out.println("BINA2: " + (((CryptographyDoubleMac)cryptoManager).getInnerMac()== null));
 		
 		DatagramPacket p = new DatagramPacket(buff, buff.length, b_addr );
 		long t0 = System.nanoTime(); // tempo de referencia para este processo
