@@ -105,7 +105,7 @@ public class DefaultPayload implements Payload {
 
 		byte[][] messageParts = criptoManager.splitOuterMac(rawPayload);
 		if (!criptoManager.validateOuterMac(messageParts[0], messageParts[1]))
-			throw new InvalidMacException("Invalid Outter Mac");
+			throw new InvalidMacException("Invalid Outer Mac");
 		else {
 			byte[] plainText = criptoManager.decrypt(messageParts[0]);
 			byte[][] payloadParts = criptoManager.splitIntegrityProof(plainText);

@@ -31,21 +31,16 @@ public class NeedhamSchroederServer implements KDCServer {
 
 	private static final String PATH_TO_CONFIG = "./configs/proxy/ciphersuite.conf";
 	private InetSocketAddress b_addr;
-	private Cryptography cryptoManager;
-
 
 	public NeedhamSchroederServer(InetSocketAddress b_addr) throws InvalidKeyException, NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, CertificateException, NoSuchPaddingException, InvalidAlgorithmParameterException, IOException, ShortBufferException, IllegalBlockSizeException, BadPaddingException {
-
 		this.b_addr = b_addr;
-		//	cryptoManager = getSessionParameters(); // O que é isto bina?
-
 	}
 
 	@Override
 	public Cryptography getSessionParameters() throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException { // TODO: isto precisa de outo nome
 
 		SecureDatagramSocket inSocket = new SecureDatagramSocket(b_addr, AbstractCryptography.loadFromConfig(PATH_TO_CONFIG));
-		inSocket.setTimeout(30*1000);
+		inSocket.setTimeout(5*1000);
 
 		AtomicBoolean finished = new AtomicBoolean(false);
 		ConcurrentHashMap<String, Cryptography> results = new ConcurrentHashMap<>();

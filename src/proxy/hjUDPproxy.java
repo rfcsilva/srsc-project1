@@ -72,6 +72,7 @@ class hjUDPproxy {
 		byte[] buffer = new byte[4 * 1024];
 
 		System.out.println("Proxy ready to receive...");
+		System.out.flush();
 		
 		// main loop
 		while (true) {
