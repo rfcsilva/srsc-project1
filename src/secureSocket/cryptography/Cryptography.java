@@ -10,8 +10,6 @@ import javax.crypto.Mac;
 import javax.crypto.ShortBufferException;
 
 public interface Cryptography {
-
-	public Cipher getCipher();
 	
 	public byte[] encrypt(byte[] plaintext) throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, ShortBufferException;
 	
@@ -30,5 +28,9 @@ public interface Cryptography {
 	public byte[][] splitIntegrityProof(byte[] plainText);
 	
 	public Mac getOuterMac();
+
+	Cipher getEncryptCipher();
+
+	Cipher getDecryptCipher();
 }
 

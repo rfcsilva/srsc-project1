@@ -15,15 +15,14 @@ import java.security.cert.CertificateException;
 import java.util.Arrays;
 
 import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
+import secureSocket.cryptography.CryptoFactory;
 import secureSocket.cryptography.Cryptography;
-import secureSocket.cryptography.AbstractCryptography;
-import secureSocket.cryptography.CryptographyDoubleMac;
-import secureSocket.exceptions.*;
+import secureSocket.exceptions.InvalidMacException;
+import secureSocket.exceptions.ReplayedNonceException;
 import secureSocket.secureMessages.DefaultPayload;
 import secureSocket.secureMessages.Payload;
 import secureSocket.secureMessages.SecureMessage;
@@ -45,10 +44,10 @@ public class SecureDatagramSocket {
 			MulticastSocket ms = new MulticastSocket(port);
 			ms.joinGroup(laddr);
 			socket = ms;
-			cryptoManager = AbstractCryptography.loadFromConfig(CIPHERSUITE_CONFIG_PATH, Cipher.DECRYPT_MODE);
+			cryptoManager = CryptoFactory.loadFromConfig(CIPHERSUITE_CONFIG_PATH);
 		} else {
 			socket = new DatagramSocket(port, laddr);
-			cryptoManager = AbstractCryptography.loadFromConfig(CIPHERSUITE_CONFIG_PATH, Cipher.DECRYPT_MODE);
+			cryptoManager = CryptoFactory.loadFromConfig(CIPHERSUITE_CONFIG_PATH);
 		}
 	}
 
@@ -58,7 +57,7 @@ public class SecureDatagramSocket {
 
 	public SecureDatagramSocket() throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException {
 		socket = new DatagramSocket();
-		cryptoManager = AbstractCryptography.loadFromConfig(CIPHERSUITE_CONFIG_PATH, Cipher.ENCRYPT_MODE);
+		cryptoManager = CryptoFactory.loadFromConfig(CIPHERSUITE_CONFIG_PATH);
 	}
 
 	public void close() throws IOException {

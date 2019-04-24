@@ -10,8 +10,8 @@ public class CryptographyHash extends AbstractCryptography {
 	private MessageDigest innerHash;
 
 	//TODO: handle exceptions gracefully
-	public CryptographyHash(Cipher cipher, MessageDigest innerHash, Mac outerMac) {
-		super(cipher, outerMac);
+	public CryptographyHash(Cipher encryptCipher,  Cipher decryptCipher , MessageDigest innerHash, Mac outerMac) {
+		super(encryptCipher, decryptCipher,outerMac);
 		this.innerHash = innerHash;
 	}
 
