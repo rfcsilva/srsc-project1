@@ -33,10 +33,10 @@ import java.util.stream.Collectors;
 
 import javax.crypto.Cipher;
 
+import cryptography.AbstractCryptography;
+import cryptography.CryptoFactory;
+import cryptography.Cryptography;
 import secureSocket.SecureDatagramSocket;
-import secureSocket.cryptography.AbstractCryptography;
-import secureSocket.cryptography.CryptoFactory;
-import secureSocket.cryptography.Cryptography;
 
 class hjUDPproxy {
 	

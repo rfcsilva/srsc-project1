@@ -19,10 +19,9 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
-
+import cryptography.Cryptography;
 import cryptography.nonce.CounterNonceManager;
 import cryptography.nonce.NonceManager;
-import secureSocket.cryptography.Cryptography;
 import secureSocket.exceptions.*;
 import secureSocket.secureMessages.DefaultPayload;
 import secureSocket.secureMessages.Payload;

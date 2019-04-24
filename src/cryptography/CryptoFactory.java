@@ -1,4 +1,4 @@
-package secureSocket.cryptography;
+package cryptography;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;

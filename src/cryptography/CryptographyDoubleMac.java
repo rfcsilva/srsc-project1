@@ -1,4 +1,4 @@
-package secureSocket.cryptography;
+package cryptography;
 
 import java.security.InvalidKeyException;
 
