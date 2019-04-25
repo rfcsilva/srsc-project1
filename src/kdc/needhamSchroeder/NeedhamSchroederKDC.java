@@ -18,6 +18,7 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
 import cryptography.CryptoFactory;
+import cryptography.CryptographyNS;
 import cryptography.CryptographyUtils;
 import cryptography.nonce.CounterNonceManager;
 import cryptography.nonce.NonceManager;
@@ -34,7 +35,7 @@ public class NeedhamSchroederKDC implements KDC {
 	private NonceManager nonceManager;
 	private String configPath;
 	
-	public NeedhamSchroederKDC(InetSocketAddress addr, NSCryptoManager cryptoManager, String configPath) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException {
+	public NeedhamSchroederKDC(InetSocketAddress addr, CryptographyNS cryptoManager, String configPath) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException {
 		socket = new SecureDatagramSocket(addr, cryptoManager);
 		this.nonceManager = new CounterNonceManager(0, 3);
 		this.configPath = configPath;

@@ -72,7 +72,7 @@ public class NeedhamSchroederClient implements KDCClient {
 				System.out.println("Received Keys. " + Na+1);
 
 				// Build the session criptoManager
-				Cryptography session_cryptoManager = UDP_KDC_Server.deserializeSessionParameters(kdc_reply.getKs()); //TODO : Trocar para o método certo
+				Cryptography session_cryptoManager =  CryptoFactory.dessrialize(kdc_reply.getKs()); //UDP_KDC_Server.deserializeSessionParameters(kdc_reply.getKs()); //TODO : Trocar para o método certo
 
 				System.out.println("Sharing keys...");
 				shareKeys(b_addr, kdc_reply.getTicket(), session_cryptoManager, nonceManager);
