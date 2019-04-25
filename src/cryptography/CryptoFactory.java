@@ -126,7 +126,6 @@ public class CryptoFactory {
 				ciphersuit_properties.getProperty(KEYSTORE), ciphersuit_properties.getProperty(SESSION_KEY), ciphersuit_properties.getProperty(INNER_MAC_KEY),
 				ciphersuit_properties.getProperty(OUTER_MAC_KEY));
 
-
 		//Generate IV
 		String ivString = ciphersuit_properties.getProperty(IV);
 		byte[] iv;

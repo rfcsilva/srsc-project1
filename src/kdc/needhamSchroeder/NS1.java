@@ -44,16 +44,16 @@ public class NS1 implements Payload {
 	private Cryptography criptoManagerA;
 	private Cryptography criptoManagerB;
 
-	public NS1(String a2, String b2, long Na, Cryptography cryptoManager)
+	public NS1(String a, String b, long Na, Cryptography cryptoManager)
 			throws IOException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException,
 			NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException,
 			IllegalBlockSizeException, BadPaddingException, ShortBufferException {
 
-		this.a = a2;
-		this.b = b2;
+		this.a = a;
+		this.b = b;
 		this.na = Na;
 
-		this.message = buildMessage(a2, b2, Na);
+		this.message = buildMessage(a, b, Na);
 
 		this.outerMac = cryptoManager.computeOuterMac(message);
 	}
@@ -131,8 +131,6 @@ public class NS1 implements Payload {
 		dataIn.close();
 		byteIn.close();
 		
-		System.out.println(a + " " + b);
-		
 		AbstractCryptography criptoManagerA = ((CryptographyNS) criptoManager).getCryptographyFromId(a);
 		AbstractCryptography criptoManagerB = ((CryptographyNS) criptoManager).getCryptographyFromId(b);
 		
@@ -140,14 +138,14 @@ public class NS1 implements Payload {
 		if (!criptoManagerA.validateOuterMac(messageParts[0], messageParts[1]))
 			throw new InvalidMacException("Invalid Outer Mac");
 
-		return new NS1(a, b, Na, messageParts[1], criptoManagerA, criptoManagerB); // Falta a msg
+		return new NS1(a, b, Na, messageParts[1], criptoManagerA, criptoManagerB); // Falta a msg -> isto é o que?
 	}	
 	
 	public Cryptography getCryptoManagerA() {
 		return this.criptoManagerA;
 	}
 	
-	public Cryptography getCryptoManagerB() { // TODO: ter aqui o B ?
+	public Cryptography getCryptoManagerB() {
 		return this.criptoManagerB;
 	}
 	

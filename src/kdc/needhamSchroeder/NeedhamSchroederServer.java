@@ -30,6 +30,8 @@ import secureSocket.secureMessages.SecureMessageImplementation;
 
 public class NeedhamSchroederServer implements KDCServer {
 
+	private static final int WINDOW_SIZE = 100;
+
 	private InetSocketAddress b_addr;
 	private Cryptography master_cryptoManager;
 	private WindowNonceManager nonceManager;
@@ -38,10 +40,10 @@ public class NeedhamSchroederServer implements KDCServer {
 			throws InvalidKeyException, NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException,
 			CertificateException, NoSuchPaddingException, InvalidAlgorithmParameterException, IOException,
 			ShortBufferException, IllegalBlockSizeException, BadPaddingException {
-		
+
 		this.b_addr = b_addr;
 		this.master_cryptoManager = master_cryptoManager;
-		this.nonceManager = new WindowNonceManager(100, master_cryptoManager.getSecureRandom());
+		this.nonceManager = new WindowNonceManager(WINDOW_SIZE, master_cryptoManager.getSecureRandom());
 	}
 
 	@Override
@@ -56,11 +58,11 @@ public class NeedhamSchroederServer implements KDCServer {
 
 		// Listen for incoming requests
 		listenRequests(finished, cryptoManager, master_cryptoManager);
-																		
+
 		while (!finished.get()) {
 			try {
 				Thread.sleep(100); // TODO : quanto tempo?
-				} catch (Exception e) {}
+			} catch (Exception e) {}
 		}
 
 		return cryptoManager.get();
@@ -71,31 +73,39 @@ public class NeedhamSchroederServer implements KDCServer {
 			UnrecoverableEntryException, KeyStoreException,	CertificateException, IOException, ShortBufferException, 
 			IllegalBlockSizeException, BadPaddingException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException {
 
-		SecureDatagramSocket inSocket = new SecureDatagramSocket(b_addr, master_cryptoManager);
-		inSocket.setTimeout(1 * 1000); // TODO: Isto parece pouco não?
-
-		System.out.println("Waitting for Ticket...");
-
-		while (!finished.get()) {
+		new Thread(() -> {
 			try {
-				// Receive Ticket
-				SecureMessage sm = new SecureMessageImplementation();
-				InetSocketAddress addr = inSocket.receive(sm);
+				SecureDatagramSocket inSocket = new SecureDatagramSocket(b_addr, master_cryptoManager);
+				inSocket.setTimeout(5 * 1000); // TODO: Isto parece pouco não?
 
-				System.out.println("Received Ticket.");
+				System.out.println("Waitting for Ticket...");
 
-				NS3 ns3 = (NS3) sm.getPayload();
+				while (!finished.get()) {
+					try {
+						// Receive Ticket
+						SecureMessage sm = new SecureMessageImplementation();
+						InetSocketAddress addr = inSocket.receive(sm);
 
-				// If not replay
-				if (!verifyReplay(ns3.getNc()))
-					processRequest(ns3, addr, cryptoManager, finished);
-				else
-					System.err.println("Replay of: " + ns3.getNc());
+						System.out.println("Received Ticket.");
 
-			} catch (SocketTimeoutException e) {}
-		}
+						NS3 ns3 = (NS3) sm.getPayload();
 
-		inSocket.close();
+						// If not replay
+						if (!verifyReplay(ns3.getNc()))
+							processRequest(ns3, addr, cryptoManager, finished);
+						else
+							System.err.println("Replay of: " + ns3.getNc());
+
+					} catch (SocketTimeoutException e) {}
+				}
+
+				inSocket.close();
+
+			}  catch(Exception e) {
+				e.printStackTrace();
+			}
+
+		}).start();
 	}
 
 	private void processRequest(NS3 ns3, InetSocketAddress addr, AtomicReference<Cryptography> cryptoManager, AtomicBoolean finished) {
@@ -107,7 +117,7 @@ public class NeedhamSchroederServer implements KDCServer {
 				new_socket.setTimeout(30 * 1000); // TODO : quanto timeout?
 
 				long Nb = getNonce();
-				
+
 				NS4 ns4 = new NS4(Nb, session_cryptoManager);
 				SecureMessage sm = new SecureMessageImplementation(ns4);
 				new_socket.send(sm, addr);
@@ -130,7 +140,7 @@ public class NeedhamSchroederServer implements KDCServer {
 				new_socket.close();
 
 			} catch (Exception e) {
-				e.printStackTrace();
+				//e.printStackTrace();
 			}
 		}).start();
 	}

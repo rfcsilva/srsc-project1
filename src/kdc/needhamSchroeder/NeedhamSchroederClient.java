@@ -110,7 +110,7 @@ public class NeedhamSchroederClient implements KDCClient {
 			} else if(reply.getNa_1() != Na+1) {
 				throw new InvalidChallangeReplyException("KDC challenge answer is wrong. " + reply.getNa_1());
 			} else
-				System.out.println("Received Keys. " + Na+1);
+				System.out.println("Received Keys. " + (Na+1));
 			
 			return reply;
 		} catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException

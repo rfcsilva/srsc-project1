@@ -14,7 +14,7 @@ public class ClientMain { //
 	public static void main(String[] args) throws Exception {
 
 		InetSocketAddress kdc_addr = new InetSocketAddress("localhost", 8888);
-		InetSocketAddress b_addr = new InetSocketAddress( "localhost", 8889);
+		InetSocketAddress b_addr = new InetSocketAddress("localhost", 8889);
 		
 		if( args[0].equals("client") ) {
 			System.out.println("Client ready");
