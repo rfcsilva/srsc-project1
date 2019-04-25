@@ -59,8 +59,8 @@ class arStreamServer {
 		//Cryptography cryptoManager = needhamClient.getSessionParameters();
 		
 		Cryptography master_cryptoManager = CryptoFactory.loadFromConfig(args[3]);
-		InetSocketAddress b_addr = new InetSocketAddress( "localhost", 8889);
-		KDCServer kdc_server = new NeedhamSchroederServer(b_addr, master_cryptoManager);
+		InetSocketAddress b_addr = new InetSocketAddress( "localhost", 8889); // TODO: colocar num file
+		KDCServer kdc_server = new NeedhamSchroederServer(b_addr, master_cryptoManager); // TODO: COLOCAR ID
 		Cryptography session_cryptoManager = kdc_server.getSessionParameters();
 		
 		SecureDatagramSocket socket = new SecureDatagramSocket(session_cryptoManager);

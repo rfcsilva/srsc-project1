@@ -116,7 +116,7 @@ public class NS3 implements Payload { // A -> B : {Nc, A, B, Ks }KB
 		dataIn.close();
 		byteIn.close();*/
 		
-		Ticket t = Ticket.deserialize(ticket); 
+		Ticket t = Ticket.deserialize(clearText); 
 		
 		Cryptography session_cryptoManager = CryptoFactory.dessrialize(t.getKs()); // TODO: .deserializeSessionParameters(Ks);
 		

@@ -131,12 +131,14 @@ public class NS1 implements Payload {
 		dataIn.close();
 		byteIn.close();
 		
-		AbstractCryptography criptoManagerA = ((CryptographyNS) criptoManager).getCryptographyFromId(new String(a));
-		AbstractCryptography criptoManagerB = ((CryptographyNS) criptoManager).getCryptographyFromId(new String(b));
+		System.out.println(a + " " + b);
+		
+		AbstractCryptography criptoManagerA = ((CryptographyNS) criptoManager).getCryptographyFromId(a);
+		AbstractCryptography criptoManagerB = ((CryptographyNS) criptoManager).getCryptographyFromId(b);
 		
 		byte[][] messageParts = criptoManagerA.splitOuterMac(rawPayload);
 		if (!criptoManagerA.validateOuterMac(messageParts[0], messageParts[1]))
-			throw new InvalidMacException("Invalid Outter Mac");
+			throw new InvalidMacException("Invalid Outer Mac");
 
 		return new NS1(a, b, Na, messageParts[1], criptoManagerA, criptoManagerB); // Falta a msg
 	}	

@@ -58,9 +58,9 @@ public class CryptographyNS extends AbstractCryptography implements Cryptography
 		
 		SecretKey km = CryptographyUtils.getKey(key_store, password, KM + id);
 		Mac outerMac = CryptoFactory.buildMac(macAlgorithm, km);
-		SecretKey ka = CryptographyUtils.getKey(key_store, password, K + id);
-		Cipher encryptCipher = CryptoFactory.buildCipher(cipherAlgorithm, Cipher.ENCRYPT_MODE, ka, iv);
-		Cipher decryptCipher = CryptoFactory.buildCipher(cipherAlgorithm, Cipher.DECRYPT_MODE, ka, iv);
+		SecretKey k = CryptographyUtils.getKey(key_store, password, K + id);
+		Cipher encryptCipher = CryptoFactory.buildCipher(cipherAlgorithm, Cipher.ENCRYPT_MODE, k, iv);
+		Cipher decryptCipher = CryptoFactory.buildCipher(cipherAlgorithm, Cipher.DECRYPT_MODE, k, iv);
 		
 		return new AbstractCryptography(encryptCipher, decryptCipher, outerMac, this.getSecureRandom()) {
 			
