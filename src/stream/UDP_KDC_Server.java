@@ -65,7 +65,7 @@ public class UDP_KDC_Server {
 		String password = masterCipherSuite.getProperty(CryptoFactory.KEYSTORE_PASSWORD);
 		String type = masterCipherSuite.getProperty(CryptoFactory.KEYSTORE_TYPE);
 		String macAlgorithm = masterCipherSuite.getProperty(CryptoFactory.OUTER_MAC_CIPHERSUITE);
-		String ivString = masterCipherSuite.getProperty("iv");
+		String ivString = masterCipherSuite.getProperty(CryptoFactory.IV);
 		byte[] iv = ArrayUtils.unparse(ivString);
 		String cipherAlgorithm = masterCipherSuite.getProperty(CryptoFactory.SESSION_CIPHERSUITE);
 		
