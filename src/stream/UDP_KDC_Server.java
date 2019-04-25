@@ -60,19 +60,8 @@ public class UDP_KDC_Server {
 
 		System.out.println("KDC Server ready to receive...");
 		
-		Properties masterCipherSuite = CryptoFactory.loadFile(args[2]);
-		SecureRandom sr = CryptoFactory.generateRandom(masterCipherSuite.getProperty(CryptoFactory.SECURE_RANDOM), masterCipherSuite.getProperty(CryptoFactory.SECURE_RANDOM_PROVIDER));
-		String path = masterCipherSuite.getProperty(CryptoFactory.KEYSTORE);
-		String password = masterCipherSuite.getProperty(CryptoFactory.KEYSTORE_PASSWORD);
-		String type = masterCipherSuite.getProperty(CryptoFactory.KEYSTORE_TYPE);
-		String macAlgorithm = masterCipherSuite.getProperty(CryptoFactory.OUTER_MAC_CIPHERSUITE);
-		String ivString = masterCipherSuite.getProperty(CryptoFactory.IV);
-		byte[] iv = ArrayUtils.unparse(ivString);
-		String cipherAlgorithm = masterCipherSuite.getProperty(CryptoFactory.SESSION_CIPHERSUITE);
-		
-		KeyStore keyStore = CryptographyUtils.loadKeyStrore(path, password, type);	
-		
-		CryptographyNS nsc = new CryptographyNS(sr, password, keyStore, macAlgorithm, iv, cipherAlgorithm);
+		Properties masterCipherSuite = CryptoFactory.loadFile(args[2]);		
+		CryptographyNS nsc = CryptographyNS.loadFromprops(masterCipherSuite);
 		KDC kdc = new NeedhamSchroederKDC(my_addr, nsc, args[3]);
 		kdc.start();
 	}
