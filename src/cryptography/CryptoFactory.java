@@ -19,6 +19,7 @@ import java.security.SecureRandom;
 import java.security.UnrecoverableEntryException;
 import java.security.KeyStore.SecretKeyEntry;
 import java.security.cert.CertificateException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Properties;
 
 import javax.crypto.Cipher;
@@ -33,6 +34,7 @@ import util.ArrayUtils;
 
 public class CryptoFactory {
 
+	private static final String PBKDF2_WITH_HMAC_SHA512 = "PBKDF2WithHmacSHA512";
 	public static final int INITIAL_MSG_NUMBER = 1;
 	public static final String IV = "iv";
 	public static final String HASH_CIPHERSUITE = "hash-ciphersuite";
@@ -61,13 +63,28 @@ public class CryptoFactory {
 	public static final String INNER_MAC_PROVIDER = "inner-mac-provider";
 	public static final String HASH_PROVIDER = "hash-provider";
 	public static final String SECURE_RANDOM_PROVIDER = "secure-random-provider";
+	private static final String SALT = "tlsa";
+	private static final String KA_ITERATIONS = "ka-iterations";
+	private static final String DEFAULT_ITERATIONS_AS_STRING = "16";
+	private static final String KM_ITERATIONS = "km-iterations";
+	private static final String KEY_GEN_ALGORITHM = "key-gen-algorithm";
+	private static final String KEY_SPEC_ALGORITM = "session-key-gen-alg";
+	private static final String DEFAULT_ALGORITHM = "AES";
+	private static final String KA_KEY_SIZE = "ka-key-size";
+	private static final String KM_KEY_SIZE = "km-key-size";
+	private static final String DEFAULT_KEY_SIZE = "256";
+	private static final String DEFAULT_SESSION_CIPHERSUITE = "AES/CBC/PKCS5Padding";
+	private static final String DEFAULT_SECURE_RANDOM_ALGORITHM = "sha1PRNG";
+	private static final String DEFAULT_SECURE_RANDOM_PROVIDER = "sha1PRNG";
+	private static final String DEFAULT_TAG_SIZE = "128";
+	private static final String DEFAULT_OUTER_MAC = "HMACSHA256";
 
 	public static Cipher buildCipher(String cipherAlgorithm, int cipherMode, SecretKey key, byte[] iv, int tagSize, String provider)
 			throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException,
 			InvalidAlgorithmParameterException, NoSuchProviderException {
 		
 		Cipher cipher = null;
-		if(provider.equals(""))
+		if(provider.equals("") || provider == null)
 			cipher = Cipher.getInstance(cipherAlgorithm);
 		else
 			cipher = Cipher.getInstance(cipherAlgorithm, provider);
@@ -432,6 +449,66 @@ public class CryptoFactory {
 			kom = readKey(key_store, ks_pp, outterMacKey);
 
 		return new SecretKey[]{ks, kim, kom};
+	}
+	
+	public static AbstractCryptography getInstace(String password, String cipherSuitePath) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, NoSuchProviderException, NoSuchPaddingException, InvalidAlgorithmParameterException {
+		
+		Properties props = loadFile(cipherSuitePath);
+		int kaIterations = Integer.parseInt( props.getProperty(KA_ITERATIONS, DEFAULT_ITERATIONS_AS_STRING) );
+		int kmIerations = Integer.parseInt( props.getProperty(KM_ITERATIONS, DEFAULT_ITERATIONS_AS_STRING) );
+		String keyGenAlgorithm = props.getProperty(KEY_GEN_ALGORITHM, PBKDF2_WITH_HMAC_SHA512);
+		String keySpecAlgorithm = props.getProperty(KEY_SPEC_ALGORITM, DEFAULT_ALGORITHM);
+		int ka_key_size = Integer.parseInt(props.getProperty(KA_KEY_SIZE, DEFAULT_KEY_SIZE));
+		int km_key_size = Integer.parseInt(props.getProperty(KM_KEY_SIZE, DEFAULT_KEY_SIZE));
+		
+		SecretKey ka = CryptographyUtils.generateKey(password, SALT, kaIterations, keyGenAlgorithm, keySpecAlgorithm, ka_key_size);
+		SecretKey km = CryptographyUtils.generateKey(password, SALT, kmIerations, keyGenAlgorithm, keySpecAlgorithm, km_key_size);
+					
+		String cipherAlgorithm = props.getProperty(SESSION_CIPHERSUITE, DEFAULT_SESSION_CIPHERSUITE);
+		
+		
+		SecureRandom sr = generateRandom(props.getProperty(SECURE_RANDOM, DEFAULT_SECURE_RANDOM_ALGORITHM), props.getProperty(SECURE_RANDOM_PROVIDER, DEFAULT_SECURE_RANDOM_PROVIDER));
+		byte[] iv = readIv(props, sr);
+		int tagSize = Integer.parseInt(props.getProperty(TAG_SIZE, DEFAULT_TAG_SIZE));
+		String cipher_provider = props.getProperty(CIPHER_PROVIDER);
+		String mac_provider = props.getProperty(OUTTER_MAC_PROVIDER);
+		String macAlgorithm = props.getProperty(OUTER_MAC_CIPHERSUITE, DEFAULT_OUTER_MAC);
+		
+		Cipher encryptCipher = buildCipher(cipherAlgorithm, Cipher.ENCRYPT_MODE, ka, iv, tagSize, cipher_provider);
+		Cipher decryptCipher = buildCipher(cipherAlgorithm, Cipher.DECRYPT_MODE, ka, iv, tagSize, cipher_provider);
+		Mac outerMac = initMac(macAlgorithm, km, mac_provider);
+		
+		return new AbstractCryptography(encryptCipher, decryptCipher, outerMac, sr) {
+			
+			@Override
+			public boolean validateIntegrityProof(byte[] message, byte[] expectedMac) throws InvalidKeyException {
+				return true;
+			}
+			
+			@Override
+			public byte[][] splitIntegrityProof(byte[] plainText) {
+				return null;
+			}
+			
+			@Override
+			public byte[] computeIntegrityProof(byte[] payload) throws InvalidKeyException {
+				return null;
+			}
+		};
+	}
+
+	public static byte[] readIv(Properties props, SecureRandom sr) {
+		
+		String ivString = props.getProperty(IV);
+		int ivSize = Integer.parseInt(props.getProperty(IV_SIZE));
+		byte[] iv = null;
+		if(ivSize > 0 ) {
+			if(ivString != null)
+				iv = ArrayUtils.unparse(ivString);
+			else
+				iv = generateIv(props.getProperty(SESSION_CIPHERSUITE), ivSize, sr);
+		}
+		return iv;
 	}
 
 }
