@@ -22,7 +22,7 @@ public class RegisterClient {
 		arKeyStore keystore = new arKeyStore(keystore_path, password, type);
 		
 		while(true) {
-			
+			System.out.print("> ");
 			String cmd = in.nextLine();
 			
 			if(cmd.equals("exit"))
@@ -36,11 +36,11 @@ public class RegisterClient {
 				if(keystore.contains("k" + id)) {
 					System.err.println("id already in use");
 				} else {
-					SecretKey ks = null;
+					/*SecretKey ks = null;
 					SecretKey kms = null; // TODO
 					
 					keystore.setKey("k" + id, ks);
-					keystore.setKey("km" + id, kms);
+					keystore.setKey("km" + id, kms);*/
 				}
 			} else if(cmd.equals("rm entry") || cmd.equals("remove entry") || cmd.equals("del entry") || cmd.equals("delete entry")) {
 				System.out.print("id: ");
