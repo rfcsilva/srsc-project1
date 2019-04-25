@@ -52,7 +52,7 @@ public class UDP_KDC_Server {
 
 	public static void main(String[] args) throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException {
 		if(args.length < 2) {
-			System.out.println("usage: kdc <ip> <port> <master-ciphersuit.conf> <session-ciphersuit.con>");
+			System.out.println("usage: kdc <ip> <port> <master-ciphersuit.conf> <session-ciphersuit.conf>");
 		}
 
 		my_addr = new InetSocketAddress( args[0], Integer.parseInt(args[1]) );
