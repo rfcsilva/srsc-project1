@@ -34,7 +34,7 @@ public class CryptoFactory {
 	private static final String OUTTER_MAC_PROVIDER = "outter-mac-provider";
 	private static final String INNER_MAC_PROVIDER = "inner-mac-provider";
 	private static final String HASH_PROVIDER = "hash-provider";
-	private static final String SECURE_RANDOM_PROVIDER = "secure-ramdom-provider";
+	private static final String SECURE_RANDOM_PROVIDER = "secure-random-provider";
 
 	private static final int INITIAL_MSG_NUMBER = 1;
 	private static final String IV = "iv";
@@ -99,6 +99,7 @@ public class CryptoFactory {
 	public static Cipher buildCipher(String cipherAlgorithm, int cipherMode, SecretKey key, byte[] iv, String provider) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, NoSuchProviderException {
 
 		if(provider != null) {
+			System.out.println(CIPHER_PROVIDER + ": " +provider);
 			Cipher cipher = Cipher.getInstance(cipherAlgorithm, provider);
 			if(iv != null) {
 				cipher.init(cipherMode, key, new IvParameterSpec(iv));
@@ -127,9 +128,10 @@ public class CryptoFactory {
 		Mac mac;
 		if(provider== null) 
 			mac = Mac.getInstance(macAlgorithm);
-		else
+		else {
+			System.out.println("MAC PROVIDER: " + provider);
 			mac = Mac.getInstance(macAlgorithm, provider);
-
+		}
 		mac.init(key);
 		return mac;
 	}
@@ -159,13 +161,16 @@ public class CryptoFactory {
 
 
 		//Generate IV
-		String ivString = ciphersuit_properties.getProperty(IV);
-		byte[] iv;
-		if(ivString != null)
-			iv = ArrayUtils.unparse(ivString);
-		else
-			iv = generateIv(ciphersuit_properties.getProperty(SESSION_CIPHERSUITE), Integer.parseInt(ciphersuit_properties.getProperty(IV_SIZE)), sr);
 
+		String ivString = ciphersuit_properties.getProperty(IV);
+		int ivSize = Integer.parseInt(ciphersuit_properties.getProperty(IV_SIZE));
+		byte[] iv = null;
+		if(ivSize > 0 ) {
+			if(ivString != null)
+				iv = ArrayUtils.unparse(ivString);
+			else
+				iv = generateIv(ciphersuit_properties.getProperty(SESSION_CIPHERSUITE), ivSize, sr);
+		}
 		//Build encrypt Cipher 
 		Cipher encryptCipher = null, decryptCipher = null;
 		if (keys[0] != null) {
