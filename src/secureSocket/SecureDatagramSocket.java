@@ -21,8 +21,8 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
 import cryptography.Cryptography;
-import cryptography.nonce.CounterNonceManager;
 import cryptography.nonce.NonceManager;
+import cryptography.nonce.WindowNonceManager;
 import secureSocket.exceptions.*;
 import secureSocket.secureMessages.DefaultPayload;
 import secureSocket.secureMessages.Payload;
@@ -30,6 +30,8 @@ import secureSocket.secureMessages.SecureMessage;
 import secureSocket.secureMessages.SecureMessageImplementation;
 
 public class SecureDatagramSocket {
+
+	private static final int WINDOW_SIZE = 100;
 
 	private static final long INITIAL_ID  = 1L;
 	
@@ -50,7 +52,7 @@ public class SecureDatagramSocket {
 	}
 	
 	public SecureDatagramSocket(int port, InetAddress inAddr, Cryptography cryptoManager) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException {
-		this(port, inAddr, cryptoManager, new CounterNonceManager());
+		this(port, inAddr, cryptoManager, new WindowNonceManager(WINDOW_SIZE, cryptoManager.getSecureRandom()));
 	}
 	
 	public SecureDatagramSocket(InetSocketAddress addr, Cryptography cryptoManager) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException {
@@ -62,7 +64,7 @@ public class SecureDatagramSocket {
 	}
 
 	public SecureDatagramSocket(Cryptography cryptoManager) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException {
-		this(cryptoManager, new CounterNonceManager());
+		this(cryptoManager, new WindowNonceManager(WINDOW_SIZE, cryptoManager.getSecureRandom()));
 	}
 	
 	public SecureDatagramSocket(Cryptography cryptoManager, NonceManager nonceManager) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException {
@@ -97,7 +99,7 @@ public class SecureDatagramSocket {
 
 	public void send(DatagramPacket p) throws IOException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, ShortBufferException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException {
 		byte[] message = Arrays.copyOfRange(p.getData(), 0, p.getLength());
-		Payload payload = new DefaultPayload(INITIAL_ID, nonceManager.getNonce(), message, cryptoManager);
+		Payload payload = new DefaultPayload(INITIAL_ID, nonceManager.generateNonce(), message, cryptoManager);
 		SecureMessage sm = new SecureMessageImplementation(payload);
 		byte[] secureMessageBytes = sm.serialize();
 		p.setData(secureMessageBytes);

@@ -64,7 +64,7 @@ public class CryptographyUtils {
 		return new IvParameterSpec(iv);
 	}
 	
-	public static long getNonce(SecureRandom sr) throws NoSuchAlgorithmException {
+	public static long getNonce(SecureRandom sr) {
 		
 		int size = Long.BYTES + 1;
 		byte[] tmp = new byte[size];

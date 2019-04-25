@@ -44,7 +44,7 @@ class arUDPproxy {
 
 	public static void main(String[] args) {
 
-		if (args.length != 1) {
+		if (args.length != 2) {
 			System.err.println("Erro, usar: myReceive <ciphersuite.conf> <config.properties>");
 			System.exit(-1);
 		}

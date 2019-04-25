@@ -125,7 +125,7 @@ public class DefaultPayload implements Payload {
 				dataIn.close();
 				byteIn.close();
 				
-				if( nonceManager.verifyReplay(nonce) )
+				if( nonceManager.registerNonce(nonce) )
 					throw new ReplayedNonceException("Nonce " + nonce + " was replayed!");
 				
 				return payload;
