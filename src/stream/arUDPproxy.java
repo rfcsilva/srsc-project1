@@ -46,12 +46,12 @@ class arUDPproxy {
 
 	private static final String LOCALDELIVERY = "localdelivery";
 	private static final String REMOTE = "remote";
-	private static final String ERROR_USER_INPUT = "Erro, usar: myReceive <ciphersuite.conf> <proxyProps.properties>";
+	private static final String ERROR_USER_INPUT = "Erro, usar: myReceive <ciphersuite.conf> <proxyProps.properties> <password>";
 	private static final int ERROR_CODE = -1;
 
 	public static void main(String[] args) {
 
-		if (args.length != 2) {
+		if (args.length != 3) {
 			System.err.println(ERROR_USER_INPUT);
 			System.exit(ERROR_CODE);
 		}
@@ -81,7 +81,7 @@ class arUDPproxy {
 			InetSocketAddress b_addr = new InetSocketAddress( "localhost", 8889);
 			InetSocketAddress kdc_addr = new InetSocketAddress("localhost", 8888); // TODO: ler das configs
 			
-			Cryptography master_cryptoManager = CryptoFactory.loadFromConfig(args[0]);
+			Cryptography master_cryptoManager = CryptoFactory.getInstace(args[2], args[0]);
 			KDCClient needhamClient = new NeedhamSchroederClient(kdc_addr, "a", master_cryptoManager); // TODO: read a and b from some file
 			cryptoManager = needhamClient.getSessionParameters("b", b_addr);
 			
