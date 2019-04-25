@@ -10,10 +10,9 @@ public class CryptographyDoubleMac extends AbstractCryptography {
 	
 	private Mac innerMac;
 			
-	public CryptographyDoubleMac(Cipher encryptCipher, Cipher decryptCipher, SecureRandom secureRandom, Mac innerMac, Mac outerMac) {
+	public CryptographyDoubleMac(Cipher encryptCipher, Cipher decryptCipher, Mac outerMac, Mac innerMac, SecureRandom secureRandom) {
 		super(encryptCipher, decryptCipher, outerMac, secureRandom);
 		this.innerMac = innerMac;
-		
 	}
 	
 	public Mac getInnerMac() {

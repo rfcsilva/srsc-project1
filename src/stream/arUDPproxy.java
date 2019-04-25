@@ -44,30 +44,25 @@ import secureSocket.exceptions.InvalidPayloadTypeException;
 
 class arUDPproxy {
 
-	@SuppressWarnings("resource")
 	public static void main(String[] args) {
 
-		if (args.length != 1)
-		{
-			System.err.println("Erro, usar: myReceive <ciphersuite.conf>");
+		if (args.length != 2) {
+			System.err.println("Erro, usar: myReceive <ciphersuite.conf> <config.properties>");
 			System.exit(-1);
 		}
 
 		String remote = null, destinations = null;
 
 		try {
-
-			InputStream inputStream = new FileInputStream("configs/proxy/config.properties"); // TODO: Não deveria ser um arg?
+			InputStream inputStream = new FileInputStream(args[1]);
 			Properties properties = new Properties();
 			properties.load(inputStream);
 			remote = properties.getProperty("remote");
 			destinations = properties.getProperty("localdelivery");
-
-		}catch(IOException e) {
-			System.err.println("Unable to read file " + args[0]  + " properly.");
+		} catch(IOException e) {
+			System.err.println("Unable to read file " + args[1]  + " properly.");
 			System.exit(-1);	
 		}
-
 
 		InetSocketAddress inSocketAddress = parseSocketAddress(remote);
 		Set<SocketAddress> outSocketAddressSet = Arrays.stream(destinations.split(",")).map(s -> parseSocketAddress(s)).collect(Collectors.toSet());
@@ -118,7 +113,10 @@ class arUDPproxy {
 		} catch (InvalidPayloadTypeException e) {
 			System.err.println("Payload is ivalid/unkown: " + e.getMessage());
 			System.exit(-1);
-		}catch(Exception e) {
+		} catch(IOException e) {
+			System.err.println("Unable to read file " + args[1]  + " properly.");
+			System.exit(-1);		
+		} catch(Exception e) {
 			e.printStackTrace();
 			System.exit(-1);		
 		}

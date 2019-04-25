@@ -26,6 +26,8 @@ import secureSocket.SecureDatagramSocket;
 
 class arStreamServer {
 
+	private static final String UNABLE_TO_LOAD_MOVIE_FILE = "Unable to load movie file.";
+
 	static public void main( String []args ) {
 		if (args.length != 4)
 		{
@@ -41,7 +43,7 @@ class arStreamServer {
 		try {
 			g = new DataInputStream( new FileInputStream(args[0]) );
 		} catch (FileNotFoundException e) {
-			System.err.println("Unable to load movie file.");
+			System.err.println(UNABLE_TO_LOAD_MOVIE_FILE);
 			System.exit(-1);
 		}
 		

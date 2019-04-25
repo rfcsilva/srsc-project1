@@ -21,28 +21,27 @@ import javax.crypto.ShortBufferException;
 
 import cryptography.CryptoFactory;
 import cryptography.Cryptography;
-import cryptography.CryptographyUtils;
-import cryptography.nonce.CounterNonceManager;
+import cryptography.nonce.WindowNonceManager;
 import kdc.KDCServer;
 import secureSocket.SecureDatagramSocket;
 import secureSocket.exceptions.InvalidPayloadTypeException;
 import secureSocket.secureMessages.SecureMessage;
 import secureSocket.secureMessages.SecureMessageImplementation;
-import stream.UDP_KDC_Server;
 
 public class NeedhamSchroederServer implements KDCServer {
 
 	private InetSocketAddress b_addr;
 	private Cryptography master_cryptoManager;
-	private CounterNonceManager nonceManager;
+	private WindowNonceManager nonceManager;
 
 	public NeedhamSchroederServer(InetSocketAddress b_addr, Cryptography master_cryptoManager)
 			throws InvalidKeyException, NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException,
 			CertificateException, NoSuchPaddingException, InvalidAlgorithmParameterException, IOException,
 			ShortBufferException, IllegalBlockSizeException, BadPaddingException {
+		
 		this.b_addr = b_addr;
 		this.master_cryptoManager = master_cryptoManager;
-		this.nonceManager = new CounterNonceManager(0, 1);
+		this.nonceManager = new WindowNonceManager(100, master_cryptoManager.getSecureRandom());
 	}
 
 	@Override
@@ -56,27 +55,24 @@ public class NeedhamSchroederServer implements KDCServer {
 		AtomicBoolean finished = new AtomicBoolean(false);
 
 		// Listen for incoming requests
-		listenRequests(finished, cryptoManager, master_cryptoManager); // TODO: o master cryptoManager não deveria ter
-																		// synchronized também?
-
+		listenRequests(finished, cryptoManager, master_cryptoManager);
+																		
 		while (!finished.get()) {
 			try {
 				Thread.sleep(100); // TODO : quanto tempo?
-			} catch (Exception e) {
-			}
+				} catch (Exception e) {}
 		}
 
 		return cryptoManager.get();
 	}
 
-	private void listenRequests(AtomicBoolean finished, AtomicReference<Cryptography> cryptoManager,
-			Cryptography master_cryptoManager) throws InvalidKeyException, NoSuchAlgorithmException,
-			NoSuchPaddingException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException,
-			CertificateException, IOException, ShortBufferException, IllegalBlockSizeException, BadPaddingException,
-			NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException {
+	private void listenRequests(AtomicBoolean finished, AtomicReference<Cryptography> cryptoManager, Cryptography master_cryptoManager) 
+			throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, 
+			UnrecoverableEntryException, KeyStoreException,	CertificateException, IOException, ShortBufferException, 
+			IllegalBlockSizeException, BadPaddingException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException {
 
 		SecureDatagramSocket inSocket = new SecureDatagramSocket(b_addr, master_cryptoManager);
-		inSocket.setTimeout(1 * 1000); // TODO: ISto parece pouco não?
+		inSocket.setTimeout(1 * 1000); // TODO: Isto parece pouco não?
 
 		System.out.println("Waitting for Ticket...");
 
@@ -96,25 +92,20 @@ public class NeedhamSchroederServer implements KDCServer {
 				else
 					System.err.println("Replay of: " + ns3.getNc());
 
-			} catch (SocketTimeoutException e) {
-
-			}
+			} catch (SocketTimeoutException e) {}
 		}
 
 		inSocket.close();
 	}
 
-	private void processRequest(NS3 ns3, InetSocketAddress addr, AtomicReference<Cryptography> cryptoManager,
-			AtomicBoolean finished) {
+	private void processRequest(NS3 ns3, InetSocketAddress addr, AtomicReference<Cryptography> cryptoManager, AtomicBoolean finished) {
 		new Thread(() -> {
 			try {
-				Cryptography session_cryptoManager = CryptoFactory.dessrialize(ns3.getKs()); //UDP_KDC_Server.deserializeSessionParameters(ns3.getKs());
+				Cryptography session_cryptoManager = CryptoFactory.deserialize( ns3.getKs() ); //UDP_KDC_Server.deserializeSessionParameters(ns3.getKs());
 
 				SecureDatagramSocket new_socket = new SecureDatagramSocket(session_cryptoManager);
 				new_socket.setTimeout(30 * 1000); // TODO : quanto timeout?
 
-				//long Nb = CryptographyUtils.getNonce(session_cryptoManager.getSecureRandom());
-				
 				long Nb = getNonce();
 				
 				NS4 ns4 = new NS4(Nb, session_cryptoManager);
@@ -131,7 +122,7 @@ public class NeedhamSchroederServer implements KDCServer {
 				if (ns5.getNb() == (Nb + 1)) {
 					System.out.println("Valid Challenge Answer: " + ns5.getNb());
 					cryptoManager.set(session_cryptoManager);
-					finished.set(true); // TODO: Verificar se o NONCE é válido
+					finished.set(true);
 				} else {
 					System.err.println("Invalid Challenge Answer: " + ns5.getNb() + " != " + (Nb + 1));
 				}
@@ -145,7 +136,7 @@ public class NeedhamSchroederServer implements KDCServer {
 	}
 
 	private synchronized long getNonce() {
-		return this.nonceManager.getNonce();
+		return this.nonceManager.generateNonce();
 	}
 
 	private synchronized boolean verifyReplay(long nonce) {

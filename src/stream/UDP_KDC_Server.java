@@ -54,7 +54,6 @@ public class UDP_KDC_Server {
 		if(args.length < 2) {
 			System.out.println("usage: kdc <ip> <port> <master-ciphersuit.conf> <session-ciphersuit.con>");
 		}
-		//InputStream inputStream = new FileInputStream("configs/kdc/ciphersuite.conf");
 
 		my_addr = new InetSocketAddress( args[0], Integer.parseInt(args[1]) );
 

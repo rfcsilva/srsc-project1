@@ -21,8 +21,8 @@ import javax.crypto.ShortBufferException;
 import cryptography.CryptoFactory;
 import cryptography.Cryptography;
 import cryptography.CryptographyUtils;
-import cryptography.nonce.CounterNonceManager;
 import cryptography.nonce.NonceManager;
+import cryptography.nonce.WindowNonceManager;
 import kdc.KDCClient;
 import kdc.needhamSchroeder.exceptions.InvalidChallangeReplyException;
 import kdc.needhamSchroeder.exceptions.TooManyTriesException;
@@ -36,19 +36,19 @@ import stream.UDP_KDC_Server;
 
 public class NeedhamSchroederClient implements KDCClient {
 
+	private static final int TIMEOUT = 30*1000;
+
+	private static final int WINDOW_SIZE = 100;
+	
 	private Cryptography master_cryptoManager;
 	private InetSocketAddress kdc_addr;
-	//private InetSocketAddress b_addr;
 	private String a;
 
 	private int max_tries = 3;
-	private static final int TIMEOUT = 30*1000;
 
 	public NeedhamSchroederClient(InetSocketAddress kdc_addr, String a, Cryptography master_cryptoManager) throws InvalidKeyException, NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, CertificateException, NoSuchPaddingException, InvalidAlgorithmParameterException, IOException {
 		this.kdc_addr = kdc_addr;
-		//this.b_addr = b_addr;
 		this.master_cryptoManager = master_cryptoManager;
-		//new SecureDatagramSocket(cryptoManager);
 		this.a = a;
 	}
 
@@ -59,22 +59,17 @@ public class NeedhamSchroederClient implements KDCClient {
 	@Override
 	public Cryptography getSessionParameters(String b, InetSocketAddress b_addr) throws NoSuchAlgorithmException, IOException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidChallangeReplyException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException, TooManyTriesException {
 
-		NonceManager nonceManager = new CounterNonceManager(-1, 2); // The first nonce is 1, then 3, then 5, ....
+		NonceManager nonceManager = new WindowNonceManager(WINDOW_SIZE, master_cryptoManager.getSecureRandom());
 
-		for(int i=0; i < max_tries; i++) { // TODO: se algum nonce for replay ou mau, repetir?
+		for(int i=0; i < max_tries; i++) {
 			try {
-				//long Na = CryptographyUtils.getNonce();
-				long Na = nonceManager.getNonce();
+				long Na = nonceManager.generateNonce();
 
-				System.out.println("Requesting keys... " + Na);
 				NS2 kdc_reply = requestKeys(kdc_addr, Na, nonceManager, a, b);
 
-				System.out.println("Received Keys. " + Na+1);
+				// Build the session cryptoManager
+				Cryptography session_cryptoManager =  CryptoFactory.deserialize(kdc_reply.getKs()); //UDP_KDC_Server.deserializeSessionParameters(kdc_reply.getKs()); //TODO : Trocar para o método certo
 
-				// Build the session criptoManager
-				Cryptography session_cryptoManager =  CryptoFactory.dessrialize(kdc_reply.getKs()); //UDP_KDC_Server.deserializeSessionParameters(kdc_reply.getKs()); //TODO : Trocar para o método certo
-
-				System.out.println("Sharing keys...");
 				shareKeys(b_addr, kdc_reply.getTicket(), session_cryptoManager, nonceManager);
 
 				System.out.println("Finished key establishment.");
@@ -99,6 +94,8 @@ public class NeedhamSchroederClient implements KDCClient {
 
 			//TODO: Change ID and load IDs from a config file
 			//Payload ns1 = new NS1("a".getBytes(), "b".getBytes(), Na, master_cryptoManager); // TODO: Isto não pode estar martelado
+			
+			System.out.println("Requesting keys... " + Na);
 			Payload ns1 = new NS1(a, b, Na, master_cryptoManager); 
 			SecureMessage sm = new SecureMessageImplementation(ns1);
 			socket.send(sm, kdc_addr);
@@ -110,9 +107,11 @@ public class NeedhamSchroederClient implements KDCClient {
 
 			if( nonceManager.verifyReplay(reply.getNc()) ) {
 				throw new ReplayedNonceException("KDC nonce (Nc) was replayed: " + reply.getNc());
-			} else if(reply.getNa_1() != Na+1) 
+			} else if(reply.getNa_1() != Na+1) {
 				throw new InvalidChallangeReplyException("KDC challenge answer is wrong. " + reply.getNa_1());
-
+			} else
+				System.out.println("Received Keys. " + Na+1);
+			
 			return reply;
 		} catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException
 				| InvalidAlgorithmParameterException | UnrecoverableEntryException | KeyStoreException

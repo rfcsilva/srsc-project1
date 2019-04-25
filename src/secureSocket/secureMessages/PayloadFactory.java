@@ -35,7 +35,6 @@ public class PayloadFactory {
 			ReplayedNonceException, BrokenIntegrityException, NoSuchProviderException, BrokenBarrierException, InvalidPayloadTypeException {
 
 		switch (payloadType) {
-
 		case DefaultPayload.TYPE:
 			return DefaultPayload.deserialize(rawPayload, cryptoManager, nonceManager);
 		case ClearPayload.TYPE:

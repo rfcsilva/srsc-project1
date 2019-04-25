@@ -118,7 +118,7 @@ public class NS3 implements Payload { // A -> B : {Nc, A, B, Ks }KB
 		
 		Ticket t = Ticket.deserialize(clearText); 
 		
-		Cryptography session_cryptoManager = CryptoFactory.dessrialize(t.getKs()); // TODO: .deserializeSessionParameters(Ks);
+		Cryptography session_cryptoManager = CryptoFactory.deserialize(t.getKs()); // TODO: .deserializeSessionParameters(Ks);
 		
 		/*byte[][] messageParts = session_cryptoManager.splitOuterMac(rawPayload);
 		if (!session_cryptoManager.validateOuterMac(messageParts[0], messageParts[1]))

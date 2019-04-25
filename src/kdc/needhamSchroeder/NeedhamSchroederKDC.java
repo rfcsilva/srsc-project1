@@ -9,7 +9,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
-import java.util.Base64;
 import java.util.concurrent.BrokenBarrierException;
 
 import javax.crypto.BadPaddingException;
@@ -19,9 +18,8 @@ import javax.crypto.ShortBufferException;
 
 import cryptography.CryptoFactory;
 import cryptography.CryptographyNS;
-import cryptography.CryptographyUtils;
-import cryptography.nonce.CounterNonceManager;
 import cryptography.nonce.NonceManager;
+import cryptography.nonce.WindowNonceManager;
 import kdc.KDC;
 import secureSocket.SecureDatagramSocket;
 import secureSocket.exceptions.InvalidPayloadTypeException;
@@ -37,7 +35,7 @@ public class NeedhamSchroederKDC implements KDC {
 
 	public NeedhamSchroederKDC(InetSocketAddress addr, CryptographyNS cryptoManager, String configPath) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException {
 		socket = new SecureDatagramSocket(addr, cryptoManager);
-		this.nonceManager = new CounterNonceManager(0, 2);
+		this.nonceManager = new WindowNonceManager(100, cryptoManager.getSecureRandom());
 		this.configPath = configPath;
 	}
 
@@ -104,7 +102,7 @@ public class NeedhamSchroederKDC implements KDC {
 	}
 
 	private synchronized long getNonce() {
-		return nonceManager.getNonce();
+		return nonceManager.generateNonce();
 	}
 
 	private synchronized boolean verifyReplay(long nonce) {

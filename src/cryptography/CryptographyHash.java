@@ -11,9 +11,8 @@ public class CryptographyHash extends AbstractCryptography {
 
 	private MessageDigest innerHash;
 
-	//TODO: handle exceptions gracefully
-	public CryptographyHash(Cipher encryptCipher, Cipher decryptCipher, SecureRandom secureRandom, MessageDigest innerHash, Mac outerMac) {
-		super(encryptCipher, decryptCipher, outerMac, secureRandom);
+	public CryptographyHash(Cipher encryptCipher, Cipher decryptCipher, MessageDigest innerHash, Mac outerMac, SecureRandom sr) {
+		super(encryptCipher, decryptCipher,outerMac, sr);
 		this.innerHash = innerHash;
 	}
 
@@ -51,4 +50,3 @@ public class CryptographyHash extends AbstractCryptography {
 	}
 	
 }
-

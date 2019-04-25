@@ -28,6 +28,9 @@ import util.ArrayUtils;
 
 public class DefaultPayload implements Payload {
 
+	private static final String INVALID_INNER_MAC = "Invalid Inner Mac";
+	private static final String INVALID_OUTTER_MAC = "Invalid Outter Mac";
+
 	public static final byte TYPE = 0x01;
 	//TODO: FIX NONCE MANAGER
 
@@ -52,7 +55,6 @@ public class DefaultPayload implements Payload {
 		this.innerIntegrityProof = criptoManager.computeIntegrityProof(Mp);
 		this.cipherText = criptoManager.encrypt(ArrayUtils.concat(Mp, this.innerIntegrityProof));
 		this.outterMac = criptoManager.computeOuterMac(this.cipherText);
-	
 	}
 
 	private DefaultPayload(long id, long nonce, byte[] message, byte[] ciphertext, byte[] innerMac, byte[] outterMac) {
@@ -99,16 +101,15 @@ public class DefaultPayload implements Payload {
 			InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException,
 			KeyStoreException, CertificateException, IOException, InvalidMacException, ReplayedNonceException, BrokenBarrierException, BrokenIntegrityException {
 
-
 		byte[][] messageParts = criptoManager.splitOuterMac(rawPayload);
 		if (!criptoManager.validateOuterMac(messageParts[0], messageParts[1]))
-			throw new InvalidMacException("Invalid Outer Mac");
+			throw new InvalidMacException(INVALID_OUTTER_MAC);
 		else {
 			byte[] plainText = criptoManager.decrypt(messageParts[0]);
 			byte[][] payloadParts = criptoManager.splitIntegrityProof(plainText);
 			
 			if (!criptoManager.validateIntegrityProof(payloadParts[0], payloadParts[1]))
-					throw new BrokenIntegrityException("Invalid Inner Integrity Proof");
+					throw new BrokenBarrierException(INVALID_INNER_MAC);
 			else {
 				ByteArrayInputStream byteIn = new ByteArrayInputStream(payloadParts[0]);
 				DataInputStream dataIn = new DataInputStream(byteIn);
@@ -125,7 +126,7 @@ public class DefaultPayload implements Payload {
 				dataIn.close();
 				byteIn.close();
 				
-				if( nonceManager.verifyReplay(nonce) )
+				if( nonceManager.registerNonce(nonce) )
 					throw new ReplayedNonceException("Nonce " + nonce + " was replayed!");
 				
 				return payload;

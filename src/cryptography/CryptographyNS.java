@@ -57,7 +57,7 @@ public class CryptographyNS extends AbstractCryptography implements Cryptography
 	public AbstractCryptography getCryptographyFromId(String id) throws NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, CertificateException, FileNotFoundException, IOException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException {
 		
 		SecretKey km = CryptographyUtils.getKey(key_store, password, KM + id);
-		Mac outerMac = CryptoFactory.buildMac(macAlgorithm, km);
+		Mac outerMac = CryptoFactory.initMac(macAlgorithm, km);
 		SecretKey k = CryptographyUtils.getKey(key_store, password, K + id);
 		Cipher encryptCipher = CryptoFactory.buildCipher(cipherAlgorithm, Cipher.ENCRYPT_MODE, k, iv);
 		Cipher decryptCipher = CryptoFactory.buildCipher(cipherAlgorithm, Cipher.DECRYPT_MODE, k, iv);
