@@ -42,7 +42,10 @@ import secureSocket.exceptions.InvalidPayloadTypeException;
 
 class arUDPproxy {
 
+	private static final String LOCALDELIVERY = "localdelivery";
+	private static final String REMOTE = "remote";
 	private static final String ERROR_USER_INPUT = "Erro, usar: myReceive <ciphersuite.conf> <proxyProps.properties>";
+	private static final int ERROR_CODE = -1;
 
 	@SuppressWarnings("resource")
 	public static void main(String[] args) {
@@ -50,15 +53,16 @@ class arUDPproxy {
 		if (args.length != 2)
 		{
 			System.err.println(ERROR_USER_INPUT);
-			
+			System.exit(ERROR_CODE);
+		}
 		String remote = null, destinations = null;
 
 		try {
 			InputStream inputStream = new FileInputStream(args[1]);
 			Properties properties = new Properties();
 			properties.load(inputStream);
-			remote = properties.getProperty("remote");
-			destinations = properties.getProperty("localdelivery");
+			remote = properties.getProperty(REMOTE);
+			destinations = properties.getProperty(LOCALDELIVERY);
 		} catch(IOException e) {
 			System.err.println("Unable to read file " + args[1]  + " properly.");
 			System.exit(-1);	
@@ -115,6 +119,7 @@ class arUDPproxy {
 		}
 
 	}
+
 
 	private static InetSocketAddress parseSocketAddress(String socketAddress) {
 		String[] split = socketAddress.split(":");
