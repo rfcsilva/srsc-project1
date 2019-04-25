@@ -38,7 +38,7 @@ import cryptography.CryptographyDoubleMac;
 import cryptography.CryptographyHash;
 import cryptography.CryptographyNS;
 import cryptography.CryptographyUtils;
-import kdc.KDC;
+import kdc.KDCService;
 import kdc.needhamSchroeder.NS1;
 import kdc.needhamSchroeder.NeedhamSchroederKDC;
 import secureSocket.exceptions.InvalidPayloadTypeException;
@@ -62,7 +62,7 @@ public class UDP_KDC_Server {
 		
 		Properties masterCipherSuite = CryptoFactory.loadFile(args[2]);		
 		CryptographyNS nsc = CryptographyNS.loadFromprops(masterCipherSuite);
-		KDC kdc = new NeedhamSchroederKDC(my_addr, nsc, args[3]);
+		KDCService kdc = new NeedhamSchroederKDC(my_addr, nsc, args[3]);
 		kdc.start();
 	}
 
