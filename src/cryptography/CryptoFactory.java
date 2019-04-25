@@ -62,11 +62,16 @@ public class CryptoFactory {
 	public static final String HASH_PROVIDER = "hash-provider";
 	public static final String SECURE_RANDOM_PROVIDER = "secure-random-provider";
 
-	public static Cipher buildCipher(String cipherAlgorithm, int cipherMode, SecretKey key, byte[] iv, int tagSize)
+	public static Cipher buildCipher(String cipherAlgorithm, int cipherMode, SecretKey key, byte[] iv, int tagSize, String provider)
 			throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException,
 			InvalidAlgorithmParameterException, NoSuchProviderException {
-		Cipher cipher = Cipher.getInstance(cipherAlgorithm);
-
+		
+		Cipher cipher = null;
+		if(provider.equals(""))
+			cipher = Cipher.getInstance(cipherAlgorithm);
+		else
+			cipher = Cipher.getInstance(cipherAlgorithm, provider);
+		
 		if (iv != null && iv.length > 0) {
 			if(tagSize > 0 && cipherAlgorithm.contains("GCM")) {
 				cipher.init(cipherMode, key, new GCMParameterSpec(tagSize, iv));
@@ -126,7 +131,7 @@ public class CryptoFactory {
 	public static Mac initMac(String macAlgorithm, SecretKey key, String provider) throws NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
 
 		Mac mac;
-		if(provider== null) 
+		if(provider== null || provider.equals("")) 
 			mac = Mac.getInstance(macAlgorithm);
 		else {
 			System.out.println("MAC PROVIDER: " + provider);
@@ -138,7 +143,7 @@ public class CryptoFactory {
 
 	public static MessageDigest buildHash(String hashAlgorithm, String provider) throws NoSuchAlgorithmException, NoSuchProviderException {
 
-		if(provider==null)
+		if(provider==null || provider.equals(""))
 			return MessageDigest.getInstance(hashAlgorithm);
 		else {
 			System.out.println(HASH_PROVIDER + ": " + provider);
@@ -223,7 +228,7 @@ public class CryptoFactory {
 		return ciphersuit_properties;
 	}
 
-	public byte[] serialize(String path) throws IOException, NoSuchAlgorithmException, NoSuchProviderException {
+	public static byte[] serialize(String path) throws IOException, NoSuchAlgorithmException, NoSuchProviderException {
 
 		//Load file
 		Properties ciphersuit_properties = loadFile(path);
@@ -239,30 +244,53 @@ public class CryptoFactory {
 
 		// Generate IV
 		byte[] iv = generateIv(ciphersuit_properties.getProperty(SESSION_CIPHERSUITE), Integer.parseInt(ciphersuit_properties.getProperty(IV_SIZE)), secureRandom);
-				
+
 		// Tag Size -> GCM
 		String aux = ciphersuit_properties.getProperty(TAG_SIZE);
 		int tagSize = (aux == null) ? 0 : Integer.parseInt(aux);
-		
+
 		// Hash Suite
 		String hashAlgorithm = ciphersuit_properties.getProperty(HASH_CIPHER_SUITE);
-
+		
+		//Write to buff
 		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
 		DataOutputStream dataOut = new DataOutputStream(byteOut);
 
+		//writing random number provider and algorithm
+		String secureRandomProvider = ciphersuit_properties.getProperty(SECURE_RANDOM_PROVIDER);
+		if(secureRandomProvider == null)
+			dataOut.writeUTF("");
+		else
+			dataOut.writeUTF(secureRandomProvider);
 		dataOut.writeUTF(ciphersuit_properties.getProperty(SECURE_RANDOM));
-
+		
+		//writing cipher provider and cipher suite itself
+		String cipherProvider = ciphersuit_properties.getProperty(CIPHER_PROVIDER);
+		if(cipherProvider == null)
+			dataOut.writeUTF("");
+		else
+			dataOut.writeUTF(cipherProvider);
 		dataOut.writeUTF(ciphersuit_properties.getProperty(SESSION_CIPHERSUITE));
+		
+		//writing session key	
 		dataOut.writeUTF(ciphersuit_properties.getProperty(SESSION_KEY_GEN_ALGORITHM));
 		byte[] session_key_encoded = keys[0].getEncoded();
 		dataOut.writeInt(session_key_encoded.length);
 		dataOut.write(session_key_encoded, 0, session_key_encoded.length);
 
+		//writing iv
 		dataOut.writeInt(iv.length);
 		dataOut.write(iv, 0, iv.length);
 
+		//writing tagsize
 		dataOut.writeInt(tagSize);
 
+		//writing outerMac provider and outerMac itself
+		String outerMacProvider = ciphersuit_properties.getProperty(OUTTER_MAC_PROVIDER);
+		if(outerMacProvider == null)
+			dataOut.writeUTF("");
+		else
+			dataOut.writeUTF(outerMacProvider);
 		dataOut.writeUTF(ciphersuit_properties.getProperty(OUTER_MAC_CIPHERSUITE));
 		dataOut.writeUTF(ciphersuit_properties.getProperty(OUTTER_MAC_KEY_GEN_ALGORITHM));
 		byte[] outer_mac_key_encoded = keys[2].getEncoded();
@@ -272,8 +300,20 @@ public class CryptoFactory {
 		dataOut.writeBoolean(useHash);
 
 		if(useHash) {
+			String hashProvider = ciphersuit_properties.getProperty(HASH_PROVIDER);
+			if(hashProvider == null)
+				dataOut.writeUTF("");
+			else
+				dataOut.writeUTF(hashProvider);
 			dataOut.writeUTF(hashAlgorithm);
+		
 		} else {
+			
+			String innerMacProvider = ciphersuit_properties.getProperty(INNER_MAC_PROVIDER);
+			if(innerMacProvider == null)
+				dataOut.writeUTF("");
+			else
+				dataOut.writeUTF(innerMacProvider);
 			dataOut.writeUTF(ciphersuit_properties.getProperty(INNER_MAC_CIPHERSUITE));
 			dataOut.writeUTF(ciphersuit_properties.getProperty(INNER_MAC_KEY_GEN_ALGORITHM));
 			byte[] inner_mac_key_encoded = keys[1].getEncoded();
@@ -291,14 +331,17 @@ public class CryptoFactory {
 
 		return data;
 	}
-	
+
 	public static Cryptography deserialize(byte[] rawParams ) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, NoSuchProviderException {
-		
+
 		ByteArrayInputStream byteIn = new ByteArrayInputStream(rawParams);
 		DataInputStream dataIn = new DataInputStream(byteIn);
-
+		
+		
+		String seecureRandomProvider = dataIn.readUTF();
 		String secureRandomAlgorithm = dataIn.readUTF();
-
+		
+		String cipherProvider = dataIn.readUTF();
 		String cipherAlgorithm = dataIn.readUTF();
 		String session_key_alg = dataIn.readUTF();
 		int length = dataIn.readInt();
@@ -309,9 +352,10 @@ public class CryptoFactory {
 		length = dataIn.readInt();
 		byte[] iv = new byte[length];
 		dataIn.read(iv, 0, length);
-		
+
 		int tagSize = dataIn.readInt();
 
+		String outMacProvider = dataIn.readUTF();
 		String outerMacAlgorithm = dataIn.readUTF();
 		String outer_key_alg = dataIn.readUTF();
 		length = dataIn.readInt();
@@ -322,17 +366,18 @@ public class CryptoFactory {
 		boolean useHash = dataIn.readBoolean();
 
 		Cryptography cryptoManager = null;
-		Cipher encryptCipher = CryptoFactory.buildCipher(cipherAlgorithm, Cipher.ENCRYPT_MODE, ks, iv, tagSize);
-		Cipher decryptCipher = CryptoFactory.buildCipher(cipherAlgorithm, Cipher.DECRYPT_MODE, ks, iv, tagSize);
-		Mac outerMac = CryptoFactory.initMac(outerMacAlgorithm, kms);
-		SecureRandom secureRandom = CryptoFactory.generateRandom(secureRandomAlgorithm);
-		
+		Cipher encryptCipher = CryptoFactory.buildCipher(cipherAlgorithm, Cipher.ENCRYPT_MODE, ks, iv, tagSize, cipherProvider);
+		Cipher decryptCipher = CryptoFactory.buildCipher(cipherAlgorithm, Cipher.DECRYPT_MODE, ks, iv, tagSize, cipherProvider);
+		Mac outerMac = CryptoFactory.initMac(outerMacAlgorithm, kms, outMacProvider);
+		SecureRandom secureRandom = CryptoFactory.generateRandom(secureRandomAlgorithm, seecureRandomProvider);
+
 		if(useHash) {
 			String hashAlgorithm = dataIn.readUTF();
-			MessageDigest innerHash = CryptoFactory.buildHash(hashAlgorithm);
+			MessageDigest innerHash = CryptoFactory.buildHash(hashAlgorithm, hashAlgorithm);
 
 			cryptoManager = new CryptographyHash(encryptCipher, decryptCipher, innerHash, outerMac, secureRandom);
 		} else {
+			String innerMacProvider = dataIn.readUTF();
 			String innerMacAlgorithm = dataIn.readUTF();
 			String inner_key_alg = dataIn.readUTF();
 			length = dataIn.readInt();
@@ -340,14 +385,14 @@ public class CryptoFactory {
 			dataIn.read(inner_mac_key_encoded, 0, length);
 			SecretKey kms2 = new SecretKeySpec(inner_mac_key_encoded, inner_key_alg);
 
-			Mac innerMac = CryptoFactory.initMac(innerMacAlgorithm, kms2);
+			Mac innerMac = CryptoFactory.initMac(innerMacAlgorithm, kms2, innerMacProvider);
 
 			cryptoManager = new CryptographyDoubleMac(encryptCipher, decryptCipher, innerMac, outerMac, secureRandom);
 		}
-		
+
 		return cryptoManager;
 	}
-	
+
 	public static SecretKey generateKey(String key_gen_alg, int key_size ) throws NoSuchAlgorithmException {
 		return CryptographyUtils.generateKey(key_gen_alg, key_size);
 	}
