@@ -40,8 +40,8 @@ public class NS1 implements Payload {
 	// private static Cryptography2 criptoService;
 
 	// Payload data
-	private byte[] a;
-	private byte[] b;
+	private String a;
+	private String b;
 	private long na;
 	private byte[] message;
 	private byte[] outerMac;
@@ -49,21 +49,21 @@ public class NS1 implements Payload {
 	private Cryptography criptoManagerA;
 	private Cryptography criptoManagerB;
 
-	public NS1(byte[] a, byte[] b, long Na, Cryptography cryptoManager)
+	public NS1(String a2, String b2, long Na, Cryptography cryptoManager)
 			throws IOException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException,
 			NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException,
 			IllegalBlockSizeException, BadPaddingException, ShortBufferException {
 
-		this.a = a;
-		this.b = b;
+		this.a = a2;
+		this.b = b2;
 		this.na = Na;
 
-		this.message = buildMessage(a, b, Na);
+		this.message = buildMessage(a2, b2, Na);
 
 		this.outerMac = cryptoManager.computeOuterMac(message);
 	}
 
-	private NS1(byte[] a, byte[] b, long Na, byte[] outerMac, Cryptography criptoManagerA, Cryptography criptoManagerB) {
+	private NS1(String a, String b, long Na, byte[] outerMac, Cryptography criptoManagerA, Cryptography criptoManagerB) {
 		this.a = a;
 		this.b = b;
 		this.na = Na;
@@ -72,14 +72,18 @@ public class NS1 implements Payload {
 		this.criptoManagerB= criptoManagerB;
 	}
 
-	private static byte[] buildMessage(byte[] a, byte[] b, long Na) throws IOException {
+	private static byte[] buildMessage(String a, String b, long Na) throws IOException {
 		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
 		DataOutputStream dataOut = new DataOutputStream(byteOut);
 
-		dataOut.writeInt(a.length);
+		/*dataOut.writeInt(a.length);
 		dataOut.write(a, 0, a.length);
 		dataOut.writeInt(b.length);
-		dataOut.write(b, 0, b.length);
+		dataOut.write(b, 0, b.length);*/
+		
+		dataOut.writeUTF(a);
+		dataOut.writeUTF(b);
+		
 		dataOut.writeLong(Na);
 
 		dataOut.flush();
@@ -116,14 +120,16 @@ public class NS1 implements Payload {
 		DataInputStream dataIn = new DataInputStream(byteIn);
 
 		//read a
-		int a_size = dataIn.readInt();
+		/*int a_size = dataIn.readInt();
 		byte[] a  = new byte[a_size];
 		dataIn.read(a, 0, a_size);
 		
 		//read b
 		int b_size = dataIn.readInt();
 		byte[] b  = new byte[b_size];
-		dataIn.read(b, 0, b_size);
+		dataIn.read(b, 0, b_size);*/
+		String a = dataIn.readUTF();
+		String b = dataIn.readUTF();
 
 		long Na = dataIn.readLong();
 
@@ -163,11 +169,11 @@ public class NS1 implements Payload {
 		return this.criptoManagerB;
 	}
 	
-	public byte[] getA() {
+	public String getA() {
 		return a;
 	}
 	
-	public byte[] getB() {
+	public String getB() {
 		return b;
 	}
 	

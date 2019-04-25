@@ -21,101 +21,99 @@ import javax.crypto.ShortBufferException;
 import cryptography.CryptoFactory;
 import cryptography.Cryptography;
 import cryptography.CryptographyUtils;
+import cryptography.nonce.CounterNonceManager;
+import cryptography.nonce.NonceManager;
 import kdc.KDCClient;
 import kdc.needhamSchroeder.exceptions.InvalidChallangeReplyException;
+import kdc.needhamSchroeder.exceptions.TooManyTriesException;
 import secureSocket.SecureDatagramSocket;
 import secureSocket.exceptions.InvalidPayloadTypeException;
+import secureSocket.exceptions.ReplayedNonceException;
 import secureSocket.secureMessages.Payload;
 import secureSocket.secureMessages.SecureMessage;
 import secureSocket.secureMessages.SecureMessageImplementation;
 import stream.UDP_KDC_Server;
 
-
 public class NeedhamSchroederClient implements KDCClient {
-	
-	private static final String PATH_TO_CONFIG = "./configs/server/ciphersuite.conf";
-	
-	private Cryptography cryptoManager;
+
+	private Cryptography master_cryptoManager;
 	private InetSocketAddress kdc_addr;
-	private InetSocketAddress b_addr;
-	public NeedhamSchroederClient(InetSocketAddress kdc_addr, InetSocketAddress b_addr) throws InvalidKeyException, NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, CertificateException, NoSuchPaddingException, InvalidAlgorithmParameterException, IOException {
-		this.kdc_addr = kdc_addr;
-		this.b_addr = b_addr;
-		cryptoManager = CryptoFactory.loadFromConfig(PATH_TO_CONFIG);
-		new SecureDatagramSocket(cryptoManager);
-	}
-	
+	//private InetSocketAddress b_addr;
+	private String a;
+
 	private int max_tries = 3;
-	
 	private static final int TIMEOUT = 30*1000;
+
+	public NeedhamSchroederClient(InetSocketAddress kdc_addr, String a, Cryptography master_cryptoManager) throws InvalidKeyException, NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, CertificateException, NoSuchPaddingException, InvalidAlgorithmParameterException, IOException {
+		this.kdc_addr = kdc_addr;
+		//this.b_addr = b_addr;
+		this.master_cryptoManager = master_cryptoManager;
+		//new SecureDatagramSocket(cryptoManager);
+		this.a = a;
+	}
+
+	public void setMaxTries(int tries) {
+		this.max_tries = tries;
+	}
 	
 	@Override
-	public Cryptography getSessionParameters() throws NoSuchAlgorithmException, IOException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidChallangeReplyException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException {
-		
-		
-		
+	public Cryptography getSessionParameters(String b, InetSocketAddress b_addr) throws NoSuchAlgorithmException, IOException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidChallangeReplyException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException, TooManyTriesException {
+
+		NonceManager nonceManager = new CounterNonceManager(0, 3);
+
 		for(int i=0; i < max_tries; i++) { // TODO: se algum nonce for replay ou mau, repetir?
-		    try {
-		    	long Na = CryptographyUtils.getNonce();
-		    	
-		    	System.out.println("Requesting keys...");
-				NS2 kdc_reply = requestKeys(kdc_addr, Na);
-				System.out.println("Received Keys.");
-				
-				// Build a criptoManager
-				Cryptography session_cryptoManager = UDP_KDC_Server.deserializeSessionParameters(kdc_reply.getKs());
-				
+			try {
+				//long Na = CryptographyUtils.getNonce();
+				long Na = nonceManager.getNonce();
+
+				System.out.println("Requesting keys... " + Na);
+				NS2 kdc_reply = requestKeys(kdc_addr, Na, nonceManager, a, b);
+
+				System.out.println("Received Keys. " + Na+1);
+
+				// Build the session criptoManager
+				Cryptography session_cryptoManager = UDP_KDC_Server.deserializeSessionParameters(kdc_reply.getKs()); //TODO : Trocar para o método certo
+
 				System.out.println("Sharing keys...");
-				shareKeys(b_addr, kdc_reply.getTicket(), session_cryptoManager);
-				
+				shareKeys(b_addr, kdc_reply.getTicket(), session_cryptoManager, nonceManager);
+
 				System.out.println("Finished key establishment.");
-				
-				//try{ Thread.sleep(10*1000); } catch(Exception e) {
-				//};
-				
+
 				return session_cryptoManager;
-		    } catch (SocketTimeoutException e) {
-		        // Try again
-		    }
+			} catch (SocketTimeoutException e) {
+				// Try again
+			} catch (ReplayedNonceException e) {
+				System.err.println(e.getMessage());
+			} catch (InvalidChallangeReplyException e) {
+				System.err.println(e.getMessage());
+			}
 		}
-		
-		// TODO: Too many tries -> O que fazer?
-		
-		return null;
+
+		throw new TooManyTriesException("" + max_tries);
 	}
-	
-	private NS2 requestKeys(InetSocketAddress kdc_addr, long Na) throws IOException, InvalidChallangeReplyException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException {
+
+	private NS2 requestKeys(InetSocketAddress kdc_addr, long Na, NonceManager nonceManager, String a, String b) throws IOException, InvalidChallangeReplyException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException, ReplayedNonceException {
 		try {
-			SecureDatagramSocket socket = new SecureDatagramSocket(cryptoManager);
+			SecureDatagramSocket socket = new SecureDatagramSocket(master_cryptoManager);
 			socket.setTimeout(TIMEOUT); // 30 s -> passar a constante
-						
+
 			//TODO: Change ID and load IDs from a config file
-			Payload ns1 = new NS1("a".getBytes(), "b".getBytes(), Na, cryptoManager);
+			//Payload ns1 = new NS1("a".getBytes(), "b".getBytes(), Na, master_cryptoManager); // TODO: Isto não pode estar martelado
+			Payload ns1 = new NS1(a, b, Na, master_cryptoManager); 
 			SecureMessage sm = new SecureMessageImplementation(ns1);
 			socket.send(sm, kdc_addr);
-			
+
 			// Receive reply from KDC
 			socket.receive(sm); // TODO: comparar os IPs de onde enviei e de onde veio?
-			
+
 			NS2 reply = (NS2) sm.getPayload();
-			
-			if(reply.getNa_1() != Na+1) throw new InvalidChallangeReplyException("Na recieved diffent from the expected.");
-			
-			System.out.println(reply.getNa_1() + " "
-						     + reply.getNc() + " "
-						     + new String(reply.getB())  + " \n"
-						     + Base64.getEncoder().encodeToString(reply.getKs()) + " \n"
-						     + Base64.getEncoder().encodeToString(reply.getTicket()));
-			
-			// Receive reply from KDC
-			/*socket.receive(p);
-			byte[] reply = Arrays.copyOfRange(p.getData(), 0, p.getLength());
-			
-			// TODO : como fazer deserialize?
-			System.out.println(new String(reply)); // temp*/
-			
+
+			if( nonceManager.verifyReplay(reply.getNc()) ) {
+				throw new ReplayedNonceException("KDC nonce (Nc) was replayed: " + reply.getNc());
+			} else if(reply.getNa_1() != Na+1) 
+				throw new InvalidChallangeReplyException("KDC challenge answer is wrong. " + reply.getNa_1());
+
 			return reply;
-			
 		} catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException
 				| InvalidAlgorithmParameterException | UnrecoverableEntryException | KeyStoreException
 				| CertificateException | IllegalBlockSizeException | BadPaddingException | ShortBufferException e) {
@@ -124,35 +122,39 @@ public class NeedhamSchroederClient implements KDCClient {
 		}
 		return null;
 	}  
-	
-	private void shareKeys(InetSocketAddress b_addr, byte[] ticket, Cryptography session_cryptoManager) throws IOException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException {
+
+	private void shareKeys(InetSocketAddress b_addr, byte[] ticket, Cryptography session_cryptoManager, NonceManager nonceManager) throws IOException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException, ReplayedNonceException {
 		try {
 			SecureDatagramSocket new_socket = new SecureDatagramSocket(session_cryptoManager);
 			new_socket.setTimeout(TIMEOUT);
-			
+
 			Payload ns3 = new NS3(ticket, session_cryptoManager);
-			
+
 			System.out.println("Sending Ticket to B ...");
 			SecureMessage sm = new SecureMessageImplementation(ns3);
 			new_socket.send(sm, b_addr);
-			
+
 			// Receive Challenge
 			sm = new SecureMessageImplementation();
 			InetSocketAddress addr = new_socket.receive(sm); // TODO: trocar a função de Na+1 e assim para uma chamada a uma funçção challenge que pode ter difenets implemneações
-			System.out.println("Received Challenge.");
-			
-			NS4 ns4 = ((NS4)sm.getPayload());
-			System.out.println("Nb: " + ns4.getNb());
-			
-			long Nb_1 = (ns4.getNb() + 1);
-			
-			System.out.println("Nb_1: " + Nb_1);
-			
-			System.out.println("Sending Challenge result ...");
-			ns4 = new NS4(Nb_1, session_cryptoManager);
-			sm = new SecureMessageImplementation(ns4);
-			new_socket.send(sm, addr);
-			
+			long Nb =((NS4)sm.getPayload()).getNb();
+
+			System.out.println("Received Challenge. " + Nb);
+
+			if(nonceManager.verifyReplay(Nb)) {
+				// Compute Reply
+				long Nb_1 = (Nb + 1);
+
+				// Update last seen nonce
+				nonceManager.verifyReplay(Nb_1);
+
+				System.out.println("Sending Challenge result ... " + Nb_1);
+				NS4 ns4 = new NS4(Nb_1, session_cryptoManager);
+				sm = new SecureMessageImplementation(ns4);
+				new_socket.send(sm, addr);
+			} else {
+				throw new ReplayedNonceException("B challenge was replayed: " + Nb);
+			}
 		} catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException
 				| InvalidAlgorithmParameterException | UnrecoverableEntryException | KeyStoreException
 				| CertificateException | IllegalBlockSizeException | BadPaddingException | ShortBufferException e) {
@@ -160,16 +162,16 @@ public class NeedhamSchroederClient implements KDCClient {
 			e.printStackTrace();
 		}
 	}  
-	
+
 	// KDC Client returns CriptoMananger
 	// Alterar construtor do SecureSocket para receber CriptoManager
 
 	// A -> KDC : A, B, Na
 	// KDC -> A : {Na+1, Nc, Ks , B, { {Nc, A, B, Ks}KB, MacTiket Kb}  }KA + MAC Ka	 
-	
+
 	// A -> B : {Nc, A, B, Ks }KB
 	// B -> A : {Nb }Ks
 	// A -> B : {Nb+1 }Ks
-		
+
 }
 

@@ -24,25 +24,25 @@ public class NS2 implements Payload { //{Na+1, Nc, Ks , B, {Nc, A, B, Ks}KB }KA
 	private long Na_1;
 	private long Nc;
 	private byte[] Ks;
-	private byte[] b;
+	private String b;
 	private byte[] ticket;
 	private byte[] cipherText;
 	private byte[] outerMac;
 	
-	public NS2(long Na_1, long Nc, byte[] Ks, byte[] a, byte[] b, Cryptography cryptoManagerB, Cryptography cryptoManagerA) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, ShortBufferException, IOException { 
+	public NS2(long Na_1, long Nc, byte[] Ks, String a, String b, Cryptography cryptoManagerB, Cryptography cryptoManagerA) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, ShortBufferException, IOException { 
 		this.Na_1 = Na_1;
 		this.Nc = Nc;
 		this.Ks = Ks;
 		this.b = b;
 		
-		this.ticket = buildTicket(Nc, a, b, Ks, cryptoManagerB);
+		this.ticket = buildTicket(Nc, a, b, Ks, cryptoManagerB); // TODO: ir para a class da bina
 
 		this.cipherText = buildPayload(Na_1, Nc, Ks, b, ticket, cryptoManagerA);
 		
 		this.outerMac = cryptoManagerA.computeOuterMac(cipherText);
 	}
 	
-	private NS2(long Na_1, long Nc, byte[] Ks, byte[] b, byte[] ticket, byte[] cipherText, byte[] outerMac) {
+	private NS2(long Na_1, long Nc, byte[] Ks, String b, byte[] ticket, byte[] cipherText, byte[] outerMac) {
 		this.Na_1 = Na_1;
 		this.Nc = Nc;
 		this.Ks = Ks;
@@ -53,15 +53,19 @@ public class NS2 implements Payload { //{Na+1, Nc, Ks , B, {Nc, A, B, Ks}KB }KA
 	}
 	
 	// TODO : secalhar devia ser construído de fora desta class e ter uma class Ticket que constroi e deserializa para depois a serialização e desirialização disto estar no mesmo sitio
-	private byte[] buildTicket(long Nc, byte[] a, byte[] b, byte[] Ks, Cryptography cryptoManagerB) throws IOException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, ShortBufferException {
+	private byte[] buildTicket(long Nc, String a, String b, byte[] Ks, Cryptography cryptoManagerB) throws IOException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, ShortBufferException {
 		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
 		DataOutputStream dataOut = new DataOutputStream(byteOut);
 
 		dataOut.writeLong(Nc);
-		dataOut.writeInt(a.length);
+		/*dataOut.writeInt(a.length);
 		dataOut.write(a, 0, a.length);
-		dataOut.writeInt(b.length);
-		dataOut.write(b, 0, b.length);
+		dataOut.writeInt(b2.length);
+		dataOut.write(b2, 0, b2.length);*/
+		
+		dataOut.writeUTF(a);
+		dataOut.writeUTF(b);
+		
 		dataOut.writeInt(Ks.length);
 		dataOut.write(Ks, 0, Ks.length);
 
@@ -76,7 +80,7 @@ public class NS2 implements Payload { //{Na+1, Nc, Ks , B, {Nc, A, B, Ks}KB }KA
 		return cryptoManagerB.encrypt(msg);
 	}
 	
-	private byte[] buildPayload(long Na_1, long Nc, byte[] Ks, byte[] b, byte[] ticket, Cryptography cryptoManagerA) throws IOException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, ShortBufferException {
+	private byte[] buildPayload(long Na_1, long Nc, byte[] Ks, String b, byte[] ticket, Cryptography cryptoManagerA) throws IOException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, ShortBufferException {
 		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
 		DataOutputStream dataOut = new DataOutputStream(byteOut);
 
@@ -84,8 +88,11 @@ public class NS2 implements Payload { //{Na+1, Nc, Ks , B, {Nc, A, B, Ks}KB }KA
 		dataOut.writeLong(Nc);
 		dataOut.writeInt(Ks.length);
 		dataOut.write(Ks, 0, Ks.length);
-		dataOut.writeInt(b.length);
-		dataOut.write(b, 0, b.length);
+		/*dataOut.writeInt(b.length);
+		dataOut.write(b, 0, b.length);*/
+		
+		dataOut.writeUTF(b);
+		
 		dataOut.writeInt(ticket.length);
 		dataOut.write(ticket, 0, ticket.length);
 
@@ -118,9 +125,10 @@ public class NS2 implements Payload { //{Na+1, Nc, Ks , B, {Nc, A, B, Ks}KB }KA
 			byte[] Ks = new byte[length];
 			dataIn.read(Ks, 0, length);
 			
-			length = dataIn.readInt();
+			/*length = dataIn.readInt();
 			byte[] b = new byte[length];
-			dataIn.read(b, 0, length);
+			dataIn.read(b, 0, length);*/
+			String b = dataIn.readUTF();
 			
 			length = dataIn.readInt();
 			byte[] ticket = new byte[length];
@@ -160,7 +168,7 @@ public class NS2 implements Payload { //{Na+1, Nc, Ks , B, {Nc, A, B, Ks}KB }KA
 		return Ks;
 	}
 
-	public byte[] getB() {
+	public String getB() {
 		return b;
 	}
 

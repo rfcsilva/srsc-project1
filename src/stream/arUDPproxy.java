@@ -59,7 +59,7 @@ class arUDPproxy {
 
 		try {
 
-			InputStream inputStream = new FileInputStream("configs/proxy/config.properties");
+			InputStream inputStream = new FileInputStream("configs/proxy/config.properties"); // TODO: Não deveria ser um arg?
 			Properties properties = new Properties();
 			properties.load(inputStream);
 			remote = properties.getProperty("remote");
@@ -84,8 +84,9 @@ class arUDPproxy {
 			InetSocketAddress b_addr = new InetSocketAddress( "localhost", 8889);
 			InetSocketAddress kdc_addr = new InetSocketAddress("localhost", 8888); // TODO: ler das configs
 			
-			KDCClient needhamClient = new NeedhamSchroederClient(kdc_addr, b_addr);
-			cryptoManager = needhamClient.getSessionParameters();
+			Cryptography master_cryptoManager = CryptoFactory.loadFromConfig(args[0]);
+			KDCClient needhamClient = new NeedhamSchroederClient(kdc_addr, "a", master_cryptoManager); // TODO: read a and b from some file
+			cryptoManager = needhamClient.getSessionParameters("b", b_addr);
 			
 			inSocket = new SecureDatagramSocket(inSocketAddress, cryptoManager);
 			outSocket = new DatagramSocket();

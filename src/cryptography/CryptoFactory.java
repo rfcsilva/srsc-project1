@@ -177,9 +177,7 @@ public class CryptoFactory {
 	}
 
 	public static SecureRandom generateRandom(String secureRandomAlgorithm ) throws NoSuchAlgorithmException {
-
 		return java.security.SecureRandom.getInstance(secureRandomAlgorithm);
-
 	}
 
 	private static Properties loadFile(String path) throws IOException {
@@ -189,7 +187,7 @@ public class CryptoFactory {
 		return ciphersuit_properties;
 	}
 
-	public byte[] serialize(String path) throws IOException, NoSuchAlgorithmException {
+	public static byte[] serialize(String path) throws IOException, NoSuchAlgorithmException {
 
 		//Load file
 		Properties ciphersuit_properties = loadFile(path);
@@ -259,8 +257,6 @@ public class CryptoFactory {
 		byteOut.close();
 
 		return msg;
-
-
 	}
 
 
