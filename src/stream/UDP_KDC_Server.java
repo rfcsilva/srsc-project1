@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.KeyFactory;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.MessageDigest;
@@ -60,7 +61,7 @@ public class UDP_KDC_Server {
 		System.out.println("KDC Server ready to receive...");
 		
 		Properties masterCipherSuite = CryptoFactory.loadFile(args[2]);
-		SecureRandom sr = CryptoFactory.generateRandom(masterCipherSuite.getProperty(CryptoFactory.SECURE_RANDOM));
+		SecureRandom sr = CryptoFactory.generateRandom(masterCipherSuite.getProperty(CryptoFactory.SECURE_RANDOM), masterCipherSuite.getProperty(CryptoFactory.SECURE_RANDOM_PROVIDER));
 		String path = masterCipherSuite.getProperty(CryptoFactory.KEYSTORE);
 		String password = masterCipherSuite.getProperty(CryptoFactory.KEYSTORE_PASSWORD);
 		String type = masterCipherSuite.getProperty(CryptoFactory.KEYSTORE_TYPE);
