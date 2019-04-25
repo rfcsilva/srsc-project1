@@ -22,13 +22,17 @@ import secureSocket.SecureDatagramSocket;
 
 class arStreamServer {
 
+	private static final String ALORITHM_NOT_FOUND = "Alorithm not found: ";
+	private static final String DONE_PACKETS_SENT = "DONE! packets sent: ";
+	private static final String ERROR_USER_INPUT_2 = "        or: mySend <movie> <ip-unicast-address> <port> <ciphersuite.conf>";
+	private static final String ERROR_USER_INPUT = "Erro, usar: mySend <movie> <ip-multicast-address> <port> <ciphersuite.conf>";
 	private static final String UNABLE_TO_LOAD_MOVIE_FILE = "Unable to load movie file.";
 
 	static public void main( String []args ) {
 		if (args.length != 4)
 		{
-			System.out.println("Erro, usar: mySend <movie> <ip-multicast-address> <port> <ciphersuite.conf>");
-			System.out.println("        or: mySend <movie> <ip-unicast-address> <port> <ciphersuite.conf>");
+			System.out.println(ERROR_USER_INPUT);
+			System.out.println(ERROR_USER_INPUT_2);
 			System.exit(-1);
 		}
 
@@ -45,8 +49,6 @@ class arStreamServer {
 		
 		try {
 		byte[] buff = new byte[65000];
-		//MulticastSocket s = new MulticastSocket();
-		//DatagramSocket s = new DatagramSocket();
 		Cryptography cryptoManager = CryptoFactory.loadFromConfig(args[3]);
 		SecureDatagramSocket socket = new SecureDatagramSocket(cryptoManager);
 		InetSocketAddress addr = new InetSocketAddress( args[1], Integer.parseInt(args[2]));
@@ -71,7 +73,7 @@ class arStreamServer {
 		g.close();
 		socket.close();
 
-		System.out.println("DONE! packets sent: "+count);
+		System.out.println(DONE_PACKETS_SENT+count);
 		}catch(InvalidKeyException e) {
 			
 		} catch (IOException e) {
@@ -81,7 +83,7 @@ class arStreamServer {
 			e.printStackTrace();
 			System.exit(-1);
 		} catch (NoSuchAlgorithmException e) {
-			System.err.println("Alorithm not found: " + e.getMessage());
+			System.err.println(ALORITHM_NOT_FOUND + e.getMessage());
 			System.exit(-1);
 		} catch (Exception e) {
 			e.printStackTrace();
