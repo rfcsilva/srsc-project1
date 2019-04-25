@@ -455,19 +455,10 @@ public class CryptoFactory {
 	public static AbstractCryptography getInstace(String password, String cipherSuitePath) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, NoSuchProviderException, NoSuchPaddingException, InvalidAlgorithmParameterException {
 		
 		Properties props = loadFile(cipherSuitePath);
-		int kaIterations = Integer.parseInt( props.getProperty(KA_ITERATIONS, DEFAULT_ITERATIONS_AS_STRING) );
-		int kmIerations = Integer.parseInt( props.getProperty(KM_ITERATIONS, DEFAULT_ITERATIONS_AS_STRING) );
-		String keyGenAlgorithm = props.getProperty(KEY_GEN_ALGORITHM, PBKDF2_WITH_HMAC_SHA512);
-		String keySpecAlgorithm = props.getProperty(KEY_SPEC_ALGORITM, DEFAULT_ALGORITHM);
-		int ka_key_size = Integer.parseInt(props.getProperty(KA_KEY_SIZE, DEFAULT_KEY_SIZE));
-		int km_key_size = Integer.parseInt(props.getProperty(KM_KEY_SIZE, DEFAULT_KEY_SIZE));
-		
-		SecretKey ka = CryptographyUtils.generateKey(password, SALT, kaIterations, keyGenAlgorithm, keySpecAlgorithm, ka_key_size);
-		SecretKey km = CryptographyUtils.generateKey(password, SALT, kmIerations, keyGenAlgorithm, keySpecAlgorithm, km_key_size);
-					
+		SecretKey[] keys = genKeysFromPassword(password, props);
+				
 		String cipherAlgorithm = props.getProperty(SESSION_CIPHERSUITE, DEFAULT_SESSION_CIPHERSUITE);
-		
-		
+	
 		SecureRandom sr = generateRandom(props.getProperty(SECURE_RANDOM, DEFAULT_SECURE_RANDOM_ALGORITHM), props.getProperty(SECURE_RANDOM_PROVIDER, DEFAULT_SECURE_RANDOM_PROVIDER));
 		byte[] iv = readIv(props, sr);
 		int tagSize = Integer.parseInt(props.getProperty(TAG_SIZE, DEFAULT_TAG_SIZE));
@@ -475,9 +466,9 @@ public class CryptoFactory {
 		String mac_provider = props.getProperty(OUTTER_MAC_PROVIDER);
 		String macAlgorithm = props.getProperty(OUTER_MAC_CIPHERSUITE, DEFAULT_OUTER_MAC);
 		
-		Cipher encryptCipher = buildCipher(cipherAlgorithm, Cipher.ENCRYPT_MODE, ka, iv, tagSize, cipher_provider);
-		Cipher decryptCipher = buildCipher(cipherAlgorithm, Cipher.DECRYPT_MODE, ka, iv, tagSize, cipher_provider);
-		Mac outerMac = initMac(macAlgorithm, km, mac_provider);
+		Cipher encryptCipher = buildCipher(cipherAlgorithm, Cipher.ENCRYPT_MODE, keys[0], iv, tagSize, cipher_provider);
+		Cipher decryptCipher = buildCipher(cipherAlgorithm, Cipher.DECRYPT_MODE, keys[0], iv, tagSize, cipher_provider);
+		Mac outerMac = initMac(macAlgorithm, keys[1], mac_provider);
 		
 		return new AbstractCryptography(encryptCipher, decryptCipher, outerMac, sr) {
 			
@@ -496,6 +487,21 @@ public class CryptoFactory {
 				return null;
 			}
 		};
+	}
+
+	public static SecretKey[] genKeysFromPassword(String password, Properties props) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+		
+		int kaIterations = Integer.parseInt( props.getProperty(KA_ITERATIONS, DEFAULT_ITERATIONS_AS_STRING) );
+		int kmIerations = Integer.parseInt( props.getProperty(KM_ITERATIONS, DEFAULT_ITERATIONS_AS_STRING) );
+		String keyGenAlgorithm = props.getProperty(KEY_GEN_ALGORITHM, PBKDF2_WITH_HMAC_SHA512);
+		String keySpecAlgorithm = props.getProperty(KEY_SPEC_ALGORITM, DEFAULT_ALGORITHM);
+		int ka_key_size = Integer.parseInt(props.getProperty(KA_KEY_SIZE, DEFAULT_KEY_SIZE));
+		int km_key_size = Integer.parseInt(props.getProperty(KM_KEY_SIZE, DEFAULT_KEY_SIZE));
+		
+		SecretKey ka = CryptographyUtils.generateKey(password, SALT, kaIterations, keyGenAlgorithm, keySpecAlgorithm, ka_key_size);
+		SecretKey km = CryptographyUtils.generateKey(password, SALT, kmIerations, keyGenAlgorithm, keySpecAlgorithm, km_key_size);
+		
+		return new SecretKey[] {ka,km};
 	}
 
 	public static byte[] readIv(Properties props, SecureRandom sr) {

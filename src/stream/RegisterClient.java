@@ -1,7 +1,12 @@
 package stream;
 
+import java.util.Properties;
 import java.util.Scanner;
 
+import javax.crypto.SecretKey;
+
+import cryptography.CryptoFactory;
+import util.CryptographyUtils;
 import util.arKeyStore;
 
 public class RegisterClient {
@@ -36,11 +41,13 @@ public class RegisterClient {
 				if(keystore.contains("k" + id)) {
 					System.err.println("id already in use");
 				} else {
-					SecretKey ks = null;
-					SecretKey kms = null; // TODO
 					
-					keystore.setKey("k" + id, ks);
-					keystore.setKey("km" + id, kms);
+					System.out.println("Properties File path:");
+					Properties props = CryptoFactory.loadFile(in.nextLine());
+					SecretKey[] keys = CryptoFactory.genKeysFromPassword(user_password, props);
+					
+					keystore.setKey("k" + id, keys[0]);
+					keystore.setKey("km" + id, keys[1]);
 				}
 			} else if(cmd.equals("rm entry") || cmd.equals("remove entry") || cmd.equals("del entry") || cmd.equals("delete entry")) {
 				System.out.print("id: ");
