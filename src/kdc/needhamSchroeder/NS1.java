@@ -7,24 +7,19 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
-import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
 
 import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.Mac;
 import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
 import javax.crypto.ShortBufferException;
 
-import cryptography.CryptoFactory;
+import cryptography.AbstractCryptography;
 import cryptography.Cryptography;
-import cryptography.CryptographyHash;
-import cryptography.CryptographyUtils;
+import cryptography.CryptographyNS;
 import secureSocket.exceptions.BrokenIntegrityException;
 import secureSocket.exceptions.InvalidMacException;
 import secureSocket.exceptions.ReplayedNonceException;
@@ -136,23 +131,8 @@ public class NS1 implements Payload {
 		dataIn.close();
 		byteIn.close();
 		
-		// TODO: Isto não pode estar assim. Esta info deveria vir toda de fora
-		KeyStore key_store = CryptographyUtils.loadKeyStrore("./configs/kdc/kdc-keystore.p12", "SRSC1819", "PKCS12");
-		SecretKey kma = CryptographyUtils.getKey(key_store, "SRSC1819", "Km" + new String(a));
-		Mac outerMacA = CryptoFactory.buildMac("HMACSHA256", kma); // TODO: passar para CryptographyUtils
-		SecretKey ka = CryptographyUtils.getKey(key_store, "SRSC1819", "K" + new String(a));
-		byte[] iv = new byte[] {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15};
-		Cipher encryptCipherA = CryptoFactory.buildCipher("AES/CTR/PKCS5Padding", Cipher.ENCRYPT_MODE, ka, iv);
-		Cipher decryptCipherA = CryptoFactory.buildCipher("AES/CTR/PKCS5Padding", Cipher.DECRYPT_MODE, ka, iv);
-		
-		SecretKey kmb = CryptographyUtils.getKey(key_store, "SRSC1819", "Km" + new String(b));
-		Mac outerMacB = CryptoFactory.buildMac("HMACSHA256", kmb); // TODO: passar para CryptographyUtils
-		SecretKey kb = CryptographyUtils.getKey(key_store, "SRSC1819", "K" + new String(b));
-		Cipher encryptCipherB = CryptoFactory.buildCipher("AES/CTR/PKCS5Padding", Cipher.ENCRYPT_MODE, kb, iv);
-		Cipher decryptCipherB = CryptoFactory.buildCipher("AES/CTR/PKCS5Padding", Cipher.DECRYPT_MODE, kb, iv);
-		
-		Cryptography criptoManagerA = new CryptographyHash(encryptCipherA, decryptCipherA, null, null, outerMacA);
-		Cryptography criptoManagerB = new CryptographyHash(encryptCipherB, decryptCipherB, null, null, outerMacB);
+		AbstractCryptography criptoManagerA = ((CryptographyNS) criptoManager).getCryptographyFromId(new String(a));
+		AbstractCryptography criptoManagerB = ((CryptographyNS) criptoManager).getCryptographyFromId(new String(b));
 		
 		byte[][] messageParts = criptoManagerA.splitOuterMac(rawPayload);
 		if (!criptoManagerA.validateOuterMac(messageParts[0], messageParts[1]))

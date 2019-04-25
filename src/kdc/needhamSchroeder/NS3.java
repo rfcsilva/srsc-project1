@@ -16,6 +16,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
+import cryptography.CryptoFactory;
 import cryptography.Cryptography;
 import secureSocket.exceptions.BrokenIntegrityException;
 import secureSocket.exceptions.InvalidMacException;
@@ -30,9 +31,9 @@ public class NS3 implements Payload { // A -> B : {Nc, A, B, Ks }KB
 	public static final byte TYPE = 0x13;
 
 	// Payload data
-	long Nc;
-	byte[] a;
-	byte[] b;
+	private long Nc;
+	private String a;
+	private String b;
 	byte[] Ks;
 	private byte[] ticket;
 	private byte[] outerMac;
@@ -49,7 +50,7 @@ public class NS3 implements Payload { // A -> B : {Nc, A, B, Ks }KB
 		this.outerMac = cryptoManager.computeOuterMac(ticket);
 	}
 
-	private NS3(long Nc, byte[] a, byte[] b, byte[] Ks, byte[] ticket, byte[] outerMac, Cryptography session_criptoManager) {
+	private NS3(long Nc, String a, String b, byte[] Ks, byte[] ticket, byte[] outerMac, Cryptography session_criptoManager) {
 		this.Nc = Nc;
 		this.a = a;
 		this.b = b;
@@ -93,7 +94,7 @@ public class NS3 implements Payload { // A -> B : {Nc, A, B, Ks }KB
 		
 		byte[] clearText = criptoManager.decrypt(ticket); // this cryptoManager has to have Kb
 		
-		byteIn = new ByteArrayInputStream(clearText);
+		/*byteIn = new ByteArrayInputStream(clearText);
 		dataIn = new DataInputStream(byteIn);
 		
 		long Nc = dataIn.readLong();
@@ -113,9 +114,11 @@ public class NS3 implements Payload { // A -> B : {Nc, A, B, Ks }KB
 		dataIn.read(Ks, 0, Ks.length);
 		
 		dataIn.close();
-		byteIn.close();
+		byteIn.close();*/
 		
-		Cryptography session_cryptoManager = UDP_KDC_Server.deserializeSessionParameters(Ks);
+		Ticket t = Ticket.deserialize(ticket); 
+		
+		Cryptography session_cryptoManager = CryptoFactory.dessrialize(t.getKs()); // TODO: .deserializeSessionParameters(Ks);
 		
 		/*byte[][] messageParts = session_cryptoManager.splitOuterMac(rawPayload);
 		if (!session_cryptoManager.validateOuterMac(messageParts[0], messageParts[1]))
@@ -124,18 +127,18 @@ public class NS3 implements Payload { // A -> B : {Nc, A, B, Ks }KB
 		if (!session_cryptoManager.validateOuterMac(ticket, outerMac))
 			throw new InvalidMacException("Invalid Outter Mac");
 
-		return new NS3(Nc, a, b, Ks, ticket, outerMac, session_cryptoManager); // Falta a msg
+		return new NS3(t.getNc(), t.getA(), t.getB(), t.getKs(), ticket, outerMac, session_cryptoManager); // Falta a msg
 	}	
 	
 	public Cryptography getSessionCryptoManager() {
 		return this.session_criptoManager;
 	}
 
-	public byte[] getA() {
+	public String getA() {
 		return a;
 	}
 	
-	public byte[] getB() {
+	public String getB() {
 		return b;
 	}
 

@@ -34,6 +34,7 @@ import cryptography.CryptoFactory;
 import cryptography.Cryptography;
 import cryptography.CryptographyDoubleMac;
 import cryptography.CryptographyHash;
+import cryptography.CryptographyNS;
 import cryptography.CryptographyUtils;
 import kdc.KDC;
 import kdc.needhamSchroeder.NS1;
@@ -56,8 +57,9 @@ public class UDP_KDC_Server {
 		my_addr = new InetSocketAddress( args[0], Integer.parseInt(args[1]) );
 
 		System.out.println("KDC Server ready to receive...");
-		NSCryptoManager nsc = args[2];
-		KDC kdc = new NeedhamSchroederKDC(my_addr, , args[3]);
+		args[2]
+		CryptographyNS nsc = new CryptographyNS();
+		KDC kdc = new NeedhamSchroederKDC(my_addr, nsc, args[3]);
 		kdc.start();
 	}
 }

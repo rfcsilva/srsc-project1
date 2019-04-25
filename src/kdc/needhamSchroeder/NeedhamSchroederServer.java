@@ -19,6 +19,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
+import cryptography.CryptoFactory;
 import cryptography.Cryptography;
 import cryptography.CryptographyUtils;
 import cryptography.nonce.CounterNonceManager;
@@ -107,8 +108,7 @@ public class NeedhamSchroederServer implements KDCServer {
 			AtomicBoolean finished) {
 		new Thread(() -> {
 			try {
-
-				Cryptography session_cryptoManager = UDP_KDC_Server.deserializeSessionParameters(ns3.getKs());
+				Cryptography session_cryptoManager = CryptoFactory.dessrialize(ns3.getKs()); //UDP_KDC_Server.deserializeSessionParameters(ns3.getKs());
 
 				SecureDatagramSocket new_socket = new SecureDatagramSocket(session_cryptoManager);
 				new_socket.setTimeout(30 * 1000); // TODO : quanto timeout?
