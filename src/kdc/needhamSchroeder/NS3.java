@@ -93,29 +93,7 @@ public class NS3 implements Payload { // A -> B : {Nc, A, B, Ks }KB
 		byteIn.close();
 		
 		byte[] clearText = criptoManager.decrypt(ticket); // this cryptoManager has to have Kb
-		
-		/*byteIn = new ByteArrayInputStream(clearText);
-		dataIn = new DataInputStream(byteIn);
-		
-		long Nc = dataIn.readLong();
-		
-		System.out.println(Nc);
-		
-		int length = dataIn.readInt();
-		byte[] a = new byte[length];
-		dataIn.read(a, 0, a.length);
-		
-		length = dataIn.readInt();
-		byte[] b = new byte[length];
-		dataIn.read(b, 0, b.length);
-		
-		length = dataIn.readInt();
-		byte[] Ks = new byte[length];
-		dataIn.read(Ks, 0, Ks.length);
-		
-		dataIn.close();
-		byteIn.close();*/
-		
+			
 		Ticket t = Ticket.deserialize(clearText); 
 		
 		Cryptography session_cryptoManager = CryptoFactory.deserialize(t.getKs()); // TODO: .deserializeSessionParameters(Ks);

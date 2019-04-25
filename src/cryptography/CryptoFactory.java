@@ -213,7 +213,7 @@ public class CryptoFactory {
 	}
 
 	public static SecureRandom generateRandom(String secureRandomAlgorithm, String provider ) throws NoSuchAlgorithmException, NoSuchProviderException {
-		if(provider == null)
+		if(provider == null || provider.equals(""))
 			return java.security.SecureRandom.getInstance(secureRandomAlgorithm);
 		else {
 			System.out.println(SECURE_RANDOM_PROVIDER + ": " + provider);
