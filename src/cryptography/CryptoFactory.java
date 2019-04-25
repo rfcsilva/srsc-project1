@@ -33,28 +33,28 @@ import util.ArrayUtils;
 
 public class CryptoFactory {
 
-	private static final String HASH_CIPHERSUITE = "hash-ciphersuite";
-	private static final String OUTER_MAC_CIPHERSUITE = "outer-mac-ciphersuite";
-	private static final String INNER_MAC_CIPHERSUITE = "inner-mac-ciphersuite";
-	private static final String SESSION_CIPHERSUITE = "session-ciphersuite";
-	private static final String OUTER_MAC_KEY = "outer-mac-key";
-	private static final String INNER_MAC_KEY = "inner-mac-key";
-	private static final String SESSION_KEY = "session-key";
-	private static final String KEYSTORE = "keystore";
-	private static final String KEYSTORE_PASSWORD = "keystore-password";
-	private static final String KEYSTORE_TYPE = "keystore-type";
-	private static final String SECURE_RANDOM = "secure-random";
-	private static final String IV_SIZE = "iv-size";
+	public static final String HASH_CIPHERSUITE = "hash-ciphersuite";
+	public static final String OUTER_MAC_CIPHERSUITE = "outer-mac-ciphersuite";
+	public static final String INNER_MAC_CIPHERSUITE = "inner-mac-ciphersuite";
+	public static final String SESSION_CIPHERSUITE = "session-ciphersuite";
+	public static final String OUTER_MAC_KEY = "outer-mac-key";
+	public static final String INNER_MAC_KEY = "inner-mac-key";
+	public static final String SESSION_KEY = "session-key";
+	public static final String KEYSTORE = "keystore";
+	public static final String KEYSTORE_PASSWORD = "keystore-password";
+	public static final String KEYSTORE_TYPE = "keystore-type";
+	public static final String SECURE_RANDOM = "secure-random";
+	public static final String IV_SIZE = "iv-size";
 	
-	private static final String SESSION_KEY_GEN_ALGORITHM =  "session-key-gen-alg";
-	private static final String SESSION_KEY_SIZE = "session-key-size";
-	private static final String OUTTER_MAC_KEY_GEN_ALGORITHM = "outer-mac-key-gen-alg";
-	private static final String OUTTER_MAC_KEY_SIZE = "outer-mac-key-size";
-	private static final String INNER_MAC_KEY_GEN_ALGORITHM = "inner-mac-key-gen-alg";
-	private static final String INNER_MAC_KEY_SIZE = "inner-mac-key-size";
-	private static final String USE_HASH = "use-hash";
-	private static final String HASH_CIPHER_SUITE = "hash-ciphersuite";
-	private static final String TAG_SIZE = "tag-size";
+	public static final String SESSION_KEY_GEN_ALGORITHM =  "session-key-gen-alg";
+	public static final String SESSION_KEY_SIZE = "session-key-size";
+	public static final String OUTTER_MAC_KEY_GEN_ALGORITHM = "outer-mac-key-gen-alg";
+	public static final String OUTTER_MAC_KEY_SIZE = "outer-mac-key-size";
+	public static final String INNER_MAC_KEY_GEN_ALGORITHM = "inner-mac-key-gen-alg";
+	public static final String INNER_MAC_KEY_SIZE = "inner-mac-key-size";
+	public static final String USE_HASH = "use-hash";
+	public static final String HASH_CIPHER_SUITE = "hash-ciphersuite";
+	public static final String TAG_SIZE = "tag-size";
 	
 		
 	public static Cipher buildCipher(String cipherAlgorithm, int cipherMode, SecretKey key, byte[] iv, int tagSize)
@@ -165,7 +165,7 @@ public class CryptoFactory {
 	}
 
 
-	private static byte[] generateIv(String cipherAlgorithm, int size, SecureRandom sr ) {
+	public static byte[] generateIv(String cipherAlgorithm, int size, SecureRandom sr ) {
 
 		byte[] iv = null;
 		if(cipherAlgorithm.contains("CTR")) {
@@ -183,7 +183,7 @@ public class CryptoFactory {
 		return java.security.SecureRandom.getInstance(secureRandomAlgorithm);
 	}
 
-	private static Properties loadFile(String path) throws IOException {
+	public static Properties loadFile(String path) throws IOException {
 		InputStream inputStream = new FileInputStream(path);
 		Properties ciphersuit_properties = new Properties();
 		ciphersuit_properties.load(inputStream);

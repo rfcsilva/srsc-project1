@@ -9,10 +9,9 @@ import java.io.IOException;
 public class Ticket {
 	
 	private long nc;
-	private byte[] Ks;
-	private String a, b;
+	private byte[]a, b, Ks;
 
-	public Ticket(long nc, String a, String b, byte[] Ks) {
+	public Ticket(long nc, byte[] a, byte[] b, byte[] Ks) {
 		this.nc = nc;
 		this.a = a;
 		this.b = b;
@@ -25,10 +24,10 @@ public class Ticket {
 		DataOutputStream dataOut = new DataOutputStream(byteOut);
 
 		dataOut.writeLong(nc);
-		
-		dataOut.writeUTF(a);
-		dataOut.writeUTF(b);
-		
+		dataOut.writeInt(a.length);
+		dataOut.write(a, 0, a.length);
+		dataOut.writeInt(b.length);
+		dataOut.write(b, 0, b.length);
 		dataOut.writeInt(Ks.length);
 		dataOut.write(Ks, 0, Ks.length);
 
@@ -52,25 +51,31 @@ public class Ticket {
 		
 		long nc = dataIn.readLong();
 		
-		String a = dataIn.readUTF();
-		String b = dataIn.readUTF();
-
 		int length = dataIn.readInt();
+		byte[] a = new byte[length];
+		dataIn.read(a, 0, length);
+		
+		length = dataIn.readInt();
+		byte[] b = new byte[length];
+		dataIn.read(b, 0, length);
+		
+		length = dataIn.readInt();
 		byte[] ks = new byte[length];
 		dataIn.read(ks, 0, length);
 		
 		return new Ticket(nc, a, b, ks);
+		
 	}
 
 	public long getNc() {
 		return nc;
 	}
 
-	public String getA() {
+	public byte[] getA() {
 		return a;
 	}
 
-	public String getB() {
+	public byte[] getB() {
 		return b;
 	}
 

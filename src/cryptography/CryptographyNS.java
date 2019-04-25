@@ -26,10 +26,10 @@ public class CryptographyNS extends AbstractCryptography implements Cryptography
 	private byte[] iv;
 	private String cipherAlgorithm;
 	
-	public CryptographyNS(SecureRandom sr, String path, String password, String type, String macAlgorithm, byte[] iv, String cipherAlgorithm) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, FileNotFoundException, IOException {
+	public CryptographyNS(SecureRandom sr, String password, KeyStore keyStore ,String macAlgorithm, byte[] iv, String cipherAlgorithm) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, FileNotFoundException, IOException {
 		super(null, null, null, sr);
 		this.password = password;
-		key_store = CryptographyUtils.loadKeyStrore(path, password, type);	
+		key_store = keyStore;
 		this.macAlgorithm = macAlgorithm;
 		this.iv = iv;
 		this.cipherAlgorithm = cipherAlgorithm;

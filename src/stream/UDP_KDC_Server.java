@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -42,6 +43,7 @@ import kdc.needhamSchroeder.NeedhamSchroederKDC;
 import secureSocket.exceptions.InvalidPayloadTypeException;
 import secureSocket.secureMessages.SecureMessage;
 import secureSocket.secureMessages.SecureMessageImplementation;
+import util.ArrayUtils;
 
 //TODO: renomear?
 public class UDP_KDC_Server {
@@ -57,9 +59,22 @@ public class UDP_KDC_Server {
 		my_addr = new InetSocketAddress( args[0], Integer.parseInt(args[1]) );
 
 		System.out.println("KDC Server ready to receive...");
-		args[2]
-		CryptographyNS nsc = new CryptographyNS();
+		
+		Properties masterCipherSuite = CryptoFactory.loadFile(args[2]);
+		SecureRandom sr = CryptoFactory.generateRandom(masterCipherSuite.getProperty(CryptoFactory.SECURE_RANDOM));
+		String path = masterCipherSuite.getProperty(CryptoFactory.KEYSTORE);
+		String password = masterCipherSuite.getProperty(CryptoFactory.KEYSTORE_PASSWORD);
+		String type = masterCipherSuite.getProperty(CryptoFactory.KEYSTORE_TYPE);
+		String macAlgorithm = masterCipherSuite.getProperty(CryptoFactory.OUTER_MAC_CIPHERSUITE);
+		String ivString = masterCipherSuite.getProperty("iv");
+		byte[] iv = ArrayUtils.unparse(ivString);
+		String cipherAlgorithm = masterCipherSuite.getProperty(CryptoFactory.SESSION_CIPHERSUITE);
+		
+		KeyStore keyStore = CryptographyUtils.loadKeyStrore(path, password, type);	
+		
+		CryptographyNS nsc = new CryptographyNS(sr, password, keyStore, macAlgorithm, iv, cipherAlgorithm);
 		KDC kdc = new NeedhamSchroederKDC(my_addr, nsc, args[3]);
 		kdc.start();
 	}
+
 }
