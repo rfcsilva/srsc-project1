@@ -15,6 +15,9 @@ public class RegisterClient {
 		
 		Scanner in = new Scanner(System.in);
 		
+		System.out.println("Properties File path:");
+		Properties props = CryptoFactory.loadFile(in.nextLine());
+		
 		System.out.print("keystore path: ");
 		String keystore_path = in.nextLine();
 		
@@ -27,7 +30,7 @@ public class RegisterClient {
 		arKeyStore keystore = new arKeyStore(keystore_path, password, type);
 		
 		while(true) {
-			
+			System.out.print("> ");
 			String cmd = in.nextLine();
 			
 			if(cmd.equals("exit"))
@@ -38,16 +41,16 @@ public class RegisterClient {
 				System.out.print("password: ");
 				String user_password = in.nextLine();
 				
+				
 				if(keystore.contains("k" + id)) {
 					System.err.println("id already in use");
 				} else {
-					
-					System.out.println("Properties File path:");
-					Properties props = CryptoFactory.loadFile(in.nextLine());
+
 					SecretKey[] keys = CryptoFactory.genKeysFromPassword(user_password, props);
 					
 					keystore.setKey("k" + id, keys[0]);
 					keystore.setKey("km" + id, keys[1]);
+
 				}
 			} else if(cmd.equals("rm entry") || cmd.equals("remove entry") || cmd.equals("del entry") || cmd.equals("delete entry")) {
 				System.out.print("id: ");
