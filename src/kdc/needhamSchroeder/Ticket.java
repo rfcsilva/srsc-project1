@@ -18,6 +18,7 @@ public class Ticket {
 		this.b = b;
 		this.Ks = Ks;
 	}
+
 	
 	public byte[] serialize() throws IOException {
 		
