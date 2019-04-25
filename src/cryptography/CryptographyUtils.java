@@ -11,10 +11,13 @@ import java.security.SecureRandom;
 import java.security.UnrecoverableEntryException;
 import java.security.KeyStore.SecretKeyEntry;
 import java.security.cert.CertificateException;
+import java.security.spec.InvalidKeySpecException;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
 public class CryptographyUtils {
@@ -75,6 +78,14 @@ public class CryptographyUtils {
 		KeyGenerator generator = KeyGenerator.getInstance(algorithm);
 		generator.init(size);
 		return generator.generateKey();
+	}
+	
+	public static SecretKey generateKey(String password, String salt, int iterations, String keyGenAlgorithm, String keySpecAlgorithm, int key_size) throws NoSuchAlgorithmException, InvalidKeySpecException {
+		SecretKeyFactory skf = SecretKeyFactory.getInstance( keyGenAlgorithm ); 
+        PBEKeySpec spec = new PBEKeySpec( password.toCharArray(), salt.getBytes(), iterations, key_size );
+        SecretKey key = skf.generateSecret( spec );
+        SecretKey secret = new SecretKeySpec(key.getEncoded(), keySpecAlgorithm);
+        return secret;
 	}
 
 	public static SecretKey deserialize(byte[] keyBytes, String algorithm) {
