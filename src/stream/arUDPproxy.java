@@ -42,12 +42,14 @@ import secureSocket.exceptions.InvalidPayloadTypeException;
 
 class arUDPproxy {
 
+	private static final String ERROR_USER_INPUT = "Erro, usar: myReceive <ciphersuite.conf>";
+
 	@SuppressWarnings("resource")
 	public static void main(String[] args) {
 
-		if (args.length != 1)
+		if (args.length != 2)
 		{
-			System.err.println("Erro, usar: myReceive <ciphersuite.conf>");
+			System.err.println(ERROR_USER_INPUT);
 			System.exit(-1);
 		}
 
