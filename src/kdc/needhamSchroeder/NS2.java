@@ -35,7 +35,7 @@ public class NS2 implements Payload { //{Na+1, Nc, Ks , B, {Nc, A, B, Ks}KB }KA
 		this.Ks = Ks;
 		this.b = b;
 		
-		this.ticket = buildTicket(Nc, a, b, Ks, cryptoManagerB);
+		this.ticket =  cryptoManagerB.encrypt((new Ticket(Nc, a, b, Ks)).serialize());
 
 		this.cipherText = buildPayload(Na_1, Nc, Ks, b, ticket, cryptoManagerA);
 		
@@ -52,29 +52,6 @@ public class NS2 implements Payload { //{Na+1, Nc, Ks , B, {Nc, A, B, Ks}KB }KA
 		this.outerMac = outerMac;
 	}
 	
-	// TODO : secalhar devia ser construído de fora desta class e ter uma class Ticket que constroi e deserializa para depois a serialização e desirialização disto estar no mesmo sitio
-	private byte[] buildTicket(long Nc, byte[] a, byte[] b, byte[] Ks, Cryptography cryptoManagerB) throws IOException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, ShortBufferException {
-		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-		DataOutputStream dataOut = new DataOutputStream(byteOut);
-
-		dataOut.writeLong(Nc);
-		dataOut.writeInt(a.length);
-		dataOut.write(a, 0, a.length);
-		dataOut.writeInt(b.length);
-		dataOut.write(b, 0, b.length);
-		dataOut.writeInt(Ks.length);
-		dataOut.write(Ks, 0, Ks.length);
-
-		dataOut.flush();
-		byteOut.flush();
-
-		byte[] msg = byteOut.toByteArray();
-
-		dataOut.close();
-		byteOut.close();
-		
-		return cryptoManagerB.encrypt(msg);
-	}
 	
 	private byte[] buildPayload(long Na_1, long Nc, byte[] Ks, byte[] b, byte[] ticket, Cryptography cryptoManagerA) throws IOException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, ShortBufferException {
 		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
