@@ -20,14 +20,14 @@ import cryptography.CryptoFactory;
 import cryptography.CryptographyNS;
 import cryptography.nonce.NonceManager;
 import cryptography.nonce.WindowNonceManager;
-import kdc.KDC;
+import kdc.KDCService;
 import secureSocket.SecureDatagramSocket;
 import secureSocket.exceptions.InvalidPayloadTypeException;
 import secureSocket.secureMessages.Payload;
 import secureSocket.secureMessages.SecureMessage;
 import secureSocket.secureMessages.SecureMessageImplementation;
 
-public class NeedhamSchroederKDC implements KDC {
+public class NeedhamSchroederKDC implements KDCService {
 
 	private SecureDatagramSocket socket;
 	private NonceManager nonceManager;

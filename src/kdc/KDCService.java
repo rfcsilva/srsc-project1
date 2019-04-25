@@ -21,7 +21,7 @@ import kdc.needhamSchroeder.NS1;
 import secureSocket.exceptions.InvalidPayloadTypeException;
 import secureSocket.secureMessages.SecureMessage;
 
-public interface KDC {
+public interface KDCService {
 
 	//InetSocketAddress receiveRequest(SecureMessage sm) throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException;
 	
