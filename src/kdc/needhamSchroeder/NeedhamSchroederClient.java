@@ -61,16 +61,19 @@ public class NeedhamSchroederClient implements KDCClient {
 
 		NonceManager nonceManager = new WindowNonceManager(WINDOW_SIZE, master_cryptoManager.getSecureRandom());
 
+		SecureDatagramSocket socket = new SecureDatagramSocket(master_cryptoManager);
+		socket.setTimeout(TIMEOUT); 
+		
 		for(int i=0; i < max_tries; i++) {
 			try {
 				long Na = nonceManager.generateNonce();
 
-				NS2 kdc_reply = requestKeys(kdc_addr, Na, nonceManager, a, b);
+				NS2 kdc_reply = requestKeys(socket, kdc_addr, Na, nonceManager, a, b);
 
 				// Build the session cryptoManager
 				Cryptography session_cryptoManager =  CryptoFactory.deserialize(kdc_reply.getKs()); //UDP_KDC_Server.deserializeSessionParameters(kdc_reply.getKs()); //TODO : Trocar para o método certo
 
-				shareKeys(b_addr, kdc_reply.getTicket(), session_cryptoManager, nonceManager);
+				shareKeys(socket, session_cryptoManager, b_addr, kdc_reply.getTicket(), nonceManager);
 
 				System.out.println("Finished key establishment.");
 
@@ -82,15 +85,17 @@ public class NeedhamSchroederClient implements KDCClient {
 			} catch (InvalidChallangeReplyException e) {
 				System.err.println(e.getMessage());
 			}
+			// TODO: Fazer sleep antes de tentar novamente??
 		}
 
 		throw new TooManyTriesException("" + max_tries);
 	}
 
-	private NS2 requestKeys(InetSocketAddress kdc_addr, long Na, NonceManager nonceManager, String a, String b) throws IOException, InvalidChallangeReplyException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException, ReplayedNonceException {
+	private NS2 requestKeys(SecureDatagramSocket socket, InetSocketAddress kdc_addr, long Na, NonceManager nonceManager, String a, String b) throws IOException, InvalidChallangeReplyException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException, ReplayedNonceException {
 		try {
-			SecureDatagramSocket socket = new SecureDatagramSocket(master_cryptoManager);
-			socket.setTimeout(TIMEOUT); // 30 s -> passar a constante
+			socket.setCryptoManager(master_cryptoManager);
+			//SecureDatagramSocket socket = new SecureDatagramSocket(master_cryptoManager);
+			//socket.setTimeout(TIMEOUT); // 30 s -> passar a constante
 
 			//TODO: Change ID and load IDs from a config file
 			//Payload ns1 = new NS1("a".getBytes(), "b".getBytes(), Na, master_cryptoManager); // TODO: Isto não pode estar martelado
@@ -122,35 +127,31 @@ public class NeedhamSchroederClient implements KDCClient {
 		return null;
 	}  
 
-	private void shareKeys(InetSocketAddress b_addr, byte[] ticket, Cryptography session_cryptoManager, NonceManager nonceManager) throws IOException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException, ReplayedNonceException {
+	private void shareKeys(SecureDatagramSocket socket, Cryptography session_cryptoManager, InetSocketAddress b_addr, byte[] ticket, NonceManager nonceManager) throws IOException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException, ReplayedNonceException {
 		try {
-			SecureDatagramSocket new_socket = new SecureDatagramSocket(session_cryptoManager);
-			new_socket.setTimeout(TIMEOUT);
-
+			socket.setCryptoManager(session_cryptoManager);
+			
 			Payload ns3 = new NS3(ticket, session_cryptoManager);
 
 			System.out.println("Sending Ticket to B ...");
 			SecureMessage sm = new SecureMessageImplementation(ns3);
-			new_socket.send(sm, b_addr);
+			socket.send(sm, b_addr);
 
 			// Receive Challenge
 			sm = new SecureMessageImplementation();
-			InetSocketAddress addr = new_socket.receive(sm); // TODO: trocar a função de Na+1 e assim para uma chamada a uma funçção challenge que pode ter difenets implemneações
+			InetSocketAddress reply_addr = socket.receive(sm); // TODO: trocar a função de Na+1 e assim para uma chamada a uma funçção challenge que pode ter difenets implemneações
 			long Nb =((NS4)sm.getPayload()).getNb();
 
 			System.out.println("Received Challenge. " + Nb);
 
-			if(nonceManager.verifyReplay(Nb)) {
+			if(!nonceManager.registerNonce(Nb)) {
 				// Compute Reply
 				long Nb_1 = (Nb + 1);
-
-				// Update last seen nonce
-				nonceManager.verifyReplay(Nb_1);
 
 				System.out.println("Sending Challenge result ... " + Nb_1);
 				NS4 ns4 = new NS4(Nb_1, session_cryptoManager);
 				sm = new SecureMessageImplementation(ns4);
-				new_socket.send(sm, addr);
+				socket.send(sm, reply_addr);
 			} else {
 				throw new ReplayedNonceException("B challenge was replayed: " + Nb);
 			}

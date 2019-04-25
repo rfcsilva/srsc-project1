@@ -76,7 +76,7 @@ public class NeedhamSchroederServer implements KDCServer {
 		new Thread(() -> {
 			try {
 				SecureDatagramSocket inSocket = new SecureDatagramSocket(b_addr, master_cryptoManager);
-				inSocket.setTimeout(5 * 1000); // TODO: Isto parece pouco não?
+				inSocket.setTimeout(15 * 1000); // TODO: Isto parece pouco não?
 
 				System.out.println("Waitting for Ticket...");
 
