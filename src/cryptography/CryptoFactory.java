@@ -31,8 +31,10 @@ import util.ArrayUtils;
 public class CryptoFactory {
 
 	private static final String CIPHER_PROVIDER = "cipher-provider";
-	private static final String MAC_PROVIDER = "mac-provider";
+	private static final String OUTTER_MAC_PROVIDER = "outter-mac-provider";
+	private static final String INNER_MAC_PROVIDER = "inner-mac-provider";
 	private static final String HASH_PROVIDER = "hash-provider";
+	private static final String SECURE_RANDOM_PROVIDER = "secure-ramdom-provider";
 
 	private static final int INITIAL_MSG_NUMBER = 1;
 	private static final String IV = "iv";
@@ -102,11 +104,11 @@ public class CryptoFactory {
 				cipher.init(cipherMode, key, new IvParameterSpec(iv));
 			}else
 				cipher.init(cipherMode, key);
-			
+
 			return cipher;
 		}else 
 			return buildCipher(cipherAlgorithm, cipherMode, key, iv);
-		
+
 	}
 
 	public static Cipher buildCipher(String cipherAlgorithm, int cipherMode, SecretKey key, byte[] iv) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException { 
@@ -120,14 +122,26 @@ public class CryptoFactory {
 		return cipher;
 	}
 
-	public static Mac initMac(String macAlgorithm, SecretKey key) throws NoSuchAlgorithmException, InvalidKeyException {
-		Mac mac = Mac.getInstance(macAlgorithm);
+	public static Mac initMac(String macAlgorithm, SecretKey key, String provider) throws NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
+
+		Mac mac;
+		if(provider== null) 
+			mac = Mac.getInstance(macAlgorithm);
+		else
+			mac = Mac.getInstance(macAlgorithm, provider);
+
 		mac.init(key);
 		return mac;
 	}
 
-	public static MessageDigest buildHash(String hashAlgorithm) throws NoSuchAlgorithmException {
-		return MessageDigest.getInstance(hashAlgorithm);
+	public static MessageDigest buildHash(String hashAlgorithm, String provider) throws NoSuchAlgorithmException, NoSuchProviderException {
+
+		if(provider==null)
+			return MessageDigest.getInstance(hashAlgorithm);
+		else {
+			System.out.println(HASH_PROVIDER + ": " + provider);
+			return MessageDigest.getInstance(hashAlgorithm, provider);
+		}
 	}
 
 	public static Cryptography loadFromConfig(String path) throws IOException, NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException, NoSuchProviderException {
@@ -136,7 +150,7 @@ public class CryptoFactory {
 		Properties ciphersuit_properties = loadFile(path);
 
 		//Create Secure Random
-		SecureRandom sr = generateRandom(ciphersuit_properties.getProperty(SECURE_RANDOM));
+		SecureRandom sr = generateRandom(ciphersuit_properties.getProperty(SECURE_RANDOM), ciphersuit_properties.getProperty(SECURE_RANDOM_PROVIDER));
 
 		//load keys
 		SecretKey[] keys = loadKeys(ciphersuit_properties.getProperty(KEYSTORE_TYPE), ciphersuit_properties.getProperty(KEYSTORE_PASSWORD),
@@ -161,16 +175,16 @@ public class CryptoFactory {
 
 		Mac outerMac = null;
 		if(ciphersuit_properties.getProperty(OUTER_MAC_CIPHERSUITE)!=null)
-			outerMac = initMac(ciphersuit_properties.getProperty(OUTER_MAC_CIPHERSUITE), keys[2]);
+			outerMac = initMac(ciphersuit_properties.getProperty(OUTER_MAC_CIPHERSUITE), keys[2], ciphersuit_properties.getProperty(OUTTER_MAC_PROVIDER));
 
 		String hashAlgorithm = ciphersuit_properties.getProperty(HASH_CIPHERSUITE);
 		if(hashAlgorithm != null) {
-			MessageDigest innerHash = buildHash(hashAlgorithm);
+			MessageDigest innerHash = buildHash(hashAlgorithm, ciphersuit_properties.getProperty(HASH_PROVIDER));
 			return new CryptographyHash(encryptCipher, decryptCipher,innerHash, outerMac, sr);
 		} else {
 			Mac innerMac = null;
 			if(keys[1] != null && ciphersuit_properties.getProperty(INNER_MAC_CIPHERSUITE) != null )
-				innerMac = initMac(ciphersuit_properties.getProperty(INNER_MAC_CIPHERSUITE), keys[1]);
+				innerMac = initMac(ciphersuit_properties.getProperty(INNER_MAC_CIPHERSUITE), keys[1], ciphersuit_properties.getProperty(INNER_MAC_PROVIDER));
 
 			return new CryptographyDoubleMac(encryptCipher, decryptCipher, innerMac, outerMac, sr);
 		}
@@ -190,10 +204,14 @@ public class CryptoFactory {
 		return iv;
 	}
 
-	private static SecureRandom generateRandom(String secureRandomAlgorithm ) throws NoSuchAlgorithmException {
+	private static SecureRandom generateRandom(String secureRandomAlgorithm, String provider ) throws NoSuchAlgorithmException, NoSuchProviderException {
 
-		return java.security.SecureRandom.getInstance(secureRandomAlgorithm);
-
+		if(provider == null)
+			return java.security.SecureRandom.getInstance(secureRandomAlgorithm);
+		else {
+			System.out.println(SECURE_RANDOM_PROVIDER + ": " + provider);
+			return java.security.SecureRandom.getInstance(secureRandomAlgorithm, provider);
+		}
 	}
 
 	private static Properties loadFile(String path) throws IOException {
@@ -203,13 +221,13 @@ public class CryptoFactory {
 		return ciphersuit_properties;
 	}
 
-	public byte[] serialize(String path) throws IOException, NoSuchAlgorithmException {
+	public byte[] serialize(String path) throws IOException, NoSuchAlgorithmException, NoSuchProviderException {
 
 		//Load file
 		Properties ciphersuit_properties = loadFile(path);
 
 		//Create Secure Random
-		SecureRandom sr = generateRandom(ciphersuit_properties.getProperty(SECURE_RANDOM));
+		SecureRandom sr = generateRandom(ciphersuit_properties.getProperty(SECURE_RANDOM), ciphersuit_properties.getProperty(SECURE_RANDOM_PROVIDER));
 
 		boolean useHash = Boolean.parseBoolean(ciphersuit_properties.getProperty(USE_HASH));
 		SecretKey[] keys = generateKeys(ciphersuit_properties.getProperty(SESSION_KEY_GEN_ALGORITHM), Integer.parseInt(ciphersuit_properties.getProperty(SESSION_KEY_SIZE)),
