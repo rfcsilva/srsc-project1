@@ -73,8 +73,8 @@ public class NeedhamSchroederServer implements KDCServer {
 			UnrecoverableEntryException, KeyStoreException,	CertificateException, IOException, ShortBufferException, 
 			IllegalBlockSizeException, BadPaddingException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException {
 
-		new Thread(() -> {
-			try {
+		/*new Thread(() -> {
+			try {*/
 				SecureDatagramSocket inSocket = new SecureDatagramSocket(b_addr, master_cryptoManager);
 				inSocket.setTimeout(5 * 1000); // TODO: Isto parece pouco não?
 
@@ -101,11 +101,11 @@ public class NeedhamSchroederServer implements KDCServer {
 
 				inSocket.close();
 
-			}  catch(Exception e) {
+			/*}  catch(Exception e) {
 				e.printStackTrace();
 			}
 
-		}).start();
+		}).start();*/
 	}
 
 	private void processRequest(NS3 ns3, InetSocketAddress addr, AtomicReference<Cryptography> cryptoManager, AtomicBoolean finished) {
