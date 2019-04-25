@@ -30,6 +30,8 @@ import util.ArrayUtils;
 
 public class CryptoFactory {
 
+	private static final int INITIAL_MSG_NUMBER = 1;
+	private static final String IV = "iv";
 	private static final String HASH_CIPHERSUITE = "hash-ciphersuite";
 	private static final String OUTER_MAC_CIPHERSUITE = "outer-mac-ciphersuite";
 	private static final String INNER_MAC_CIPHERSUITE = "inner-mac-ciphersuite";
@@ -58,11 +60,7 @@ public class CryptoFactory {
 			throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException,
 			InvalidAlgorithmParameterException, NoSuchProviderException {
 		Cipher cipher = Cipher.getInstance(cipherAlgorithm);
-		
-		System.out.println(cipherAlgorithm);
-		System.out.println(tagSize);
-		System.out.println(key.getEncoded().length*8);
-		
+				
 		if (iv != null && iv.length > 0) {
 			if(tagSize > 0 && cipherAlgorithm.contains("GCM")) {
 				cipher.init(cipherMode, key, new GCMParameterSpec(tagSize, iv));
@@ -104,8 +102,7 @@ public class CryptoFactory {
 		return cipher;
 	}
 
-	// TODO: arranjar nome melhor
-	public static Mac buildMac(String macAlgorithm, SecretKey key) throws NoSuchAlgorithmException, InvalidKeyException {
+	public static Mac initMac(String macAlgorithm, SecretKey key) throws NoSuchAlgorithmException, InvalidKeyException {
 		Mac mac = Mac.getInstance(macAlgorithm);
 		mac.init(key);
 		return mac;
@@ -130,7 +127,7 @@ public class CryptoFactory {
 
 
 		//Generate IV
-		String ivString = ciphersuit_properties.getProperty("iv");
+		String ivString = ciphersuit_properties.getProperty(IV);
 		byte[] iv;
 		if(ivString != null)
 			iv = ArrayUtils.unparse(ivString);
@@ -146,7 +143,7 @@ public class CryptoFactory {
 
 		Mac outerMac = null;
 		if(ciphersuit_properties.getProperty(OUTER_MAC_CIPHERSUITE)!=null)
-			outerMac = buildMac(ciphersuit_properties.getProperty(OUTER_MAC_CIPHERSUITE), keys[2]);
+			outerMac = initMac(ciphersuit_properties.getProperty(OUTER_MAC_CIPHERSUITE), keys[2]);
 
 		String hashAlgorithm = ciphersuit_properties.getProperty(HASH_CIPHERSUITE);
 		if(hashAlgorithm != null) {
@@ -155,7 +152,7 @@ public class CryptoFactory {
 		} else {
 			Mac innerMac = null;
 			if(keys[1] != null && ciphersuit_properties.getProperty(INNER_MAC_CIPHERSUITE) != null )
-				innerMac = buildMac(ciphersuit_properties.getProperty(INNER_MAC_CIPHERSUITE), keys[1]);
+				innerMac = initMac(ciphersuit_properties.getProperty(INNER_MAC_CIPHERSUITE), keys[1]);
 
 			return new CryptographyDoubleMac(encryptCipher, decryptCipher, innerMac, outerMac, sr);
 		}
@@ -166,8 +163,7 @@ public class CryptoFactory {
 
 		byte[] iv = null;
 		if(cipherAlgorithm.contains("CTR")) {
-			int messageNumber = 1; // TODO : CTR com iv a depender do numero de msg
-			iv = CryptographyUtils.createCtrIvForAES(messageNumber, sr).getIV();
+			iv = CryptographyUtils.createCtrIvForAES(INITIAL_MSG_NUMBER, sr).getIV();
 		} else if( size > 0 ) {
 			iv = CryptographyUtils.createGenericIvForAES(size).getIV();
 		} else
@@ -253,12 +249,12 @@ public class CryptoFactory {
 		dataOut.flush();
 		byteOut.flush();
 
-		byte[] msg = byteOut.toByteArray(); // TODO: renomear de msg para outra coisa
+		byte[] data = byteOut.toByteArray();
 
 		dataOut.close();
 		byteOut.close();
 
-		return msg;
+		return data;
 
 
 	}
@@ -267,7 +263,7 @@ public class CryptoFactory {
 	private static SecretKey[] generateKeys(String session_key_gen_alg, int session_key_size, String outer_key_gen_alg,int outer_mac_key_size, String inner_key_gen_alg, int inner_mac_key_size, boolean useHash ) throws NoSuchAlgorithmException {
 
 		SecretKey ks = CryptographyUtils.generateKey(session_key_gen_alg, session_key_size); // Session key
-		SecretKey kms = useHash ? null : CryptographyUtils.generateKey(inner_key_gen_alg, inner_mac_key_size);
+		SecretKey kms = useHash ? null : CryptographyUtils.generateKey(inner_key_gen_alg, inner_mac_key_size); //inner mac key
 		SecretKey kms2 = CryptographyUtils.generateKey(outer_key_gen_alg, outer_mac_key_size); //outter mac key
 
 		return new SecretKey[]{ks, kms, kms2};
@@ -284,7 +280,7 @@ public class CryptoFactory {
 	private static SecretKey[] loadKeys(String keyStoreType, String password, String keystore, String sessionKey, String innerMacKey, String outterMacKey) throws NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, CertificateException, FileNotFoundException, IOException {
 
 		// Load KeyStore
-		KeyStore key_store = KeyStore.getInstance(keyStoreType); // TODO: passar estas strings todas para constatnes
+		KeyStore key_store = KeyStore.getInstance(keyStoreType);
 		char[] password_arr = password.toCharArray();
 		key_store.load(new FileInputStream(keystore), password_arr);
 		KeyStore.PasswordProtection  ks_pp = new KeyStore.PasswordProtection(password_arr);

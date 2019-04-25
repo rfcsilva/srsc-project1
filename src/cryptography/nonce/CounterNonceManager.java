@@ -8,7 +8,6 @@ public class CounterNonceManager implements NonceManager {
 	public CounterNonceManager() {
 		this.counter = 0;
 		this.step = 1;
-		System.out.println("Estou a ser criado pra crl");
 	}
 
 	public CounterNonceManager(long start) {

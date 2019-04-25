@@ -26,6 +26,10 @@ import util.ArrayUtils;
 
 public class DefaultPayload implements Payload {
 
+	private static final String INVALID_INNER_MAC = "Invalid Inner Mac";
+
+	private static final String INVALID_OUTTER_MAC = "Invalid Outter Mac";
+
 	public static final byte TYPE = 0x01;
 
 	// Payload data
@@ -98,13 +102,13 @@ public class DefaultPayload implements Payload {
 
 		byte[][] messageParts = criptoManager.splitOuterMac(rawPayload);
 		if (!criptoManager.validateOuterMac(messageParts[0], messageParts[1]))
-			throw new InvalidMacException("Invalid Outter Mac");
+			throw new InvalidMacException(INVALID_OUTTER_MAC);
 		else {
 			byte[] plainText = criptoManager.decrypt(messageParts[0]);
 			byte[][] payloadParts = criptoManager.splitIntegrityProof(plainText);
 			
 			if (!criptoManager.validateIntegrityProof(payloadParts[0], payloadParts[1]))
-					throw new BrokenBarrierException("Invalid Inner Mac");
+					throw new BrokenBarrierException(INVALID_INNER_MAC);
 			else {
 				ByteArrayInputStream byteIn = new ByteArrayInputStream(payloadParts[0]);
 				DataInputStream dataIn = new DataInputStream(byteIn);

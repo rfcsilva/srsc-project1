@@ -36,7 +36,6 @@ public abstract class AbstractCryptography implements Cryptography {
 		return decryptCipher;
 	}
 
-
 	@Override
 	public Mac getOuterMac() {
 		return outerMac;

@@ -22,13 +22,15 @@ import secureSocket.exceptions.ReplayedNonceException;
 
 public class PayloadFactory {
 
+	private static final String TYPE = "type: ";
+
 	public static Payload buildPayload(byte payloadType, byte[] rawPayload, Cryptography cryptoManager, NonceManager nonceManager) throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException, InvalidMacException, ReplayedNonceException, InvalidPayloadTypeException, BrokenBarrierException {
 
 		switch(payloadType) {
 		case DefaultPayload.TYPE:
 			return DefaultPayload.deserialize(rawPayload, cryptoManager, nonceManager);	
 		default: 
-			throw new InvalidPayloadTypeException("type: " + payloadType);
+			throw new InvalidPayloadTypeException(TYPE + payloadType);
 		}
 	}
 }

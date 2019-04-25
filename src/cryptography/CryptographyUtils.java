@@ -29,10 +29,8 @@ public class CryptographyUtils {
      * @param random - source ou seed para random
      * @return Vector IvParameterSpec inicializado
      */
-    public static IvParameterSpec createCtrIvForAES(
-        int             messageNumber,
-        SecureRandom    random)
-    {
+    public static IvParameterSpec createCtrIvForAES(int messageNumber, SecureRandom    random){
+    	
         byte[]          ivBytes = new byte[16];
         
         // initially randomize
@@ -59,6 +57,7 @@ public class CryptographyUtils {
     }
 	
 	public static IvParameterSpec createGenericIvForAES(int blockSize) {
+		
 		SecureRandom randomSecureRandom = new SecureRandom();
 		byte[] iv = new byte[blockSize];
 		randomSecureRandom.nextBytes(iv);
@@ -66,6 +65,7 @@ public class CryptographyUtils {
 	}
 	
 	public static long getNonce(SecureRandom sr) throws NoSuchAlgorithmException {
+		
 		int size = Long.BYTES + 1;
 		byte[] tmp = new byte[size];
 		sr.nextBytes(tmp);
@@ -75,6 +75,7 @@ public class CryptographyUtils {
 	}
 	
 	public static SecretKey generateKey(String algorithm, int size) throws NoSuchAlgorithmException {
+		
 		KeyGenerator    generator = KeyGenerator.getInstance(algorithm);
         generator.init(size);
         return generator.generateKey();
@@ -96,6 +97,7 @@ public class CryptographyUtils {
 	public static SecretKey getKey(KeyStore ks, String password, String alias) throws
 	NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException,
 	CertificateException, FileNotFoundException, IOException {
+		
 		KeyStore.PasswordProtection  ks_pp = new KeyStore.PasswordProtection(password.toCharArray());
 		SecretKeyEntry entry = (KeyStore.SecretKeyEntry)ks.getEntry(alias, ks_pp);
 		return entry.getSecretKey();
