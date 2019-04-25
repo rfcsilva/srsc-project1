@@ -16,10 +16,10 @@ public class ClientMain { //
 		InetSocketAddress kdc_addr = new InetSocketAddress("localhost", 8888);
 		InetSocketAddress b_addr = new InetSocketAddress( "localhost", 8889);
 		
-		if(args[0].equals("client") ) {
+		if( args[0].equals("client") ) {
 			System.out.println("Client ready");
 
-			String config_file = "./configs/server/ciphersuite.conf";
+			String config_file = "./configs/proxy/ciphersuite.conf";
 			Cryptography master_cryptoManager = CryptoFactory.loadFromConfig(config_file);
 			KDCClient needhamClient = new NeedhamSchroederClient(kdc_addr, "a", master_cryptoManager); // TODO: read a and b from some file
 			Cryptography session_cryptoManager = needhamClient.getSessionParameters("b", b_addr);

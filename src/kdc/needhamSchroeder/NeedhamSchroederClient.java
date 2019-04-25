@@ -59,7 +59,7 @@ public class NeedhamSchroederClient implements KDCClient {
 	@Override
 	public Cryptography getSessionParameters(String b, InetSocketAddress b_addr) throws NoSuchAlgorithmException, IOException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidChallangeReplyException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException, TooManyTriesException {
 
-		NonceManager nonceManager = new CounterNonceManager(0, 3);
+		NonceManager nonceManager = new CounterNonceManager(-1, 2); // The first nonce is 1, then 3, then 5, ....
 
 		for(int i=0; i < max_tries; i++) { // TODO: se algum nonce for replay ou mau, repetir?
 			try {

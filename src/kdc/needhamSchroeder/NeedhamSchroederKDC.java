@@ -34,13 +34,13 @@ public class NeedhamSchroederKDC implements KDC {
 	private SecureDatagramSocket socket;
 	private NonceManager nonceManager;
 	private String configPath;
-	
+
 	public NeedhamSchroederKDC(InetSocketAddress addr, CryptographyNS cryptoManager, String configPath) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException {
 		socket = new SecureDatagramSocket(addr, cryptoManager);
-		this.nonceManager = new CounterNonceManager(0, 3);
+		this.nonceManager = new CounterNonceManager(0, 2);
 		this.configPath = configPath;
 	}
-	
+
 	@Override
 	public void start() throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, NoSuchProviderException, IOException, InvalidPayloadTypeException, BrokenBarrierException {
 		while(true) {
@@ -49,32 +49,37 @@ public class NeedhamSchroederKDC implements KDC {
 			processRequest(sm, client_addr, configPath);
 		}
 	}
-	
+
 	private void processRequest(SecureMessage request, InetSocketAddress client_addr, String configPath) {
-		long Nc = this.getNonce();
+
 		new Thread(() -> {
 			try {
 				NS1 req = (NS1)request.getPayload();
 				String a = req.getA();
 				String b = req.getB();
-				
-				System.out.println("Received request from " + a + "(" + client_addr.toString() + ")" + " to " + b + " with nonce " + req.getNa());
+				long Na = req.getNa();
 
-				SecureDatagramSocket new_socket = new SecureDatagramSocket(req.getCryptoManagerA());
+				if(this.verifyReplay(Na)) {
+					System.err.println("Receveid replay " + Na);
+				} else {
+					System.out.println("Received request from " + a + "(" + client_addr.toString() + ")" + " to " + b + " with nonce " + Na);
 
-				// Generate Session Parameters
-				//String path = "./configs/kdc/session-ciphersuite.conf"; // TODO: ISto deveria ser args
-				byte[] securityParams = CryptoFactory.serialize(configPath); //buildSessionParameters(configPath);
+					SecureDatagramSocket new_socket = new SecureDatagramSocket(req.getCryptoManagerA());
 
-				// TODO: FALTA FAZER DINHEIRO
+					// Generate Session Parameters for A and B
+					byte[] securityParams = CryptoFactory.serialize(configPath); // TODO: renomear para buildSessionParameters(configPath);
 
-				// envia replys
-				long Na_1 = req.getNa() + 1;
-				
-				Payload payload = new NS2(Na_1, Nc, securityParams, req.getA(), req.getB(), req.getCryptoManagerB(), req.getCryptoManagerA());
-				SecureMessage sm = new SecureMessageImplementation(payload);
-				
-				new_socket.send(sm, client_addr);
+					// TODO: FALTA FAZER DINHEIRO
+
+					// Send reply to A
+					long Na_1 = req.getNa() + 1;
+					long Nc = this.getNonce();
+
+					Payload payload = new NS2(Na_1, Nc, securityParams, a, b, req.getCryptoManagerB(), req.getCryptoManagerA());
+					SecureMessage sm = new SecureMessageImplementation(payload);
+					new_socket.send(sm, client_addr);
+				}
+
 			} catch(Exception e) {
 				e.printStackTrace(); // TODO: tratar as excepções
 			}
@@ -83,27 +88,27 @@ public class NeedhamSchroederKDC implements KDC {
 
 	public InetSocketAddress receiveRequest( SecureMessage sm ) throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException {
 		InetSocketAddress addr = null;
-		
+
 		boolean replay = false;
 		do {
 			addr = socket.receive(sm);
-			
+
 			// Verify if is replay
 			long Na = ((NS1)sm.getPayload()).getNa();
 			replay = this.verifyReplay(Na);
 			if(replay)
 				System.err.println("Replayed request " + Na);
 		} while(replay);
-		
+
 		return addr;	
 	}
-	
+
 	private synchronized long getNonce() {
 		return nonceManager.getNonce();
 	}
-	
+
 	private synchronized boolean verifyReplay(long nonce) {
 		return nonceManager.verifyReplay(nonce);
 	}
-	
+
 }

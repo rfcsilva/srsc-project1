@@ -42,7 +42,7 @@ public class NeedhamSchroederServer implements KDCServer {
 			ShortBufferException, IllegalBlockSizeException, BadPaddingException {
 		this.b_addr = b_addr;
 		this.master_cryptoManager = master_cryptoManager;
-		this.nonceManager = new CounterNonceManager(0, 3);
+		this.nonceManager = new CounterNonceManager(0, 1);
 	}
 
 	@Override
