@@ -20,12 +20,12 @@ import javax.crypto.ShortBufferException;
 
 import cryptography.CryptoFactory;
 import cryptography.Cryptography;
-import cryptography.CryptographyUtils;
 import cryptography.nonce.NonceManager;
 import cryptography.nonce.WindowNonceManager;
 import kdc.KDCClient;
 import kdc.needhamSchroeder.exceptions.InvalidChallangeReplyException;
 import kdc.needhamSchroeder.exceptions.TooManyTriesException;
+import kdc.needhamSchroeder.exceptions.UnkonwnIdException;
 import secureSocket.SecureDatagramSocket;
 import secureSocket.exceptions.InvalidPayloadTypeException;
 import secureSocket.exceptions.ReplayedNonceException;
@@ -33,6 +33,7 @@ import secureSocket.secureMessages.Payload;
 import secureSocket.secureMessages.SecureMessage;
 import secureSocket.secureMessages.SecureMessageImplementation;
 import stream.UDP_KDC_Server;
+import util.CryptographyUtils;
 
 public class NeedhamSchroederClient implements KDCClient {
 
@@ -57,7 +58,7 @@ public class NeedhamSchroederClient implements KDCClient {
 	}
 	
 	@Override
-	public Cryptography getSessionParameters(String b, InetSocketAddress b_addr) throws NoSuchAlgorithmException, IOException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidChallangeReplyException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException, TooManyTriesException {
+	public Cryptography getSessionParameters(String b, InetSocketAddress b_addr) throws NoSuchAlgorithmException, IOException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidChallangeReplyException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException, TooManyTriesException, UnkonwnIdException {
 
 		NonceManager nonceManager = new WindowNonceManager(WINDOW_SIZE, master_cryptoManager.getSecureRandom());
 
@@ -91,7 +92,7 @@ public class NeedhamSchroederClient implements KDCClient {
 		throw new TooManyTriesException("" + max_tries);
 	}
 
-	private NS2 requestKeys(SecureDatagramSocket socket, InetSocketAddress kdc_addr, long Na, NonceManager nonceManager, String a, String b) throws IOException, InvalidChallangeReplyException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException, ReplayedNonceException {
+	private NS2 requestKeys(SecureDatagramSocket socket, InetSocketAddress kdc_addr, long Na, NonceManager nonceManager, String a, String b) throws IOException, InvalidChallangeReplyException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException, ReplayedNonceException, UnkonwnIdException {
 		try {
 			socket.setCryptoManager(master_cryptoManager);
 			//SecureDatagramSocket socket = new SecureDatagramSocket(master_cryptoManager);
@@ -127,7 +128,7 @@ public class NeedhamSchroederClient implements KDCClient {
 		return null;
 	}  
 
-	private void shareKeys(SecureDatagramSocket socket, Cryptography session_cryptoManager, InetSocketAddress b_addr, byte[] ticket, NonceManager nonceManager) throws IOException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException, ReplayedNonceException {
+	private void shareKeys(SecureDatagramSocket socket, Cryptography session_cryptoManager, InetSocketAddress b_addr, byte[] ticket, NonceManager nonceManager) throws IOException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException, ReplayedNonceException, UnkonwnIdException {
 		try {
 			socket.setCryptoManager(session_cryptoManager);
 			

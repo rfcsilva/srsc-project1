@@ -36,15 +36,15 @@ import cryptography.CryptoFactory;
 import cryptography.Cryptography;
 import cryptography.CryptographyDoubleMac;
 import cryptography.CryptographyHash;
-import cryptography.CryptographyNS;
-import cryptography.CryptographyUtils;
 import kdc.KDCService;
+import kdc.needhamSchroeder.CryptographyNS;
 import kdc.needhamSchroeder.NS1;
 import kdc.needhamSchroeder.NeedhamSchroederKDC;
 import secureSocket.exceptions.InvalidPayloadTypeException;
 import secureSocket.secureMessages.SecureMessage;
 import secureSocket.secureMessages.SecureMessageImplementation;
 import util.ArrayUtils;
+import util.CryptographyUtils;
 
 //TODO: renomear?
 public class UDP_KDC_Server {

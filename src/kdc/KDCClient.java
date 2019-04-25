@@ -16,10 +16,11 @@ import javax.crypto.NoSuchPaddingException;
 import cryptography.Cryptography;
 import kdc.needhamSchroeder.exceptions.InvalidChallangeReplyException;
 import kdc.needhamSchroeder.exceptions.TooManyTriesException;
+import kdc.needhamSchroeder.exceptions.UnkonwnIdException;
 import secureSocket.exceptions.InvalidPayloadTypeException;
 
 public interface KDCClient {
 
-	public Cryptography getSessionParameters(String b, InetSocketAddress b_addr) throws NoSuchAlgorithmException, IOException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidChallangeReplyException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException, TooManyTriesException;
+	public Cryptography getSessionParameters(String b, InetSocketAddress b_addr) throws NoSuchAlgorithmException, IOException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidChallangeReplyException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException, TooManyTriesException, UnkonwnIdException;
 	
 }

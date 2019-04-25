@@ -21,6 +21,7 @@ import javax.crypto.ShortBufferException;
 
 import cryptography.Cryptography;
 import cryptography.nonce.NonceManager;
+import kdc.needhamSchroeder.exceptions.UnkonwnIdException;
 import secureSocket.exceptions.BrokenIntegrityException;
 import secureSocket.exceptions.InvalidMacException;
 import secureSocket.exceptions.InvalidPayloadTypeException;
@@ -52,11 +53,11 @@ public class SecureMessageImplementation implements SecureMessage {
 	}
 
 	//TODO payload may come null if type is invalid 
-	public SecureMessageImplementation(byte[] rawContent, Cryptography cryptoManager, NonceManager nonceManager) throws IOException, InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidMacException, ReplayedNonceException, BrokenIntegrityException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException {
+	public SecureMessageImplementation(byte[] rawContent, Cryptography cryptoManager, NonceManager nonceManager) throws IOException, InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidMacException, ReplayedNonceException, BrokenIntegrityException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException, UnkonwnIdException {
 		deserialize(rawContent, cryptoManager, nonceManager);
 	}
 
-	public void deserialize(byte[] rawContent, Cryptography cryptoManager, NonceManager nonceManager) throws IOException, InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidMacException, ReplayedNonceException, InvalidPayloadTypeException, NoSuchProviderException, BrokenIntegrityException, BrokenBarrierException {
+	public void deserialize(byte[] rawContent, Cryptography cryptoManager, NonceManager nonceManager) throws IOException, InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidMacException, ReplayedNonceException, InvalidPayloadTypeException, NoSuchProviderException, BrokenIntegrityException, BrokenBarrierException, UnkonwnIdException {
 
 		ByteArrayInputStream byteIn = new ByteArrayInputStream(rawContent);
 		DataInputStream dataIn = new DataInputStream(byteIn);

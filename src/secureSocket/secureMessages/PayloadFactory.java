@@ -21,6 +21,7 @@ import kdc.needhamSchroeder.NS1;
 import kdc.needhamSchroeder.NS2;
 import kdc.needhamSchroeder.NS3;
 import kdc.needhamSchroeder.NS4;
+import kdc.needhamSchroeder.exceptions.UnkonwnIdException;
 import secureSocket.exceptions.BrokenIntegrityException;
 import secureSocket.exceptions.InvalidMacException;
 import secureSocket.exceptions.InvalidPayloadTypeException;
@@ -32,7 +33,7 @@ public class PayloadFactory {
 			throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException,
 			InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException,
 			UnrecoverableEntryException, KeyStoreException, CertificateException, IOException, InvalidMacException,
-			ReplayedNonceException, BrokenIntegrityException, NoSuchProviderException, BrokenBarrierException, InvalidPayloadTypeException {
+			ReplayedNonceException, BrokenIntegrityException, NoSuchProviderException, BrokenBarrierException, InvalidPayloadTypeException, UnkonwnIdException {
 
 		switch (payloadType) {
 		case DefaultPayload.TYPE:

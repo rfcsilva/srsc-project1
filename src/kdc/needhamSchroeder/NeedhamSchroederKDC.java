@@ -17,10 +17,10 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
 import cryptography.CryptoFactory;
-import cryptography.CryptographyNS;
 import cryptography.nonce.NonceManager;
 import cryptography.nonce.WindowNonceManager;
 import kdc.KDCService;
+import kdc.needhamSchroeder.exceptions.UnkonwnIdException;
 import secureSocket.SecureDatagramSocket;
 import secureSocket.exceptions.InvalidPayloadTypeException;
 import secureSocket.secureMessages.Payload;
@@ -87,16 +87,21 @@ public class NeedhamSchroederKDC implements KDCService {
 	public InetSocketAddress receiveRequest( SecureMessage sm ) throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException {
 		InetSocketAddress addr = null;
 
-		boolean replay = false;
+		boolean replay = false, unknown = false;
 		do {
-			addr = socket.receive(sm);
+			try {
+				addr = socket.receive(sm);
 
-			// Verify if is replay
-			long Na = ((NS1)sm.getPayload()).getNa();
-			replay = this.verifyReplay(Na);
-			if(replay)
-				System.err.println("Replayed request " + Na);
-		} while(replay);
+				// Verify if is replay
+				long Na = ((NS1)sm.getPayload()).getNa();
+				replay = this.verifyReplay(Na);
+				if(replay)
+					System.err.println("Replayed request " + Na);
+			} catch(UnkonwnIdException e) {
+				System.err.println("Unknown id: " + e.getMessage());
+				unknown = true;
+			}
+		} while(replay || unknown);
 
 		return addr;	
 	}

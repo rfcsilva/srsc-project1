@@ -20,7 +20,7 @@ import javax.crypto.ShortBufferException;
 
 import cryptography.AbstractCryptography;
 import cryptography.Cryptography;
-import cryptography.CryptographyNS;
+import kdc.needhamSchroeder.exceptions.UnkonwnIdException;
 import secureSocket.exceptions.BrokenIntegrityException;
 import secureSocket.exceptions.InvalidMacException;
 import secureSocket.exceptions.ReplayedNonceException;
@@ -110,7 +110,7 @@ public class NS1 implements Payload {
 	public static Payload deserialize(byte[] rawPayload, Cryptography criptoManager)
 			throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException,
 			InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException,
-			UnrecoverableEntryException, KeyStoreException, CertificateException, IOException, InvalidMacException, ReplayedNonceException, BrokenIntegrityException, NoSuchProviderException {
+			UnrecoverableEntryException, KeyStoreException, CertificateException, IOException, InvalidMacException, ReplayedNonceException, BrokenIntegrityException, NoSuchProviderException, UnkonwnIdException {
 
 		ByteArrayInputStream byteIn = new ByteArrayInputStream(rawPayload);
 		DataInputStream dataIn = new DataInputStream(byteIn);

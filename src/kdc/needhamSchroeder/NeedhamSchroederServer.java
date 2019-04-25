@@ -23,6 +23,7 @@ import cryptography.CryptoFactory;
 import cryptography.Cryptography;
 import cryptography.nonce.WindowNonceManager;
 import kdc.KDCServer;
+import kdc.needhamSchroeder.exceptions.UnkonwnIdException;
 import secureSocket.SecureDatagramSocket;
 import secureSocket.exceptions.InvalidPayloadTypeException;
 import secureSocket.secureMessages.SecureMessage;
@@ -51,7 +52,7 @@ public class NeedhamSchroederServer implements KDCServer {
 			throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException,
 			InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException,
 			UnrecoverableEntryException, KeyStoreException, CertificateException, IOException, NoSuchProviderException,
-			InvalidPayloadTypeException, BrokenBarrierException { // TODO: isto precisa de outo nome
+			InvalidPayloadTypeException, BrokenBarrierException, UnkonwnIdException { // TODO: isto precisa de outo nome
 
 		AtomicReference<Cryptography> cryptoManager = new AtomicReference<>(null);
 		AtomicBoolean finished = new AtomicBoolean(false);
@@ -71,7 +72,7 @@ public class NeedhamSchroederServer implements KDCServer {
 	private void listenRequests(AtomicBoolean finished, AtomicReference<Cryptography> cryptoManager, Cryptography master_cryptoManager) 
 			throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, 
 			UnrecoverableEntryException, KeyStoreException,	CertificateException, IOException, ShortBufferException, 
-			IllegalBlockSizeException, BadPaddingException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException {
+			IllegalBlockSizeException, BadPaddingException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException, UnkonwnIdException {
 
 		/*new Thread(() -> {
 			try {*/

@@ -1,4 +1,4 @@
-package cryptography;
+package kdc.needhamSchroeder;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -18,7 +18,12 @@ import javax.crypto.Mac;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
+import cryptography.AbstractCryptography;
+import cryptography.CryptoFactory;
+import cryptography.Cryptography;
+import kdc.needhamSchroeder.exceptions.UnkonwnIdException;
 import util.ArrayUtils;
+import util.arKeyStore;
 
 public class CryptographyNS extends AbstractCryptography implements Cryptography {
 
@@ -26,13 +31,13 @@ public class CryptographyNS extends AbstractCryptography implements Cryptography
 	private static final String KM = "Km";
 	private String password;	
 	private String macAlgorithm;
-	private KeyStore key_store;
+	private arKeyStore key_store;
 	private byte[] iv;
 	private String cipherAlgorithm;
 	private String cipherProvider;
 	private String outMacProvider;
 	
-	public CryptographyNS(SecureRandom sr, String password, KeyStore keyStore ,String macAlgorithm, byte[] iv, String cipherAlgorithm, String cipherProvider, String outerMacProvider) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, FileNotFoundException, IOException {
+	public CryptographyNS(SecureRandom sr, String password, arKeyStore keyStore ,String macAlgorithm, byte[] iv, String cipherAlgorithm, String cipherProvider, String outerMacProvider) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, FileNotFoundException, IOException {
 		super(null, null, null, sr); 
 		this.password = password;
 		key_store = keyStore;
@@ -62,13 +67,14 @@ public class CryptographyNS extends AbstractCryptography implements Cryptography
 	}
 	
 	
-	public AbstractCryptography getCryptographyFromId(String id) throws NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, CertificateException, FileNotFoundException, IOException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException, NoSuchProviderException {
+	public AbstractCryptography getCryptographyFromId(String id) throws NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, CertificateException, FileNotFoundException, IOException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException, NoSuchProviderException, UnkonwnIdException {
 		
-		// TODO: meter a merda dos providers
-		SecretKey km = CryptographyUtils.getKey(key_store, password, KM + id);
+		if( !(key_store.contains(KM + id) || key_store.contains(K + id)) )
+			throw new UnkonwnIdException(id);
 		
+		SecretKey km = key_store.getKey(KM + id);
 		Mac outerMac = CryptoFactory.initMac(macAlgorithm, km, outMacProvider);
-		SecretKey k = CryptographyUtils.getKey(key_store, password, K + id);
+		SecretKey k = key_store.getKey(K + id);
 		Cipher encryptCipher = CryptoFactory.buildCipher(cipherAlgorithm, Cipher.ENCRYPT_MODE, k, iv, cipherProvider);
 		Cipher decryptCipher = CryptoFactory.buildCipher(cipherAlgorithm, Cipher.DECRYPT_MODE, k, iv, cipherProvider);
 		
@@ -104,7 +110,9 @@ public class CryptographyNS extends AbstractCryptography implements Cryptography
 		String cipherProvider = props.getProperty(CryptoFactory.CIPHER_PROVIDER);
 		String outerMacProvider = props.getProperty(CryptoFactory.OUTTER_MAC_PROVIDER);
 		
-		KeyStore keyStore = CryptographyUtils.loadKeyStrore(path, password, type);
+		//KeyStore keyStore = arKeyStore.loadKeyStore(path, password, type);
+		
+		arKeyStore keyStore = new arKeyStore(path, password, type);
 		return new CryptographyNS(sr, password, keyStore, macAlgorithm, iv, cipherAlgorithm, cipherProvider, outerMacProvider);
 		
 		

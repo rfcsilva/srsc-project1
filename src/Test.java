@@ -12,9 +12,8 @@ import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-
-import cryptography.CryptographyUtils;
 import util.ArrayUtils;
+import util.CryptographyUtils;
 
 public class Test {
 

@@ -25,6 +25,7 @@ import javax.crypto.ShortBufferException;
 import cryptography.Cryptography;
 import cryptography.nonce.NonceManager;
 import cryptography.nonce.WindowNonceManager;
+import kdc.needhamSchroeder.exceptions.UnkonwnIdException;
 import secureSocket.exceptions.*;
 import secureSocket.secureMessages.ClearPayload;
 import secureSocket.secureMessages.DefaultPayload;
@@ -85,7 +86,7 @@ public class SecureDatagramSocket {
 
 	public InetSocketAddress receive(SecureMessage sm) throws IOException, ShortBufferException, IllegalBlockSizeException,
 	BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException,
-	NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException {
+	NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException, UnkonwnIdException {
 
 		byte[] buffer = new byte[4 * 1024];
 		DatagramPacket p = new DatagramPacket(buffer, buffer.length);
@@ -106,7 +107,7 @@ public class SecureDatagramSocket {
 
 	public void receive(DatagramPacket p) throws IOException, ShortBufferException, IllegalBlockSizeException,
 	BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException,
-	NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException {
+	NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException, UnkonwnIdException {
 
 		byte[] message = null;
 		while (true) {
