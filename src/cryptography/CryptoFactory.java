@@ -30,6 +30,10 @@ import util.ArrayUtils;
 
 public class CryptoFactory {
 
+	private static final String CIPHER_PROVIDER = "cipher-provider";
+	private static final String MAC_PROVIDER = "mac-provider";
+	private static final String HASH_PROVIDER = "hash-provider";
+
 	private static final int INITIAL_MSG_NUMBER = 1;
 	private static final String IV = "iv";
 	private static final String HASH_CIPHERSUITE = "hash-ciphersuite";
@@ -44,7 +48,7 @@ public class CryptoFactory {
 	private static final String KEYSTORE_TYPE = "keystore-type";
 	private static final String SECURE_RANDOM = "secure-random";
 	private static final String IV_SIZE = "iv-size";
-	
+
 	private static final String SESSION_KEY_GEN_ALGORITHM =  "session-key-gen-alg";
 	private static final String SESSION_KEY_SIZE = "session-key-size";
 	private static final String OUTTER_MAC_KEY_GEN_ALGORITHM = "outer-mac-key-gen-alg";
@@ -54,13 +58,13 @@ public class CryptoFactory {
 	private static final String USE_HASH = "use-hash";
 	private static final String HASH_CIPHER_SUITE = "hash-ciphersuite";
 	private static final String TAG_SIZE = "tag-size";
-	
-		
+
+
 	public static Cipher buildCipher(String cipherAlgorithm, int cipherMode, SecretKey key, byte[] iv, int tagSize)
 			throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException,
 			InvalidAlgorithmParameterException, NoSuchProviderException {
 		Cipher cipher = Cipher.getInstance(cipherAlgorithm);
-				
+
 		if (iv != null && iv.length > 0) {
 			if(tagSize > 0 && cipherAlgorithm.contains("GCM")) {
 				cipher.init(cipherMode, key, new GCMParameterSpec(tagSize, iv));
@@ -71,7 +75,7 @@ public class CryptoFactory {
 
 		return cipher;
 	}
-	
+
 	public static Cipher buildGCMCipher(String cipherAlgorithm, int cipherMode, SecretKey key, byte[] iv, int tagSize)
 			throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException,
 			InvalidAlgorithmParameterException {
@@ -79,7 +83,7 @@ public class CryptoFactory {
 		cipher.init(cipherMode, key, new GCMParameterSpec(tagSize, iv));
 		return cipher;
 	}
-	
+
 	public static Cipher buildCipher(String cipherAlgorithm, int cipherMode, SecretKey key)
 			throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException,
 			InvalidAlgorithmParameterException {
@@ -89,11 +93,25 @@ public class CryptoFactory {
 
 		return cipher;
 	}
-	
+
+	public static Cipher buildCipher(String cipherAlgorithm, int cipherMode, SecretKey key, byte[] iv, String provider) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, NoSuchProviderException {
+
+		if(provider != null) {
+			Cipher cipher = Cipher.getInstance(cipherAlgorithm, provider);
+			if(iv != null) {
+				cipher.init(cipherMode, key, new IvParameterSpec(iv));
+			}else
+				cipher.init(cipherMode, key);
+			
+			return cipher;
+		}else 
+			return buildCipher(cipherAlgorithm, cipherMode, key, iv);
+		
+	}
 
 	public static Cipher buildCipher(String cipherAlgorithm, int cipherMode, SecretKey key, byte[] iv) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException { 
-		Cipher cipher =	Cipher.getInstance(cipherAlgorithm);
 
+		Cipher cipher =	Cipher.getInstance(cipherAlgorithm);
 		if( iv != null )
 			cipher.init(cipherMode, key, new IvParameterSpec(iv));
 		else
@@ -112,7 +130,7 @@ public class CryptoFactory {
 		return MessageDigest.getInstance(hashAlgorithm);
 	}
 
-	public static Cryptography loadFromConfig(String path) throws IOException, NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException {
+	public static Cryptography loadFromConfig(String path) throws IOException, NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException, NoSuchProviderException {
 
 		//Load file
 		Properties ciphersuit_properties = loadFile(path);
@@ -137,8 +155,8 @@ public class CryptoFactory {
 		//Build encrypt Cipher 
 		Cipher encryptCipher = null, decryptCipher = null;
 		if (keys[0] != null) {
-			encryptCipher = buildCipher(ciphersuit_properties.getProperty(SESSION_CIPHERSUITE), Cipher.ENCRYPT_MODE, keys[0], iv);
-			decryptCipher = buildCipher(ciphersuit_properties.getProperty(SESSION_CIPHERSUITE), Cipher.DECRYPT_MODE, keys[0], iv);
+			encryptCipher = buildCipher(ciphersuit_properties.getProperty(SESSION_CIPHERSUITE), Cipher.ENCRYPT_MODE, keys[0], iv, ciphersuit_properties.getProperty(CIPHER_PROVIDER));
+			decryptCipher = buildCipher(ciphersuit_properties.getProperty(SESSION_CIPHERSUITE), Cipher.DECRYPT_MODE, keys[0], iv, ciphersuit_properties.getProperty(CIPHER_PROVIDER));
 		}
 
 		Mac outerMac = null;
@@ -192,23 +210,23 @@ public class CryptoFactory {
 
 		//Create Secure Random
 		SecureRandom sr = generateRandom(ciphersuit_properties.getProperty(SECURE_RANDOM));
-		
+
 		boolean useHash = Boolean.parseBoolean(ciphersuit_properties.getProperty(USE_HASH));
 		SecretKey[] keys = generateKeys(ciphersuit_properties.getProperty(SESSION_KEY_GEN_ALGORITHM), Integer.parseInt(ciphersuit_properties.getProperty(SESSION_KEY_SIZE)),
 				ciphersuit_properties.getProperty(OUTTER_MAC_KEY_GEN_ALGORITHM), Integer.parseInt(ciphersuit_properties.getProperty(OUTTER_MAC_KEY_SIZE)),
 				ciphersuit_properties.getProperty(INNER_MAC_KEY_GEN_ALGORITHM), Integer.parseInt( ciphersuit_properties.getProperty(INNER_MAC_KEY_SIZE)),
 				useHash);
-		
-		
+
+
 		//Generate IV
 		byte[] iv = generateIv(ciphersuit_properties.getProperty(SESSION_CIPHERSUITE), Integer.parseInt(ciphersuit_properties.getProperty(IV_SIZE)), sr);
-		
-		
+
+
 		//tag
 		String aux = ciphersuit_properties.getProperty(TAG_SIZE);
 		int tagSize = (aux == null) ? 0 : Integer.parseInt(aux);
-		
-		
+
+
 		// Hash Suite
 		String hashAlgorithm = ciphersuit_properties.getProperty(HASH_CIPHER_SUITE);
 
