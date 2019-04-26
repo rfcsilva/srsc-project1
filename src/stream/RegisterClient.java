@@ -6,7 +6,6 @@ import java.util.Scanner;
 import javax.crypto.SecretKey;
 
 import cryptography.CryptoFactory;
-import util.CryptographyUtils;
 import util.arKeyStore;
 
 public class RegisterClient {
@@ -62,8 +61,9 @@ public class RegisterClient {
 				for(String s : keystore.aliases()) {
 					System.out.println(s);
 				}
+			} else if(cmd.equals("save") || cmd.equals("store")) {
+				keystore.store();
 			}
-			
 		}
 		
 	}

@@ -76,7 +76,7 @@ public class CryptoFactory {
 	private static final String DEFAULT_KEY_SIZE = "256";
 	private static final String DEFAULT_SESSION_CIPHERSUITE = "AES/CBC/PKCS5Padding";
 	private static final String DEFAULT_SECURE_RANDOM_ALGORITHM = "sha1PRNG";
-	private static final String DEFAULT_SECURE_RANDOM_PROVIDER = "sha1PRNG";
+	private static final String DEFAULT_SECURE_RANDOM_PROVIDER = null;
 	private static final String DEFAULT_TAG_SIZE = "128";
 	private static final String DEFAULT_OUTER_MAC = "HMACSHA256";
 
