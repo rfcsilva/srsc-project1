@@ -10,7 +10,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
-import java.util.Base64;
 import java.util.concurrent.BrokenBarrierException;
 
 import javax.crypto.BadPaddingException;
@@ -32,8 +31,6 @@ import secureSocket.exceptions.ReplayedNonceException;
 import secureSocket.secureMessages.Payload;
 import secureSocket.secureMessages.SecureMessage;
 import secureSocket.secureMessages.SecureMessageImplementation;
-import stream.UDP_KDC_Server;
-import util.CryptographyUtils;
 import util.Utils;
 
 public class NeedhamSchroederClient implements KeyEstablishmentProtocolClient {
