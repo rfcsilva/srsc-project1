@@ -61,7 +61,8 @@ class arStreamServer {
 		
 		SecureDatagramSocket socket = new SecureDatagramSocket(session_cryptoManager);
 
-		InetSocketAddress addr = new InetSocketAddress( args[1], Integer.parseInt(args[2]));
+		//InetSocketAddress addr = new InetSocketAddress( args[1], Integer.parseInt(args[2]));
+		InetSocketAddress addr = kdc_server.getClientAddr();
 		DatagramPacket p = new DatagramPacket(buff, buff.length, addr );
 		long t0 = System.nanoTime(); // tempo de referencia para este processo
 		long q0 = 0;
