@@ -259,7 +259,7 @@ public class CryptoFactory {
 		return ciphersuit_properties;
 	}
 
-	public static byte[] serialize(String path) throws IOException, NoSuchAlgorithmException, NoSuchProviderException {
+	public static byte[] buildSessionParameters(String path) throws IOException, NoSuchAlgorithmException, NoSuchProviderException {
 
 		// Load file
 		Properties ciphersuit_properties = loadFile(path);
@@ -367,7 +367,7 @@ public class CryptoFactory {
 		return data;
 	}
 
-	public static Cryptography deserialize(byte[] rawParams)
+	public static Cryptography deserializeSessionParameters(byte[] rawParams)
 			throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException,
 			InvalidAlgorithmParameterException, NoSuchProviderException {
 

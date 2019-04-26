@@ -18,7 +18,6 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
-import cryptography.AbstractCryptography;
 import cryptography.Cryptography;
 import keyEstablishmentProtocol.needhamSchroeder.exceptions.UnkonwnIdException;
 import secureSocket.exceptions.BrokenIntegrityException;
@@ -27,8 +26,9 @@ import secureSocket.exceptions.ReplayedNonceException;
 import secureSocket.secureMessages.Payload;
 import util.Utils;
 
-// TODO : find better name for the class
 public class NS0 implements Payload {
+
+	private static final String INVALID_OUTER_MAC = "Invalid Outer Mac";
 
 	public static final byte TYPE = 0x10;
 
@@ -88,8 +88,6 @@ public class NS0 implements Payload {
 		return (short) (this.cipherText.length + this.outerMac.length);
 	}
 
-	// TODO handle bad macs
-	// TODO : retornar Payload ou DEfaultPayload?
 	public static Payload deserialize(byte[] rawPayload, Cryptography criptoManager)
 			throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException,
 			InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException,
@@ -97,7 +95,7 @@ public class NS0 implements Payload {
 
 		byte[][] messageParts = criptoManager.splitOuterMac(rawPayload);
 		if (!criptoManager.validateOuterMac(messageParts[0], messageParts[1]))
-			throw new InvalidMacException("Invalid Outer Mac");
+			throw new InvalidMacException(INVALID_OUTER_MAC);
 		else {
 		
 		ByteArrayInputStream byteIn = new ByteArrayInputStream(messageParts[0]);

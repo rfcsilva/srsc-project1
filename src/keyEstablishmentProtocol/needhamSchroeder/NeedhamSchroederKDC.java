@@ -83,7 +83,7 @@ public class NeedhamSchroederKDC implements KeyEstablishmentProtocolKDC {
 					SecureDatagramSocket new_socket = new SecureDatagramSocket(req.getCryptoManagerA());
 
 					// Generate Session Parameters for A and B
-					byte[] securityParams = CryptoFactory.serialize(configPath); // TODO: renomear para buildSessionParameters(configPath);
+					byte[] securityParams = CryptoFactory.buildSessionParameters(configPath);
 
 					// TODO: FALTA FAZER DINHEIRO
 
@@ -91,8 +91,6 @@ public class NeedhamSchroederKDC implements KeyEstablishmentProtocolKDC {
 					long Na_1 = req.getNa() + 1;
 					long Nc = this.getNonce();
 					
-					//TODO RECEIVE AS ARG
-					// TODO -> validar os args ??
 					Payload payload = null;
 					String server_addr = services.get(b);
 					if(server_addr != null) {
