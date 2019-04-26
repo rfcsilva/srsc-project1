@@ -40,6 +40,7 @@ public class NS1 implements Payload {
 	private String b;
 	private long na;
 	private String[] arguments;
+	private byte[] cipheredArgs;
 	private byte[] message;
 	private byte[] outerMac;
 	
@@ -56,40 +57,72 @@ public class NS1 implements Payload {
 		this.na = Na;
 		this.arguments = arguments;
 
-		this.message = buildMessage(a, b, Na, arguments);
+		this.cipheredArgs = cryptoManager.encrypt(serializeArgs(this.arguments));
+		
+		this.message = buildMessage(a, b, Na, this.cipheredArgs);
 
 		this.outerMac = cryptoManager.computeOuterMac(message);
 	}
-
-	private NS1(String a, String b, long Na, String[] arguments, byte[] outerMac, Cryptography criptoManagerA, Cryptography criptoManagerB) {
-		this.a = a;
-		this.b = b;
-		this.na = Na;
-		this.arguments = arguments;
-		this.outerMac = outerMac;
-		this.criptoManagerA = criptoManagerA;
-		this.criptoManagerB= criptoManagerB;
-	}
-
-	private static byte[] buildMessage(String a, String b, long Na, String[] arguments) throws IOException {
+	
+	private byte[] serializeArgs(String[] args) throws IOException {
 		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
 		DataOutputStream dataOut = new DataOutputStream(byteOut);
-
-		/*dataOut.writeInt(a.length);
-		dataOut.write(a, 0, a.length);
-		dataOut.writeInt(b.length);
-		dataOut.write(b, 0, b.length);*/
-		
-		dataOut.writeUTF(a);
-		dataOut.writeUTF(b);
-		
-		dataOut.writeLong(Na);
 		
 		dataOut.writeInt(arguments.length);
 		for(int i = 0; i < arguments.length; i++) {
 			dataOut.writeUTF(arguments[i]);
 		}
 
+		dataOut.flush();
+		byteOut.flush();
+
+		byte[] msg = byteOut.toByteArray();
+
+		dataOut.close();
+		byteOut.close();
+
+		return msg;
+	}
+	
+	private static String[] deserializeArgs(byte[] raw_args) throws IOException {
+		ByteArrayInputStream byteIn = new ByteArrayInputStream(raw_args);
+		DataInputStream dataIn = new DataInputStream(byteIn);
+		
+		int length = dataIn.readInt();
+		String[] arguments = new String[length];
+		for(int i = 0; i < length; i++) {
+			arguments[i] = dataIn.readUTF();
+		}
+		
+		dataIn.close();
+		byteIn.close();
+		
+		return arguments;
+	}
+
+	private NS1(String a, String b, long Na, String[] arguments, byte[] cipheredArgs, byte[] outerMac, Cryptography criptoManagerA, Cryptography criptoManagerB) {
+		this.a = a;
+		this.b = b;
+		this.na = Na;
+		this.arguments = arguments;
+		this.cipheredArgs = cipheredArgs;
+		this.outerMac = outerMac;
+		this.criptoManagerA = criptoManagerA;
+		this.criptoManagerB= criptoManagerB;
+	}
+
+	private static byte[] buildMessage(String a, String b, long Na, byte[] cipheredArgs) throws IOException {
+		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+		DataOutputStream dataOut = new DataOutputStream(byteOut);
+		
+		dataOut.writeUTF(a);
+		dataOut.writeUTF(b);
+		
+		dataOut.writeLong(Na);
+		
+		dataOut.writeInt(cipheredArgs.length);
+		dataOut.write(cipheredArgs, 0, cipheredArgs.length);
+		
 		dataOut.flush();
 		byteOut.flush();
 
@@ -138,10 +171,8 @@ public class NS1 implements Payload {
 		long Na = dataIn.readLong();
 		
 		int length = dataIn.readInt();
-		String[] arguments = new String[length];
-		for(int i = 0; i < length; i++) {
-			arguments[i] = dataIn.readUTF();
-		}
+		byte[] cipheredArgs = new byte[length];
+		dataIn.read(cipheredArgs, 0, length);
 
 		dataIn.close();
 		byteIn.close();
@@ -149,11 +180,13 @@ public class NS1 implements Payload {
 		AbstractCryptography criptoManagerA = ((CryptographyNS) criptoManager).getCryptographyFromId(a);
 		AbstractCryptography criptoManagerB = ((CryptographyNS) criptoManager).getCryptographyFromId(b);
 		
+		String[] arguments = deserializeArgs(criptoManagerA.decrypt(cipheredArgs));
+		
 		byte[][] messageParts = criptoManagerA.splitOuterMac(rawPayload);
 		if (!criptoManagerA.validateOuterMac(messageParts[0], messageParts[1]))
 			throw new InvalidMacException("Invalid Outer Mac");
 
-		return new NS1(a, b, Na, arguments, messageParts[1], criptoManagerA, criptoManagerB); // Falta a msg -> isto é o que?
+		return new NS1(a, b, Na, arguments, cipheredArgs, messageParts[1], criptoManagerA, criptoManagerB); // Falta a msg -> isto é o que?
 	}	
 	
 	public Cryptography getCryptoManagerA() {
