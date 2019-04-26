@@ -17,7 +17,9 @@ import secureSocket.exceptions.InvalidMacException;
 import secureSocket.secureMessages.Payload;
 import util.Utils;
 
-public class NS2 implements Payload { //{Na+1, Nc, Ks , B, {Nc, A, B, Ks}KB }KA 
+public class NS2 implements Payload { 
+
+	private static final String INVALID_OUTTER_MAC = "Invalid Outter Mac";
 
 	public static final byte TYPE = 0x12;
 	
@@ -72,19 +74,19 @@ public class NS2 implements Payload { //{Na+1, Nc, Ks , B, {Nc, A, B, Ks}KB }KA
 		dataOut.flush();
 		byteOut.flush();
 
-		byte[] msg = byteOut.toByteArray();
+		byte[] data = byteOut.toByteArray();
 
 		dataOut.close();
 		byteOut.close();
 		
-		return cryptoManagerA.encrypt(msg);
+		return cryptoManagerA.encrypt(data);
 	}
 
 	public static Payload deserialize(byte[] rawPayload, Cryptography criptoManager) throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, IOException, InvalidMacException {
 		
 		byte[][] messageParts = criptoManager.splitOuterMac(rawPayload);
 		if (!criptoManager.validateOuterMac(messageParts[0], messageParts[1]))
-			throw new InvalidMacException("Invalid Outter Mac");
+			throw new InvalidMacException(INVALID_OUTTER_MAC);
 		else {
 			byte[] plainText = criptoManager.decrypt(messageParts[0]);
 

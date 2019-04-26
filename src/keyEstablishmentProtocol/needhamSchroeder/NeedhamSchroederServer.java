@@ -93,6 +93,7 @@ public class NeedhamSchroederServer implements KeyEstablishmentProtocolServer {
 	private void processRequest(NS3 ns3, InetSocketAddress addr, RequestHandler requestHandler) {
 		new Thread(() -> {
 			try {
+				
 				Cryptography session_cryptoManager = CryptoFactory.deserializeSessionParameters( ns3.getKs() ); 
 
 				SecureDatagramSocket new_socket = new SecureDatagramSocket(session_cryptoManager);

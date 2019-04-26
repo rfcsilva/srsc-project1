@@ -27,13 +27,11 @@ import secureSocket.exceptions.ReplayedNonceException;
 import secureSocket.secureMessages.Payload;
 import util.Utils;
 
-// TODO : find better name for the class
 public class NS1 implements Payload {
 
-	public static final byte TYPE = 0x11;
+	private static final String INVALID_OUTER_MAC = "Invalid Outer Mac";
 
-	// Encryption support
-	// private static Cryptography2 criptoService;
+	public static final byte TYPE = 0x11;
 
 	// Payload data
 	private String a;
@@ -76,12 +74,12 @@ public class NS1 implements Payload {
 		dataOut.flush();
 		byteOut.flush();
 
-		byte[] msg = byteOut.toByteArray();
+		byte[] data = byteOut.toByteArray();
 
 		dataOut.close();
 		byteOut.close();
 
-		return msg;
+		return data;
 	}
 	
 	private static String[] deserializeArgs(byte[] raw_args) throws IOException {
@@ -146,8 +144,6 @@ public class NS1 implements Payload {
 		return (short) (message.length + outerMac.length);
 	}
 
-	// TODO handle bad macs
-	// TODO : retornar Payload ou DEfaultPayload?
 	public static Payload deserialize(byte[] rawPayload, Cryptography criptoManager)
 			throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException,
 			InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException,
@@ -156,15 +152,6 @@ public class NS1 implements Payload {
 		ByteArrayInputStream byteIn = new ByteArrayInputStream(rawPayload);
 		DataInputStream dataIn = new DataInputStream(byteIn);
 
-		//read a
-		/*int a_size = dataIn.readInt();
-		byte[] a  = new byte[a_size];
-		dataIn.read(a, 0, a_size);
-		
-		//read b
-		int b_size = dataIn.readInt();
-		byte[] b  = new byte[b_size];
-		dataIn.read(b, 0, b_size);*/
 		String a = dataIn.readUTF();
 		String b = dataIn.readUTF();
 
@@ -184,9 +171,9 @@ public class NS1 implements Payload {
 		
 		byte[][] messageParts = criptoManagerA.splitOuterMac(rawPayload);
 		if (!criptoManagerA.validateOuterMac(messageParts[0], messageParts[1]))
-			throw new InvalidMacException("Invalid Outer Mac");
+			throw new InvalidMacException(INVALID_OUTER_MAC);
 
-		return new NS1(a, b, Na, arguments, cipheredArgs, messageParts[1], criptoManagerA, criptoManagerB); // Falta a msg -> isto é o que?
+		return new NS1(a, b, Na, arguments, cipheredArgs, messageParts[1], criptoManagerA, criptoManagerB);
 	}	
 	
 	public Cryptography getCryptoManagerA() {

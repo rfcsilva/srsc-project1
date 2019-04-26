@@ -19,6 +19,8 @@ import util.Utils;
 
 public class NS4 implements Payload {
 
+	private static final String INVALID_OUTTER_MAC = "Invalid Outter Mac";
+
 	public static final byte TYPE = 0x14;
 	
 	private long nb;
@@ -47,12 +49,12 @@ public class NS4 implements Payload {
 		dataOut.flush();
 		byteOut.flush();
 
-		byte[] msg = byteOut.toByteArray();
+		byte[] data = byteOut.toByteArray();
 
 		dataOut.close();
 		byteOut.close();
 		
-		return msg;
+		return data;
 	}
 
 	@Override
@@ -73,7 +75,7 @@ public class NS4 implements Payload {
 	public static Payload deserialize(byte[] rawPayload, Cryptography cryptoManager) throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, IOException, InvalidMacException {
 		byte[][] messageParts = cryptoManager.splitOuterMac(rawPayload);		
 		if (!cryptoManager.validateOuterMac(messageParts[0], messageParts[1]))
-			throw new InvalidMacException("Invalid Outter Mac");
+			throw new InvalidMacException(INVALID_OUTTER_MAC);
 		else {
 			byte[] plainText = cryptoManager.decrypt(messageParts[0]);
 			ByteArrayInputStream byteIn = new ByteArrayInputStream(plainText);
