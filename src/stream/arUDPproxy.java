@@ -39,6 +39,7 @@ import cryptography.CryptoFactory;
 import cryptography.Cryptography;
 import keyEstablishmentProtocol.KeyEstablishmentProtocolClient;
 import keyEstablishmentProtocol.needhamSchroeder.NeedhamSchroederClient;
+import keyEstablishmentProtocol.needhamSchroeder.exceptions.UnkonwnServerException;
 import secureSocket.SecureDatagramSocket;
 import secureSocket.exceptions.InvalidPayloadTypeException;
 
@@ -85,7 +86,7 @@ class arUDPproxy {
 			
 			Cryptography master_cryptoManager = CryptoFactory.getInstace(args[2], args[0]);
 			KeyEstablishmentProtocolClient kdc_client = new NeedhamSchroederClient(kdc_addr, "proxy", master_cryptoManager); // TODO: read a and b from some file
-			cryptoManager = kdc_client.getSessionParameters("movie-server", new String[] {"monsters"}); // TODO: passar filme como arg
+			cryptoManager = kdc_client.getSessionParameters("movie-server2", new String[] {"monsters"}); // TODO: passar filme como arg
 			
 			//inSocket = new SecureDatagramSocket(inSocketAddress, cryptoManager);
 			
@@ -107,6 +108,9 @@ class arUDPproxy {
 					outSocket.send(new DatagramPacket(inPacket.getData(), inPacket.getLength(), outSocketAddress));
 				}
 			}
+		} catch (UnkonwnServerException e) {
+			System.err.println(e.getMessage());
+			System.exit(-1);
 		} catch (InvalidKeyException e) {
 			System.err.println("Invalid Key or ciphersuite parameters: " + e.getMessage());
 			System.exit(-1);

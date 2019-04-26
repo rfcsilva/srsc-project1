@@ -9,6 +9,9 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.BrokenBarrierException;
 
 import javax.crypto.BadPaddingException;
@@ -29,14 +32,29 @@ import secureSocket.secureMessages.SecureMessageImplementation;
 
 public class NeedhamSchroederKDC implements KeyEstablishmentProtocolKDC {
 
+	private static final int WINDOW_SIZE = 100;
 	private SecureDatagramSocket socket;
 	private NonceManager nonceManager;
 	private String configPath;
+	
+	private Map<String, String> services;
 
-	public NeedhamSchroederKDC(InetSocketAddress addr, CryptographyNS cryptoManager, String configPath) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException {
+	public NeedhamSchroederKDC(InetSocketAddress addr, CryptographyNS cryptoManager, String configPath, String servicesPath) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException {
 		socket = new SecureDatagramSocket(addr, cryptoManager);
-		this.nonceManager = new WindowNonceManager(100, cryptoManager.getSecureRandom());
+		this.nonceManager = new WindowNonceManager(WINDOW_SIZE, cryptoManager.getSecureRandom());
 		this.configPath = configPath;
+		
+		this.services = loadServices(servicesPath);
+	}
+
+	private Map<String, String> loadServices(String servicesPath) throws IOException {
+		//Load file
+		Properties services_properties = CryptoFactory.loadFile(servicesPath);
+		Map<String, String> services = new HashMap<>(services_properties.size());
+		
+		services_properties.forEach( (k,v) -> services.put((String)k, (String)v));
+		
+		return services;
 	}
 
 	@Override
@@ -75,7 +93,13 @@ public class NeedhamSchroederKDC implements KeyEstablishmentProtocolKDC {
 					
 					//TODO RECEIVE AS ARG
 					// TODO -> validar os args ??
-					Payload payload = new NS2(Na_1, Nc, securityParams, a, b, "localhost:8889", req.getArgs(), req.getCryptoManagerB(), req.getCryptoManagerA());
+					Payload payload = null;
+					String server_addr = services.get(b);
+					if(server_addr != null) {
+						payload = new NS2(Na_1, Nc, securityParams, a, b, server_addr, req.getArgs(), req.getCryptoManagerB(), req.getCryptoManagerA());
+					} else {
+						payload = new NS0(ErrorCodes.UNKNOWN_SERVER.ordinal(), "Unknown Server " + b, req.getCryptoManagerA());
+					}
 					SecureMessage sm = new SecureMessageImplementation(payload);
 					new_socket.send(sm, client_addr);
 				}

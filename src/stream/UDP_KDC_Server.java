@@ -52,8 +52,9 @@ public class UDP_KDC_Server {
 	static InetSocketAddress my_addr;
 
 	public static void main(String[] args) throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException {
-		if(args.length < 2) {
-			System.out.println("usage: kdc <ip> <port> <master-ciphersuit.conf> <session-ciphersuit.conf>");
+		if(args.length < 5) {
+			System.out.println("usage: kdc <ip> <port> <master-ciphersuit.conf> <session-ciphersuit.conf> <services.conf>");
+			System.exit(-1);
 		}
 
 		my_addr = new InetSocketAddress( args[0], Integer.parseInt(args[1]) );
@@ -62,7 +63,7 @@ public class UDP_KDC_Server {
 		
 		Properties masterCipherSuite = CryptoFactory.loadFile(args[2]);		
 		CryptographyNS nsc = CryptographyNS.loadFromprops(masterCipherSuite);
-		KeyEstablishmentProtocolKDC kdc = new NeedhamSchroederKDC(my_addr, nsc, args[3]);
+		KeyEstablishmentProtocolKDC kdc = new NeedhamSchroederKDC(my_addr, nsc, args[3], args[4]);
 		kdc.start();
 	}
 

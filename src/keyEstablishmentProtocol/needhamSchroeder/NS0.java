@@ -51,7 +51,6 @@ public class NS0 implements Payload {
 		this.outerMac = cryptoManager.computeOuterMac(this.cipherText);
 	}
 	
-
 	private NS0(int error_code, String error_msg, byte[] cipherText, byte[] outerMac) {
 		this.error_code = error_code;
 		this.error_msg = error_msg;
