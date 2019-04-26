@@ -25,33 +25,36 @@ public class NS2 implements Payload { //{Na+1, Nc, Ks , B, {Nc, A, B, Ks}KB }KA
 	private long Nc;
 	private byte[] Ks;
 	private String b;
+	private String b_addr;
 	private byte[] ticket;
 	private byte[] cipherText;
 	private byte[] outerMac;
 	
-	public NS2(long Na_1, long Nc, byte[] Ks, String a, String b, Cryptography cryptoManagerB, Cryptography cryptoManagerA) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, ShortBufferException, IOException { 
+	public NS2(long Na_1, long Nc, byte[] Ks, String a, String b, String b_addr,Cryptography cryptoManagerB, Cryptography cryptoManagerA) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, ShortBufferException, IOException { 
 		this.Na_1 = Na_1;
 		this.Nc = Nc;
 		this.Ks = Ks;
 		this.b = b;
+		this.b_addr = b_addr;
 		this.ticket =  cryptoManagerB.encrypt((new Ticket(Nc, a, b, Ks)).serialize());
 
-		this.cipherText = buildPayload(Na_1, Nc, Ks, b, ticket, cryptoManagerA);
+		this.cipherText = buildPayload(Na_1, Nc, Ks, b, b_addr, ticket, cryptoManagerA);
 		
 		this.outerMac = cryptoManagerA.computeOuterMac(cipherText);
 	}
 	
-	private NS2(long Na_1, long Nc, byte[] Ks, String b, byte[] ticket, byte[] cipherText, byte[] outerMac) {
+	private NS2(long Na_1, long Nc, byte[] Ks, String b, String b_addr,byte[] ticket, byte[] cipherText, byte[] outerMac) {
 		this.Na_1 = Na_1;
 		this.Nc = Nc;
 		this.Ks = Ks;
 		this.b = b;
+		this.b_addr = b_addr;
 		this.ticket = ticket;
 		this.cipherText = cipherText;
 		this.outerMac = outerMac;
 	}
 	
-	private byte[] buildPayload(long Na_1, long Nc, byte[] Ks, String b, byte[] ticket, Cryptography cryptoManagerA) throws IOException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, ShortBufferException {
+	private byte[] buildPayload(long Na_1, long Nc, byte[] Ks, String b, String b_addr, byte[] ticket, Cryptography cryptoManagerA) throws IOException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, ShortBufferException {
 		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
 		DataOutputStream dataOut = new DataOutputStream(byteOut);
 
@@ -61,6 +64,7 @@ public class NS2 implements Payload { //{Na+1, Nc, Ks , B, {Nc, A, B, Ks}KB }KA
 		dataOut.write(Ks, 0, Ks.length);
 		
 		dataOut.writeUTF(b);
+		dataOut.writeUTF(b_addr);
 		
 		dataOut.writeInt(ticket.length);
 		dataOut.write(ticket, 0, ticket.length);
@@ -95,6 +99,7 @@ public class NS2 implements Payload { //{Na+1, Nc, Ks , B, {Nc, A, B, Ks}KB }KA
 			dataIn.read(Ks, 0, length);
 
 			String b = dataIn.readUTF();
+			String b_addr = dataIn.readUTF();
 			
 			length = dataIn.readInt();
 			byte[] ticket = new byte[length];
@@ -103,7 +108,7 @@ public class NS2 implements Payload { //{Na+1, Nc, Ks , B, {Nc, A, B, Ks}KB }KA
 			dataIn.close();
 			byteIn.close();
 
-			return new NS2(Na_1, Nc, Ks, b, ticket, messageParts[0], messageParts[1]);
+			return new NS2(Na_1, Nc, Ks, b, b_addr, ticket, messageParts[0], messageParts[1]);
 		}
 	}
 	
@@ -149,5 +154,8 @@ public class NS2 implements Payload { //{Na+1, Nc, Ks , B, {Nc, A, B, Ks}KB }KA
 	public byte[] getOuterMac() {
 		return outerMac;
 	}
-
+	
+	public String getBAddr() {
+		return b_addr;
+	}
 }

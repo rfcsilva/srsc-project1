@@ -72,8 +72,9 @@ public class NeedhamSchroederKDC implements KDCService {
 					// Send reply to A
 					long Na_1 = req.getNa() + 1;
 					long Nc = this.getNonce();
-
-					Payload payload = new NS2(Na_1, Nc, securityParams, a, b, req.getCryptoManagerB(), req.getCryptoManagerA());
+					
+					//TODO RECEIVE AS ARG
+					Payload payload = new NS2(Na_1, Nc, securityParams, a, b, "localhost:8889",req.getCryptoManagerB(), req.getCryptoManagerA());
 					SecureMessage sm = new SecureMessageImplementation(payload);
 					new_socket.send(sm, client_addr);
 				}
