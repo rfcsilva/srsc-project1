@@ -51,6 +51,8 @@ class arUDPproxy {
 
 	public static void main(String[] args) {
 
+		// TODO: Receber id como arg também
+		
 		if (args.length != 3) {
 			System.err.println(ERROR_USER_INPUT);
 			System.exit(ERROR_CODE);
@@ -61,7 +63,7 @@ class arUDPproxy {
 			InputStream inputStream = new FileInputStream(args[1]);
 			Properties properties = new Properties();
 			properties.load(inputStream);
-			remote = properties.getProperty(REMOTE);
+			remote = properties.getProperty(REMOTE); // TODO: remover isto? ou merter o KDC Client para usar isto?
 			destinations = properties.getProperty(LOCALDELIVERY);
 		} catch(IOException e) {
 			System.err.println("Unable to read file " + args[1]  + " properly.");
@@ -121,7 +123,8 @@ class arUDPproxy {
 			System.err.println("Payload is ivalid/unkown: " + e.getMessage());
 			System.exit(-1);
 		} catch(IOException e) {
-			System.err.println("Unable to read file " + args[1]  + " properly.");
+			System.out.println(e.getMessage());
+			System.err.println("Unable to read file " + args[0]  + " properly.");
 			System.exit(-1);		
 		} catch(Exception e) {
 			e.printStackTrace();

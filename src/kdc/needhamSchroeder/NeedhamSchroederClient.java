@@ -88,6 +88,8 @@ public class NeedhamSchroederClient implements KDCClient {
 
 				this.a_addr = socket.getLocalAddress();
 				
+				socket.close();
+				
 				return session_cryptoManager;
 			} catch (SocketTimeoutException e) {
 				// Try again
