@@ -25,7 +25,7 @@ import secureSocket.exceptions.BrokenIntegrityException;
 import secureSocket.exceptions.InvalidMacException;
 import secureSocket.exceptions.ReplayedNonceException;
 import secureSocket.secureMessages.Payload;
-import util.ArrayUtils;
+import util.Utils;
 
 // TODO : find better name for the class
 public class NS1 implements Payload {
@@ -98,7 +98,7 @@ public class NS1 implements Payload {
 	}
 
 	public byte[] serialize() {
-		return ArrayUtils.concat(this.message, this.outerMac);
+		return Utils.concat(this.message, this.outerMac);
 	}
 
 	public short size() {

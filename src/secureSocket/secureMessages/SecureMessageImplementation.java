@@ -26,7 +26,7 @@ import secureSocket.exceptions.BrokenIntegrityException;
 import secureSocket.exceptions.InvalidMacException;
 import secureSocket.exceptions.InvalidPayloadTypeException;
 import secureSocket.exceptions.ReplayedNonceException;
-import util.ArrayUtils;
+import util.Utils;
 
 public class SecureMessageImplementation implements SecureMessage {
 
@@ -116,7 +116,7 @@ public class SecureMessageImplementation implements SecureMessage {
 		byte[] payloadBytes = payload.serialize();
 
 		//Append both
-		byte[] messageBytes = ArrayUtils.concat(headerBytes, payloadBytes);
+		byte[] messageBytes = Utils.concat(headerBytes, payloadBytes);
 
 		dataOut.close();
 		byteOut.close();

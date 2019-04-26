@@ -30,7 +30,7 @@ import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-import util.ArrayUtils;
+import util.Utils;
 import util.CryptographyUtils;
 
 public class CryptoFactory {
@@ -189,7 +189,7 @@ public class CryptoFactory {
 		byte[] iv = null;
 		if(ivSize > 0 ) {
 			if(ivString != null)
-				iv = ArrayUtils.unparse(ivString);
+				iv = Utils.unparse(ivString);
 			else
 				iv = generateIv(ciphersuit_properties.getProperty(SESSION_CIPHERSUITE), ivSize, sr);
 		}
@@ -511,7 +511,7 @@ public class CryptoFactory {
 		byte[] iv = null;
 		if(ivSize > 0 ) {
 			if(ivString != null)
-				iv = ArrayUtils.unparse(ivString);
+				iv = Utils.unparse(ivString);
 			else
 				iv = generateIv(props.getProperty(SESSION_CIPHERSUITE), ivSize, sr);
 		}

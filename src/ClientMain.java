@@ -23,7 +23,7 @@ public class ClientMain { //
 			//Cryptography master_cryptoManager = CryptoFactory.loadFromConfig(config_file);
 			Cryptography master_cryptoManager = CryptoFactory.getInstace("password", "configs/proxy/ciphersuite.conf");
 			KDCClient needhamClient = new NeedhamSchroederClient(kdc_addr, "proxy", master_cryptoManager); // TODO: read a and b from some file
-			Cryptography session_cryptoManager = needhamClient.getSessionParameters("b", b_addr);
+			Cryptography session_cryptoManager = needhamClient.getSessionParameters("b");
 		}else {
 			System.out.println("Server ready");
 			String config_file = "./configs/server/ciphersuite.conf";

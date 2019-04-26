@@ -15,7 +15,7 @@ import javax.crypto.ShortBufferException;
 import cryptography.Cryptography;
 import secureSocket.exceptions.InvalidMacException;
 import secureSocket.secureMessages.Payload;
-import util.ArrayUtils;
+import util.Utils;
 
 public class NS2 implements Payload { //{Na+1, Nc, Ks , B, {Nc, A, B, Ks}KB }KA 
 
@@ -119,7 +119,7 @@ public class NS2 implements Payload { //{Na+1, Nc, Ks , B, {Nc, A, B, Ks}KB }KA
 
 	@Override
 	public byte[] serialize() {
-		return ArrayUtils.concat(cipherText, outerMac);
+		return Utils.concat(cipherText, outerMac);
 	}
 
 	@Override

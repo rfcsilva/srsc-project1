@@ -22,7 +22,7 @@ import secureSocket.exceptions.BrokenIntegrityException;
 import secureSocket.exceptions.InvalidMacException;
 import secureSocket.exceptions.ReplayedNonceException;
 import secureSocket.secureMessages.Payload;
-import util.ArrayUtils;
+import util.Utils;
 
 // TODO : find better name for the class
 public class NS3 implements Payload { // A -> B : {Nc, A, B, Ks }KB
@@ -64,7 +64,7 @@ public class NS3 implements Payload { // A -> B : {Nc, A, B, Ks }KB
 	}
 
 	public byte[] serialize() {
-		return ArrayUtils.concat(ArrayUtils.intToByteArray(this.outerMac.length), ArrayUtils.concat(this.ticket, this.outerMac));
+		return Utils.concat(Utils.intToByteArray(this.outerMac.length), Utils.concat(this.ticket, this.outerMac));
 	}
 
 	public short size() {

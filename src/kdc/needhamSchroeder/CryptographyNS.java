@@ -22,7 +22,7 @@ import cryptography.AbstractCryptography;
 import cryptography.CryptoFactory;
 import cryptography.Cryptography;
 import kdc.needhamSchroeder.exceptions.UnkonwnIdException;
-import util.ArrayUtils;
+import util.Utils;
 import util.arKeyStore;
 
 public class CryptographyNS extends AbstractCryptography implements Cryptography {
@@ -105,7 +105,7 @@ public class CryptographyNS extends AbstractCryptography implements Cryptography
 		String type = props.getProperty(CryptoFactory.KEYSTORE_TYPE);
 		String macAlgorithm = props.getProperty(CryptoFactory.OUTER_MAC_CIPHERSUITE);
 		String ivString = props.getProperty(CryptoFactory.IV);
-		byte[] iv = ArrayUtils.unparse(ivString);
+		byte[] iv = Utils.unparse(ivString);
 		String cipherAlgorithm = props.getProperty(CryptoFactory.SESSION_CIPHERSUITE);
 		String cipherProvider = props.getProperty(CryptoFactory.CIPHER_PROVIDER);
 		String outerMacProvider = props.getProperty(CryptoFactory.OUTTER_MAC_PROVIDER);

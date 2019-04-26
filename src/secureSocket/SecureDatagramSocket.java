@@ -164,8 +164,8 @@ public class SecureDatagramSocket {
 		this.cryptoManager = cryptoManager;
 	}
 	
-	public InetAddress getLocalAddress() {
-		return socket.getLocalAddress();
+	public InetSocketAddress getLocalAddress() {
+		return new InetSocketAddress(socket.getLocalAddress(), socket.getLocalPort());
 	}
 
 }

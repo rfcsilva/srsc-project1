@@ -15,7 +15,7 @@ import javax.crypto.ShortBufferException;
 import cryptography.Cryptography;
 import secureSocket.exceptions.InvalidMacException;
 import secureSocket.secureMessages.Payload;
-import util.ArrayUtils;
+import util.Utils;
 
 public class NS4 implements Payload {
 
@@ -62,7 +62,7 @@ public class NS4 implements Payload {
 
 	@Override
 	public byte[] serialize() {
-		return ArrayUtils.concat(cipherText, outermac);
+		return Utils.concat(cipherText, outermac);
 	}
 
 	@Override

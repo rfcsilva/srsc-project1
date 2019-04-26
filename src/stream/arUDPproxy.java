@@ -78,14 +78,17 @@ class arUDPproxy {
 		try {
 			//KDCServer kdc_server = new NeedhamSchroederServer(inSocketAddress);
 			//cryptoManager = kdc_server.getSessionParameters();
-			InetSocketAddress b_addr = new InetSocketAddress( "localhost", 8889);
+			//InetSocketAddress b_addr = new InetSocketAddress( "localhost", 8889);
 			InetSocketAddress kdc_addr = new InetSocketAddress("localhost", 8888); // TODO: ler das configs
 			
 			Cryptography master_cryptoManager = CryptoFactory.getInstace(args[2], args[0]);
-			KDCClient needhamClient = new NeedhamSchroederClient(kdc_addr, "a", master_cryptoManager); // TODO: read a and b from some file
-			cryptoManager = needhamClient.getSessionParameters("b", b_addr);
+			KDCClient kdc_client = new NeedhamSchroederClient(kdc_addr, "proxy", master_cryptoManager); // TODO: read a and b from some file
+			cryptoManager = kdc_client.getSessionParameters("b");
 			
-			inSocket = new SecureDatagramSocket(inSocketAddress, cryptoManager);
+			//inSocket = new SecureDatagramSocket(inSocketAddress, cryptoManager);
+			
+			inSocket = new SecureDatagramSocket(kdc_client.getMyAddr(), cryptoManager);
+			
 			outSocket = new DatagramSocket();
 			byte[] buffer = new byte[4 * 1024];
 

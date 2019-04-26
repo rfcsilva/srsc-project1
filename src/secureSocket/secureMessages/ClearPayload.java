@@ -17,7 +17,7 @@ import cryptography.Cryptography;
 import cryptography.nonce.NonceManager;
 import secureSocket.exceptions.InvalidMacException;
 import secureSocket.exceptions.ReplayedNonceException;
-import util.ArrayUtils;
+import util.Utils;
 
 // TODO : find better name for the class
 public class ClearPayload implements Payload {
@@ -53,7 +53,7 @@ public class ClearPayload implements Payload {
 	}
 
 	public byte[] serialize() {
-		return ArrayUtils.concat(this.message, this.outterMac);
+		return Utils.concat(this.message, this.outterMac);
 	}
 
 	public short size() {

@@ -34,6 +34,7 @@ import secureSocket.secureMessages.SecureMessage;
 import secureSocket.secureMessages.SecureMessageImplementation;
 import stream.UDP_KDC_Server;
 import util.CryptographyUtils;
+import util.Utils;
 
 public class NeedhamSchroederClient implements KDCClient {
 
@@ -44,6 +45,7 @@ public class NeedhamSchroederClient implements KDCClient {
 	private Cryptography master_cryptoManager;
 	private InetSocketAddress kdc_addr;
 	private String a;
+	private InetSocketAddress a_addr;
 
 	private int max_tries = 3;
 
@@ -57,8 +59,12 @@ public class NeedhamSchroederClient implements KDCClient {
 		this.max_tries = tries;
 	}
 	
+	public InetSocketAddress getMyAddr() {
+		return a_addr;
+	}
+	
 	@Override
-	public Cryptography getSessionParameters(String b, InetSocketAddress b_addr) throws NoSuchAlgorithmException, IOException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidChallangeReplyException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException, TooManyTriesException, UnkonwnIdException {
+	public Cryptography getSessionParameters(String b) throws NoSuchAlgorithmException, IOException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidChallangeReplyException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException, TooManyTriesException, UnkonwnIdException {
 
 		NonceManager nonceManager = new WindowNonceManager(WINDOW_SIZE, master_cryptoManager.getSecureRandom());
 
@@ -72,12 +78,16 @@ public class NeedhamSchroederClient implements KDCClient {
 				NS2 kdc_reply = requestKeys(socket, kdc_addr, Na, nonceManager, a, b);
 
 				// Build the session cryptoManager
-				Cryptography session_cryptoManager =  CryptoFactory.deserialize(kdc_reply.getKs()); //UDP_KDC_Server.deserializeSessionParameters(kdc_reply.getKs()); //TODO : Trocar para o método certo
+				Cryptography session_cryptoManager = CryptoFactory.deserialize(kdc_reply.getKs()); //UDP_KDC_Server.deserializeSessionParameters(kdc_reply.getKs()); //TODO : Trocar para o método certo
 
+				InetSocketAddress b_addr = Utils.unparseAddr(kdc_reply.getBAddr());
+				
 				shareKeys(socket, session_cryptoManager, b_addr, kdc_reply.getTicket(), nonceManager);
 
 				System.out.println("Finished key establishment.");
 
+				this.a_addr = socket.getLocalAddress();
+				
 				return session_cryptoManager;
 			} catch (SocketTimeoutException e) {
 				// Try again

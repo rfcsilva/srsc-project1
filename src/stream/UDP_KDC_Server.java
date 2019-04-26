@@ -43,7 +43,7 @@ import kdc.needhamSchroeder.NeedhamSchroederKDC;
 import secureSocket.exceptions.InvalidPayloadTypeException;
 import secureSocket.secureMessages.SecureMessage;
 import secureSocket.secureMessages.SecureMessageImplementation;
-import util.ArrayUtils;
+import util.Utils;
 import util.CryptographyUtils;
 
 //TODO: renomear?
