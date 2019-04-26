@@ -1,7 +1,6 @@
 package keyEstablishmentProtocol;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyStoreException;
@@ -16,7 +15,6 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
-import cryptography.Cryptography;
 import keyEstablishmentProtocol.needhamSchroeder.exceptions.UnkonwnIdException;
 import secureSocket.exceptions.InvalidPayloadTypeException;
 

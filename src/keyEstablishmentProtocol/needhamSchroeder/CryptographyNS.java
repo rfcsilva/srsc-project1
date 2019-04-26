@@ -4,7 +4,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
-import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -108,7 +107,7 @@ public class CryptographyNS extends AbstractCryptography implements Cryptography
 		byte[] iv = Utils.unparse(ivString);
 		String cipherAlgorithm = props.getProperty(CryptoFactory.SESSION_CIPHERSUITE);
 		String cipherProvider = props.getProperty(CryptoFactory.CIPHER_PROVIDER);
-		String outerMacProvider = props.getProperty(CryptoFactory.OUTTER_MAC_PROVIDER);
+		String outerMacProvider = props.getProperty(CryptoFactory.OUTER_MAC_PROVIDER);
 		
 		//KeyStore keyStore = arKeyStore.loadKeyStore(path, password, type);
 		
