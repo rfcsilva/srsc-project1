@@ -24,8 +24,9 @@ import secureSocket.exceptions.ReplayedNonceException;
 import secureSocket.secureMessages.Payload;
 import util.Utils;
 
-// TODO : find better name for the class
-public class NS3 implements Payload { // A -> B : {Nc, A, B, Ks }KB
+public class NS3 implements Payload {
+
+	private static final String INVALID_OUTTER_MAC = "Invalid Outter Mac";
 
 	public static final byte TYPE = 0x13;
 
@@ -73,8 +74,6 @@ public class NS3 implements Payload { // A -> B : {Nc, A, B, Ks }KB
 		return (short) (Integer.BYTES + ticket.length + outerMac.length);
 	}
 
-	// TODO handle bad macs
-	// TODO : retornar Payload ou DEfaultPayload?
 	public static Payload deserialize(byte[] rawPayload, Cryptography criptoManager)
 			throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException,
 			InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException,
@@ -93,18 +92,14 @@ public class NS3 implements Payload { // A -> B : {Nc, A, B, Ks }KB
 		dataIn.close();
 		byteIn.close();
 		
-		byte[] clearText = criptoManager.decrypt(ticket); // this cryptoManager has to have Kb
+		byte[] clearText = criptoManager.decrypt(ticket);
 			
 		Ticket t = Ticket.deserialize(clearText); 
 		
-		Cryptography session_cryptoManager = CryptoFactory.deserialize(t.getKs()); // TODO: .deserializeSessionParameters(Ks);
-		
-		/*byte[][] messageParts = session_cryptoManager.splitOuterMac(rawPayload);
-		if (!session_cryptoManager.validateOuterMac(messageParts[0], messageParts[1]))
-			throw new InvalidMacException("Invalid Outter Mac");*/
+		Cryptography session_cryptoManager = CryptoFactory.deserializeSessionParameters(t.getKs()); 
 		
 		if (!session_cryptoManager.validateOuterMac(ticket, outerMac))
-			throw new InvalidMacException("Invalid Outter Mac");
+			throw new InvalidMacException(INVALID_OUTTER_MAC);
 
 		return new NS3(t.getNc(), t.getA(), t.getB(), t.getKs(), t.getArgs(), ticket, outerMac, session_cryptoManager); // Falta a msg
 	}	
@@ -142,7 +137,6 @@ public class NS3 implements Payload { // A -> B : {Nc, A, B, Ks }KB
 	}
 
 	public String[] getArgs() {
-		System.out.println("args_len: " + args.length);
 		return args;
 	}
 	

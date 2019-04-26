@@ -348,7 +348,7 @@ public class CryptoFactory {
 		return data;
 	}
 
-	public static Cryptography deserialize(byte[] rawParams ) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, NoSuchProviderException {
+	public static Cryptography deserializeSessionParameters(byte[] rawParams ) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, NoSuchProviderException {
 
 		ByteArrayInputStream byteIn = new ByteArrayInputStream(rawParams);
 		DataInputStream dataIn = new DataInputStream(byteIn);

@@ -95,7 +95,7 @@ public class NeedhamSchroederServer implements KeyEstablishmentProtocolServer {
 	private void processRequest(NS3 ns3, InetSocketAddress addr, RequestHandler requestHandler) {
 		new Thread(() -> {
 			try {
-				Cryptography session_cryptoManager = CryptoFactory.deserialize( ns3.getKs() ); //UDP_KDC_Server.deserializeSessionParameters(ns3.getKs());
+				Cryptography session_cryptoManager = CryptoFactory.deserializeSessionParameters( ns3.getKs() ); //UDP_KDC_Server.deserializeSessionParameters(ns3.getKs());
 
 				SecureDatagramSocket new_socket = new SecureDatagramSocket(session_cryptoManager);
 				new_socket.setTimeout(30 * 1000); // TODO : quanto timeout?

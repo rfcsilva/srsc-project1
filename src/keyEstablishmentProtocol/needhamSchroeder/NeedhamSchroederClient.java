@@ -75,7 +75,7 @@ public class NeedhamSchroederClient implements KeyEstablishmentProtocolClient {
 				NS2 kdc_reply = requestKeys(socket, kdc_addr, Na, nonceManager, a, b, args);
 
 				// Build the session cryptoManager
-				Cryptography session_cryptoManager = CryptoFactory.deserialize(kdc_reply.getKs()); //UDP_KDC_Server.deserializeSessionParameters(kdc_reply.getKs()); //TODO : Trocar para o método certo
+				Cryptography session_cryptoManager = CryptoFactory.deserializeSessionParameters(kdc_reply.getKs()); //UDP_KDC_Server.deserializeSessionParameters(kdc_reply.getKs()); //TODO : Trocar para o método certo
 
 				InetSocketAddress b_addr = Utils.unparseAddr(kdc_reply.getBAddr());
 				
