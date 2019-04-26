@@ -28,7 +28,6 @@ public class CryptographyNS extends AbstractCryptography implements Cryptography
 
 	private static final String K = "K";
 	private static final String KM = "Km";
-	private String password;	
 	private String macAlgorithm;
 	private arKeyStore key_store;
 	private byte[] iv;
@@ -36,9 +35,8 @@ public class CryptographyNS extends AbstractCryptography implements Cryptography
 	private String cipherProvider;
 	private String outMacProvider;
 	
-	public CryptographyNS(SecureRandom sr, String password, arKeyStore keyStore ,String macAlgorithm, byte[] iv, String cipherAlgorithm, String cipherProvider, String outerMacProvider) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, FileNotFoundException, IOException {
+	public CryptographyNS(SecureRandom sr, arKeyStore keyStore ,String macAlgorithm, byte[] iv, String cipherAlgorithm, String cipherProvider, String outerMacProvider) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, FileNotFoundException, IOException {
 		super(null, null, null, sr); 
-		this.password = password;
 		key_store = keyStore;
 		this.macAlgorithm = macAlgorithm;
 		this.iv = iv;
@@ -112,7 +110,7 @@ public class CryptographyNS extends AbstractCryptography implements Cryptography
 		//KeyStore keyStore = arKeyStore.loadKeyStore(path, password, type);
 		
 		arKeyStore keyStore = new arKeyStore(path, password, type);
-		return new CryptographyNS(sr, password, keyStore, macAlgorithm, iv, cipherAlgorithm, cipherProvider, outerMacProvider);
+		return new CryptographyNS(sr, keyStore, macAlgorithm, iv, cipherAlgorithm, cipherProvider, outerMacProvider);
 		
 		
 	}
