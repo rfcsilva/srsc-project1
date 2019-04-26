@@ -1,4 +1,4 @@
-package kdc.needhamSchroeder;
+package keyEstablishmentProtocol.needhamSchroeder;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -34,6 +34,7 @@ public class NS3 implements Payload { // A -> B : {Nc, A, B, Ks }KB
 	private String a;
 	private String b;
 	byte[] Ks;
+	private String[] args;
 	private byte[] ticket;
 	private byte[] outerMac;
 	
@@ -49,11 +50,12 @@ public class NS3 implements Payload { // A -> B : {Nc, A, B, Ks }KB
 		this.outerMac = cryptoManager.computeOuterMac(ticket);
 	}
 
-	private NS3(long Nc, String a, String b, byte[] Ks, byte[] ticket, byte[] outerMac, Cryptography session_criptoManager) {
+	private NS3(long Nc, String a, String b, byte[] Ks, String[] args, byte[] ticket, byte[] outerMac, Cryptography session_criptoManager) {
 		this.Nc = Nc;
 		this.a = a;
 		this.b = b;
 		this.Ks = Ks;
+		this.args = args;
 		this.ticket = ticket;
 		this.outerMac = outerMac;
 		this.session_criptoManager = session_criptoManager;
@@ -104,7 +106,7 @@ public class NS3 implements Payload { // A -> B : {Nc, A, B, Ks }KB
 		if (!session_cryptoManager.validateOuterMac(ticket, outerMac))
 			throw new InvalidMacException("Invalid Outter Mac");
 
-		return new NS3(t.getNc(), t.getA(), t.getB(), t.getKs(), ticket, outerMac, session_cryptoManager); // Falta a msg
+		return new NS3(t.getNc(), t.getA(), t.getB(), t.getKs(), t.getArgs(), ticket, outerMac, session_cryptoManager); // Falta a msg
 	}	
 	
 	public Cryptography getSessionCryptoManager() {
@@ -127,12 +129,21 @@ public class NS3 implements Payload { // A -> B : {Nc, A, B, Ks }KB
 		return Ks;
 	}
 
-	public byte[] getTicket() {
+	public byte[] getTicketRaw() {
 		return ticket;
+	}
+	
+	public Ticket getTicket(Cryptography cryptoManager) throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, IOException {
+		return Ticket.deserialize(cryptoManager.decrypt(ticket)); 
 	}
 
 	public byte[] getOuterMac() {
 		return outerMac;
+	}
+
+	public String[] getArgs() {
+		System.out.println("args_len: " + args.length);
+		return args;
 	}
 	
 }

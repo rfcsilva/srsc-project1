@@ -17,11 +17,11 @@ import javax.crypto.ShortBufferException;
 
 import cryptography.Cryptography;
 import cryptography.nonce.NonceManager;
-import kdc.needhamSchroeder.NS1;
-import kdc.needhamSchroeder.NS2;
-import kdc.needhamSchroeder.NS3;
-import kdc.needhamSchroeder.NS4;
-import kdc.needhamSchroeder.exceptions.UnkonwnIdException;
+import keyEstablishmentProtocol.needhamSchroeder.NS1;
+import keyEstablishmentProtocol.needhamSchroeder.NS2;
+import keyEstablishmentProtocol.needhamSchroeder.NS3;
+import keyEstablishmentProtocol.needhamSchroeder.NS4;
+import keyEstablishmentProtocol.needhamSchroeder.exceptions.UnkonwnIdException;
 import secureSocket.exceptions.BrokenIntegrityException;
 import secureSocket.exceptions.InvalidMacException;
 import secureSocket.exceptions.InvalidPayloadTypeException;

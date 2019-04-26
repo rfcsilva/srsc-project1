@@ -1,4 +1,4 @@
-package kdc.needhamSchroeder;
+package keyEstablishmentProtocol.needhamSchroeder;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -20,7 +20,7 @@ import javax.crypto.ShortBufferException;
 
 import cryptography.AbstractCryptography;
 import cryptography.Cryptography;
-import kdc.needhamSchroeder.exceptions.UnkonwnIdException;
+import keyEstablishmentProtocol.needhamSchroeder.exceptions.UnkonwnIdException;
 import secureSocket.exceptions.BrokenIntegrityException;
 import secureSocket.exceptions.InvalidMacException;
 import secureSocket.exceptions.ReplayedNonceException;
@@ -39,13 +39,14 @@ public class NS1 implements Payload {
 	private String a;
 	private String b;
 	private long na;
+	private String[] arguments;
 	private byte[] message;
 	private byte[] outerMac;
 	
 	private Cryptography criptoManagerA;
 	private Cryptography criptoManagerB;
 
-	public NS1(String a, String b, long Na, Cryptography cryptoManager)
+	public NS1(String a, String b, long Na, String[] arguments, Cryptography cryptoManager)
 			throws IOException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException,
 			NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException,
 			IllegalBlockSizeException, BadPaddingException, ShortBufferException {
@@ -53,22 +54,24 @@ public class NS1 implements Payload {
 		this.a = a;
 		this.b = b;
 		this.na = Na;
+		this.arguments = arguments;
 
-		this.message = buildMessage(a, b, Na);
+		this.message = buildMessage(a, b, Na, arguments);
 
 		this.outerMac = cryptoManager.computeOuterMac(message);
 	}
 
-	private NS1(String a, String b, long Na, byte[] outerMac, Cryptography criptoManagerA, Cryptography criptoManagerB) {
+	private NS1(String a, String b, long Na, String[] arguments, byte[] outerMac, Cryptography criptoManagerA, Cryptography criptoManagerB) {
 		this.a = a;
 		this.b = b;
 		this.na = Na;
+		this.arguments = arguments;
 		this.outerMac = outerMac;
 		this.criptoManagerA = criptoManagerA;
 		this.criptoManagerB= criptoManagerB;
 	}
 
-	private static byte[] buildMessage(String a, String b, long Na) throws IOException {
+	private static byte[] buildMessage(String a, String b, long Na, String[] arguments) throws IOException {
 		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
 		DataOutputStream dataOut = new DataOutputStream(byteOut);
 
@@ -81,6 +84,11 @@ public class NS1 implements Payload {
 		dataOut.writeUTF(b);
 		
 		dataOut.writeLong(Na);
+		
+		dataOut.writeInt(arguments.length);
+		for(int i = 0; i < arguments.length; i++) {
+			dataOut.writeUTF(arguments[i]);
+		}
 
 		dataOut.flush();
 		byteOut.flush();
@@ -128,6 +136,12 @@ public class NS1 implements Payload {
 		String b = dataIn.readUTF();
 
 		long Na = dataIn.readLong();
+		
+		int length = dataIn.readInt();
+		String[] arguments = new String[length];
+		for(int i = 0; i < length; i++) {
+			arguments[i] = dataIn.readUTF();
+		}
 
 		dataIn.close();
 		byteIn.close();
@@ -139,7 +153,7 @@ public class NS1 implements Payload {
 		if (!criptoManagerA.validateOuterMac(messageParts[0], messageParts[1]))
 			throw new InvalidMacException("Invalid Outer Mac");
 
-		return new NS1(a, b, Na, messageParts[1], criptoManagerA, criptoManagerB); // Falta a msg -> isto é o que?
+		return new NS1(a, b, Na, arguments, messageParts[1], criptoManagerA, criptoManagerB); // Falta a msg -> isto é o que?
 	}	
 	
 	public Cryptography getCryptoManagerA() {
@@ -160,6 +174,10 @@ public class NS1 implements Payload {
 	
 	public long getNa() {
 		return na;
+	}
+
+	public String[] getArgs() {
+		return arguments;
 	}
 	
 }

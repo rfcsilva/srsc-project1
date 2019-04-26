@@ -21,7 +21,7 @@ import javax.crypto.ShortBufferException;
 
 import cryptography.Cryptography;
 import cryptography.nonce.NonceManager;
-import kdc.needhamSchroeder.exceptions.UnkonwnIdException;
+import keyEstablishmentProtocol.needhamSchroeder.exceptions.UnkonwnIdException;
 import secureSocket.exceptions.BrokenIntegrityException;
 import secureSocket.exceptions.InvalidMacException;
 import secureSocket.exceptions.InvalidPayloadTypeException;

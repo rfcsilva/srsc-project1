@@ -1,4 +1,4 @@
-package kdc.needhamSchroeder;
+package keyEstablishmentProtocol.needhamSchroeder;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -19,15 +19,15 @@ import javax.crypto.ShortBufferException;
 import cryptography.CryptoFactory;
 import cryptography.nonce.NonceManager;
 import cryptography.nonce.WindowNonceManager;
-import kdc.KDCService;
-import kdc.needhamSchroeder.exceptions.UnkonwnIdException;
+import keyEstablishmentProtocol.KeyEstablishmentProtocolKDC;
+import keyEstablishmentProtocol.needhamSchroeder.exceptions.UnkonwnIdException;
 import secureSocket.SecureDatagramSocket;
 import secureSocket.exceptions.InvalidPayloadTypeException;
 import secureSocket.secureMessages.Payload;
 import secureSocket.secureMessages.SecureMessage;
 import secureSocket.secureMessages.SecureMessageImplementation;
 
-public class NeedhamSchroederKDC implements KDCService {
+public class NeedhamSchroederKDC implements KeyEstablishmentProtocolKDC {
 
 	private SecureDatagramSocket socket;
 	private NonceManager nonceManager;
@@ -74,7 +74,8 @@ public class NeedhamSchroederKDC implements KDCService {
 					long Nc = this.getNonce();
 					
 					//TODO RECEIVE AS ARG
-					Payload payload = new NS2(Na_1, Nc, securityParams, a, b, "localhost:8889",req.getCryptoManagerB(), req.getCryptoManagerA());
+					// TODO -> validar os args ??
+					Payload payload = new NS2(Na_1, Nc, securityParams, a, b, "localhost:8889", req.getArgs(), req.getCryptoManagerB(), req.getCryptoManagerA());
 					SecureMessage sm = new SecureMessageImplementation(payload);
 					new_socket.send(sm, client_addr);
 				}

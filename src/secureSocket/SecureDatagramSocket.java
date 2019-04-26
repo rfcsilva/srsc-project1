@@ -25,7 +25,7 @@ import javax.crypto.ShortBufferException;
 import cryptography.Cryptography;
 import cryptography.nonce.NonceManager;
 import cryptography.nonce.WindowNonceManager;
-import kdc.needhamSchroeder.exceptions.UnkonwnIdException;
+import keyEstablishmentProtocol.needhamSchroeder.exceptions.UnkonwnIdException;
 import secureSocket.exceptions.*;
 import secureSocket.secureMessages.ClearPayload;
 import secureSocket.secureMessages.DefaultPayload;
@@ -166,6 +166,10 @@ public class SecureDatagramSocket {
 	
 	public InetSocketAddress getLocalAddress() {
 		return new InetSocketAddress(socket.getLocalAddress(), socket.getLocalPort());
+	}
+	
+	public boolean isClosed() {
+		return socket.isClosed();
 	}
 
 }

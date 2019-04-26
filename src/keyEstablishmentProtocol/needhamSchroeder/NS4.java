@@ -1,4 +1,4 @@
-package kdc.needhamSchroeder;
+package keyEstablishmentProtocol.needhamSchroeder;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

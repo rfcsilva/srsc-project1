@@ -18,10 +18,10 @@ import java.security.NoSuchAlgorithmException;
 
 import cryptography.CryptoFactory;
 import cryptography.Cryptography;
-import kdc.KDCClient;
-import kdc.KDCServer;
-import kdc.needhamSchroeder.NeedhamSchroederClient;
-import kdc.needhamSchroeder.NeedhamSchroederServer;
+import keyEstablishmentProtocol.KeyEstablishmentProtocolClient;
+import keyEstablishmentProtocol.KeyEstablishmentProtocolServer;
+import keyEstablishmentProtocol.needhamSchroeder.NeedhamSchroederClient;
+import keyEstablishmentProtocol.needhamSchroeder.NeedhamSchroederServer;
 import secureSocket.SecureDatagramSocket;
 
 class arStreamServer {
@@ -39,7 +39,7 @@ class arStreamServer {
 			System.exit(-1);
 		}
 
-		int size;
+		/*int size;
 		int count = 0;
 		long time;
 		DataInputStream g = null;
@@ -48,18 +48,17 @@ class arStreamServer {
 		} catch (FileNotFoundException e) {
 			System.err.println(UNABLE_TO_LOAD_MOVIE_FILE);
 			System.exit(-1);
-		}
-		
+		}*/
+
 
 		try {
-		byte[] buff = new byte[65000];
-		
-		Cryptography master_cryptoManager = CryptoFactory.loadFromConfig(args[3]);
-	    InetSocketAddress b_addr = new InetSocketAddress( "localhost", 8889);
-		KDCServer kdc_server = new NeedhamSchroederServer(b_addr, master_cryptoManager); // TODO: COLOCAR ID
-		Cryptography session_cryptoManager = kdc_server.getSessionParameters();
-		
-		SecureDatagramSocket socket = new SecureDatagramSocket(session_cryptoManager);
+
+			Cryptography master_cryptoManager = CryptoFactory.loadFromConfig(args[3]);
+			InetSocketAddress b_addr = new InetSocketAddress( "localhost", 8889); //receber dos args
+			KeyEstablishmentProtocolServer kdc_server = new NeedhamSchroederServer(b_addr, master_cryptoManager); // TODO: COLOCAR ID
+			kdc_server.start( (inSocket, addr, arguments) -> {streamMovie(inSocket, addr, arguments[0]);} );
+
+			/*SecureDatagramSocket socket = new SecureDatagramSocket(session_cryptoManager);
 
 		//InetSocketAddress addr = new InetSocketAddress( args[1], Integer.parseInt(args[2]));
 		InetSocketAddress addr = kdc_server.getClientAddr();
@@ -84,23 +83,78 @@ class arStreamServer {
 		g.close();
 		socket.close();
 
-		System.out.println(DONE_PACKETS_SENT+count);
+		System.out.println(DONE_PACKETS_SENT+count);*/
 		}catch(InvalidKeyException e) {
-			
+
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.exit(-1);
-		} catch (InterruptedException e) {
+		} /*catch (InterruptedException e) {
 			e.printStackTrace();
 			System.exit(-1);
-		} catch (NoSuchAlgorithmException e) {
+		}*/ catch (NoSuchAlgorithmException e) {
 			System.err.println(ALORITHM_NOT_FOUND + e.getMessage());
 			System.exit(-1);
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.exit(-1);
 		}
+	}
+
+	private static void streamMovie(SecureDatagramSocket socket, InetSocketAddress addr, String movie) {
+		int size;
+		int count = 0;
+		long time;
+		DataInputStream g = null;
 		
+		System.out.println(movie);
+		
+		try {
+			g = new DataInputStream( new FileInputStream("./movies/" + movie + ".dat") ); // TODO: passar a folder como arg
+		
+
+			byte[] buff = new byte[65000];
+
+			DatagramPacket p = new DatagramPacket(buff, buff.length, addr );
+			long t0 = System.nanoTime(); // tempo de referencia para este processo
+			long q0 = 0;
+
+			while ( g.available() > 0 ) {
+				size = g.readShort();
+				time = g.readLong();
+				if ( count == 0 ) q0 = time; // tempo de referencia no stream
+				count += 1;
+				g.readFully(buff, 0, size );
+				p.setData(buff, 0, size );
+				p.setSocketAddress( addr );
+				long t = System.nanoTime();
+				Thread.sleep( Math.max(0, ((time-q0)-(t-t0))/1000000) );
+				socket.send( p );
+				System.out.print( "." );
+			}
+
+			g.close();
+			socket.close();
+
+			System.out.println("\n" + DONE_PACKETS_SENT + count);
+		}catch(InvalidKeyException e) {
+			// TODO: falta aqui um print
+		} catch (FileNotFoundException e) {
+			System.err.println(UNABLE_TO_LOAD_MOVIE_FILE);
+			//System.exit(-1);
+		} catch (IOException e) {
+			e.printStackTrace();
+			//System.exit(-1);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			//System.exit(-1);
+		} catch (NoSuchAlgorithmException e) {
+			System.err.println(ALORITHM_NOT_FOUND + e.getMessage());
+			//System.exit(-1);
+		} catch (Exception e) {
+			e.printStackTrace();
+			//System.exit(-1);
+		}
 	}
 
 }

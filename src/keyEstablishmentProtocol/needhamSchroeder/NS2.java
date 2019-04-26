@@ -1,4 +1,4 @@
-package kdc.needhamSchroeder;
+package keyEstablishmentProtocol.needhamSchroeder;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -30,20 +30,20 @@ public class NS2 implements Payload { //{Na+1, Nc, Ks , B, {Nc, A, B, Ks}KB }KA
 	private byte[] cipherText;
 	private byte[] outerMac;
 	
-	public NS2(long Na_1, long Nc, byte[] Ks, String a, String b, String b_addr,Cryptography cryptoManagerB, Cryptography cryptoManagerA) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, ShortBufferException, IOException { 
+	public NS2(long Na_1, long Nc, byte[] Ks, String a, String b, String b_addr, String[] args, Cryptography cryptoManagerB, Cryptography cryptoManagerA) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, ShortBufferException, IOException { 
 		this.Na_1 = Na_1;
 		this.Nc = Nc;
 		this.Ks = Ks;
 		this.b = b;
 		this.b_addr = b_addr;
-		this.ticket =  cryptoManagerB.encrypt((new Ticket(Nc, a, b, Ks)).serialize());
+		this.ticket =  cryptoManagerB.encrypt((new Ticket(Nc, a, b, Ks, args)).serialize());
 
 		this.cipherText = buildPayload(Na_1, Nc, Ks, b, b_addr, ticket, cryptoManagerA);
 		
 		this.outerMac = cryptoManagerA.computeOuterMac(cipherText);
 	}
 	
-	private NS2(long Na_1, long Nc, byte[] Ks, String b, String b_addr,byte[] ticket, byte[] cipherText, byte[] outerMac) {
+	private NS2(long Na_1, long Nc, byte[] Ks, String b, String b_addr, byte[] ticket, byte[] cipherText, byte[] outerMac) {
 		this.Na_1 = Na_1;
 		this.Nc = Nc;
 		this.Ks = Ks;

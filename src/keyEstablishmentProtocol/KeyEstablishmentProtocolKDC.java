@@ -1,4 +1,4 @@
-package kdc;
+package keyEstablishmentProtocol;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -17,11 +17,11 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
-import kdc.needhamSchroeder.NS1;
+import keyEstablishmentProtocol.needhamSchroeder.NS1;
 import secureSocket.exceptions.InvalidPayloadTypeException;
 import secureSocket.secureMessages.SecureMessage;
 
-public interface KDCService {
+public interface KeyEstablishmentProtocolKDC {
 
 	//InetSocketAddress receiveRequest(SecureMessage sm) throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException;
 	

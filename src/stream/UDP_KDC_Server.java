@@ -36,10 +36,10 @@ import cryptography.CryptoFactory;
 import cryptography.Cryptography;
 import cryptography.CryptographyDoubleMac;
 import cryptography.CryptographyHash;
-import kdc.KDCService;
-import kdc.needhamSchroeder.CryptographyNS;
-import kdc.needhamSchroeder.NS1;
-import kdc.needhamSchroeder.NeedhamSchroederKDC;
+import keyEstablishmentProtocol.KeyEstablishmentProtocolKDC;
+import keyEstablishmentProtocol.needhamSchroeder.CryptographyNS;
+import keyEstablishmentProtocol.needhamSchroeder.NS1;
+import keyEstablishmentProtocol.needhamSchroeder.NeedhamSchroederKDC;
 import secureSocket.exceptions.InvalidPayloadTypeException;
 import secureSocket.secureMessages.SecureMessage;
 import secureSocket.secureMessages.SecureMessageImplementation;
@@ -62,7 +62,7 @@ public class UDP_KDC_Server {
 		
 		Properties masterCipherSuite = CryptoFactory.loadFile(args[2]);		
 		CryptographyNS nsc = CryptographyNS.loadFromprops(masterCipherSuite);
-		KDCService kdc = new NeedhamSchroederKDC(my_addr, nsc, args[3]);
+		KeyEstablishmentProtocolKDC kdc = new NeedhamSchroederKDC(my_addr, nsc, args[3]);
 		kdc.start();
 	}
 

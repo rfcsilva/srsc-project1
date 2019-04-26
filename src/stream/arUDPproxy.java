@@ -37,8 +37,8 @@ import java.util.stream.Collectors;
 
 import cryptography.CryptoFactory;
 import cryptography.Cryptography;
-import kdc.KDCClient;
-import kdc.needhamSchroeder.NeedhamSchroederClient;
+import keyEstablishmentProtocol.KeyEstablishmentProtocolClient;
+import keyEstablishmentProtocol.needhamSchroeder.NeedhamSchroederClient;
 import secureSocket.SecureDatagramSocket;
 import secureSocket.exceptions.InvalidPayloadTypeException;
 
@@ -84,8 +84,8 @@ class arUDPproxy {
 			InetSocketAddress kdc_addr = new InetSocketAddress("localhost", 8888); // TODO: ler das configs
 			
 			Cryptography master_cryptoManager = CryptoFactory.getInstace(args[2], args[0]);
-			KDCClient kdc_client = new NeedhamSchroederClient(kdc_addr, "proxy", master_cryptoManager); // TODO: read a and b from some file
-			cryptoManager = kdc_client.getSessionParameters("b");
+			KeyEstablishmentProtocolClient kdc_client = new NeedhamSchroederClient(kdc_addr, "proxy", master_cryptoManager); // TODO: read a and b from some file
+			cryptoManager = kdc_client.getSessionParameters("b", new String[] {"monsters"}); // TODO: passar filme como arg
 			
 			//inSocket = new SecureDatagramSocket(inSocketAddress, cryptoManager);
 			

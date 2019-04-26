@@ -1,4 +1,4 @@
-package kdc.needhamSchroeder;
+package keyEstablishmentProtocol.needhamSchroeder;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -22,10 +22,10 @@ import cryptography.CryptoFactory;
 import cryptography.Cryptography;
 import cryptography.nonce.NonceManager;
 import cryptography.nonce.WindowNonceManager;
-import kdc.KDCClient;
-import kdc.needhamSchroeder.exceptions.InvalidChallangeReplyException;
-import kdc.needhamSchroeder.exceptions.TooManyTriesException;
-import kdc.needhamSchroeder.exceptions.UnkonwnIdException;
+import keyEstablishmentProtocol.KeyEstablishmentProtocolClient;
+import keyEstablishmentProtocol.needhamSchroeder.exceptions.InvalidChallangeReplyException;
+import keyEstablishmentProtocol.needhamSchroeder.exceptions.TooManyTriesException;
+import keyEstablishmentProtocol.needhamSchroeder.exceptions.UnkonwnIdException;
 import secureSocket.SecureDatagramSocket;
 import secureSocket.exceptions.InvalidPayloadTypeException;
 import secureSocket.exceptions.ReplayedNonceException;
@@ -36,7 +36,7 @@ import stream.UDP_KDC_Server;
 import util.CryptographyUtils;
 import util.Utils;
 
-public class NeedhamSchroederClient implements KDCClient {
+public class NeedhamSchroederClient implements KeyEstablishmentProtocolClient {
 
 	private static final int TIMEOUT = 30*1000;
 
@@ -64,7 +64,7 @@ public class NeedhamSchroederClient implements KDCClient {
 	}
 	
 	@Override
-	public Cryptography getSessionParameters(String b) throws NoSuchAlgorithmException, IOException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidChallangeReplyException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException, TooManyTriesException, UnkonwnIdException {
+	public Cryptography getSessionParameters(String b, String[] args) throws NoSuchAlgorithmException, IOException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidChallangeReplyException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException, TooManyTriesException, UnkonwnIdException {
 
 		NonceManager nonceManager = new WindowNonceManager(WINDOW_SIZE, master_cryptoManager.getSecureRandom());
 
@@ -75,7 +75,7 @@ public class NeedhamSchroederClient implements KDCClient {
 			try {
 				long Na = nonceManager.generateNonce();
 
-				NS2 kdc_reply = requestKeys(socket, kdc_addr, Na, nonceManager, a, b);
+				NS2 kdc_reply = requestKeys(socket, kdc_addr, Na, nonceManager, a, b, args);
 
 				// Build the session cryptoManager
 				Cryptography session_cryptoManager = CryptoFactory.deserialize(kdc_reply.getKs()); //UDP_KDC_Server.deserializeSessionParameters(kdc_reply.getKs()); //TODO : Trocar para o método certo
@@ -104,7 +104,7 @@ public class NeedhamSchroederClient implements KDCClient {
 		throw new TooManyTriesException("" + max_tries);
 	}
 
-	private NS2 requestKeys(SecureDatagramSocket socket, InetSocketAddress kdc_addr, long Na, NonceManager nonceManager, String a, String b) throws IOException, InvalidChallangeReplyException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException, ReplayedNonceException, UnkonwnIdException {
+	private NS2 requestKeys(SecureDatagramSocket socket, InetSocketAddress kdc_addr, long Na, NonceManager nonceManager, String a, String b, String[] args) throws IOException, InvalidChallangeReplyException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException, ReplayedNonceException, UnkonwnIdException {
 		try {
 			socket.setCryptoManager(master_cryptoManager);
 			//SecureDatagramSocket socket = new SecureDatagramSocket(master_cryptoManager);
@@ -114,7 +114,7 @@ public class NeedhamSchroederClient implements KDCClient {
 			//Payload ns1 = new NS1("a".getBytes(), "b".getBytes(), Na, master_cryptoManager); // TODO: Isto não pode estar martelado
 			
 			System.out.println("Requesting keys... " + Na);
-			Payload ns1 = new NS1(a, b, Na, master_cryptoManager); 
+			Payload ns1 = new NS1(a, b, Na, args, master_cryptoManager); 
 			SecureMessage sm = new SecureMessageImplementation(ns1);
 			socket.send(sm, kdc_addr);
 

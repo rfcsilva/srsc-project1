@@ -1,4 +1,4 @@
-package kdc.needhamSchroeder.exceptions;
+package keyEstablishmentProtocol.needhamSchroeder.exceptions;
 
 public class UnkonwnIdException extends Exception {
 

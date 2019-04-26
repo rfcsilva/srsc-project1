@@ -1,4 +1,4 @@
-package kdc.needhamSchroeder;
+package keyEstablishmentProtocol.needhamSchroeder;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -21,7 +21,7 @@ import javax.crypto.SecretKey;
 import cryptography.AbstractCryptography;
 import cryptography.CryptoFactory;
 import cryptography.Cryptography;
-import kdc.needhamSchroeder.exceptions.UnkonwnIdException;
+import keyEstablishmentProtocol.needhamSchroeder.exceptions.UnkonwnIdException;
 import util.Utils;
 import util.arKeyStore;
 
