@@ -47,22 +47,18 @@ public class CryptographyNS extends AbstractCryptography implements Cryptography
 
 	@Override
 	public byte[] computeIntegrityProof(byte[] payload) throws InvalidKeyException {
-		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("Unimplemented Method");
 	}
 
 	@Override
 	public boolean validateIntegrityProof(byte[] message, byte[] expectedMac) throws InvalidKeyException {
-		// TODO Auto-generated method stub
-		return false;
+		throw new RuntimeException("Unimplemented Method");
 	}
 
 	@Override
 	public byte[][] splitIntegrityProof(byte[] plainText) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("Unimplemented Method");
 	}
-	
 	
 	public AbstractCryptography getCryptographyFromId(String id) throws NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, CertificateException, FileNotFoundException, IOException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException, NoSuchProviderException, UnkonwnIdException {
 		
@@ -79,17 +75,17 @@ public class CryptographyNS extends AbstractCryptography implements Cryptography
 			
 			@Override
 			public boolean validateIntegrityProof(byte[] message, byte[] expectedMac) throws InvalidKeyException {
-				return true;
+				throw new RuntimeException("Unimplemented Method");
 			}
 			
 			@Override
 			public byte[][] splitIntegrityProof(byte[] plainText) {
-				return null;
+				throw new RuntimeException("Unimplemented Method");
 			}
 			
 			@Override
 			public byte[] computeIntegrityProof(byte[] payload) throws InvalidKeyException {
-				return null;
+				throw new RuntimeException("Unimplemented Method");
 			}
 		};
 	}
@@ -106,8 +102,6 @@ public class CryptographyNS extends AbstractCryptography implements Cryptography
 		String cipherAlgorithm = props.getProperty(CryptoFactory.SESSION_CIPHERSUITE);
 		String cipherProvider = props.getProperty(CryptoFactory.CIPHER_PROVIDER);
 		String outerMacProvider = props.getProperty(CryptoFactory.OUTER_MAC_PROVIDER);
-		
-		//KeyStore keyStore = arKeyStore.loadKeyStore(path, password, type);
 		
 		arKeyStore keyStore = new arKeyStore(path, password, type);
 		return new CryptographyNS(sr, keyStore, macAlgorithm, iv, cipherAlgorithm, cipherProvider, outerMacProvider);

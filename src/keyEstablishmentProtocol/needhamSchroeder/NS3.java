@@ -97,7 +97,7 @@ public class NS3 implements Payload {
 		Ticket t = Ticket.deserialize(clearText); 
 		
 		Cryptography session_cryptoManager = CryptoFactory.deserializeSessionParameters(t.getKs()); 
-		
+
 		if (!session_cryptoManager.validateOuterMac(ticket, outerMac))
 			throw new InvalidMacException(INVALID_OUTTER_MAC);
 

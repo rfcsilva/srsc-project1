@@ -49,10 +49,9 @@ public class SecureMessageImplementation implements SecureMessage {
 	}
 
 	public SecureMessageImplementation() {
-		// DUMMY to be filled later with deserialize call
+		// Creates an empty msg to be filled later with deserialize call
 	}
 
-	//TODO payload may come null if type is invalid 
 	public SecureMessageImplementation(byte[] rawContent, Cryptography cryptoManager, NonceManager nonceManager) throws IOException, InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidMacException, ReplayedNonceException, BrokenIntegrityException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException, UnkonwnIdException {
 		deserialize(rawContent, cryptoManager, nonceManager);
 	}
@@ -74,7 +73,6 @@ public class SecureMessageImplementation implements SecureMessage {
 		dataIn.close();
 		byteIn.close();
 	}
-
 
 	@Override
 	public byte getVersionRelease() {
@@ -109,13 +107,13 @@ public class SecureMessageImplementation implements SecureMessage {
 		dataOut.flush();
 		byteOut.flush();
 
-		//retrieve header raw data
+		// Retrieve header raw data
 		byte[] headerBytes = byteOut.toByteArray();
 
-		//retrieve payload raw data
+		// Retrieve payload raw data
 		byte[] payloadBytes = payload.serialize();
 
-		//Append both
+		// Append both
 		byte[] messageBytes = Utils.concat(headerBytes, payloadBytes);
 
 		dataOut.close();

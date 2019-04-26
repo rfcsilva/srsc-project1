@@ -11,8 +11,6 @@ import java.security.NoSuchProviderException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
 import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -32,12 +30,13 @@ import secureSocket.secureMessages.SecureMessageImplementation;
 
 public class NeedhamSchroederServer implements KeyEstablishmentProtocolServer {
 
+	private static final int DEFAULT_TIMEOUT = 30 * 1000;
+
 	private static final int WINDOW_SIZE = 100;
 
 	private InetSocketAddress b_addr;
 	private Cryptography master_cryptoManager;
 	private WindowNonceManager nonceManager;
-	private InetSocketAddress a_addr;
 
 	public NeedhamSchroederServer(InetSocketAddress b_addr, Cryptography master_cryptoManager)
 			throws InvalidKeyException, NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException,
@@ -54,7 +53,7 @@ public class NeedhamSchroederServer implements KeyEstablishmentProtocolServer {
 			throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException,
 			InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException,
 			UnrecoverableEntryException, KeyStoreException, CertificateException, IOException, NoSuchProviderException,
-			InvalidPayloadTypeException, BrokenBarrierException, UnkonwnIdException { // TODO: isto precisa de outo nome
+			InvalidPayloadTypeException, BrokenBarrierException, UnkonwnIdException {
 
 		// Listen for incoming requests
 		listenRequests(master_cryptoManager, requestHandler);
@@ -66,7 +65,6 @@ public class NeedhamSchroederServer implements KeyEstablishmentProtocolServer {
 			IllegalBlockSizeException, BadPaddingException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException, UnkonwnIdException {
 
 				SecureDatagramSocket inSocket = new SecureDatagramSocket(b_addr, master_cryptoManager);
-				inSocket.setTimeout(5 * 1000); // TODO: Isto parece pouco não?
 
 				System.out.println("Waitting for Ticket...");
 
@@ -95,10 +93,11 @@ public class NeedhamSchroederServer implements KeyEstablishmentProtocolServer {
 	private void processRequest(NS3 ns3, InetSocketAddress addr, RequestHandler requestHandler) {
 		new Thread(() -> {
 			try {
-				Cryptography session_cryptoManager = CryptoFactory.deserializeSessionParameters( ns3.getKs() ); //UDP_KDC_Server.deserializeSessionParameters(ns3.getKs());
+				
+				Cryptography session_cryptoManager = CryptoFactory.deserializeSessionParameters( ns3.getKs() ); 
 
 				SecureDatagramSocket new_socket = new SecureDatagramSocket(session_cryptoManager);
-				new_socket.setTimeout(30 * 1000); // TODO : quanto timeout?
+				new_socket.setTimeout(DEFAULT_TIMEOUT);
 
 				long Nb = getNonce();
 
@@ -109,17 +108,14 @@ public class NeedhamSchroederServer implements KeyEstablishmentProtocolServer {
 
 				SecureMessage sm2 = new SecureMessageImplementation();
 				InetSocketAddress client_addr = new_socket.receive(sm2);
-				// System.out.println("Received Challenge answer.");
 				
 				NS4 ns5 = (NS4) sm2.getPayload();
 
 				if (ns5.getNb() == (Nb + 1)) {
 					System.out.println("Valid Challenge Answer: " + ns5.getNb());
 					
-					//if(requestHandler != null)
-						requestHandler.execute(new_socket, client_addr, ns3.getArgs()); // TODO: passar nome do filme como arg do ticket
-					
-					System.out.println("xé");
+					if(requestHandler != null)
+						requestHandler.execute(new_socket, client_addr, ns3.getArgs());
 					
 				} else {
 					System.err.println("Invalid Challenge Answer: " + ns5.getNb() + " != " + (Nb + 1));
