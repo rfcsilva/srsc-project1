@@ -32,8 +32,7 @@ public class DefaultPayload implements Payload {
 	private static final String INVALID_OUTTER_MAC = "Invalid Outter Mac";
 
 	public static final byte TYPE = 0x01;
-	//TODO: FIX NONCE MANAGER
-
+	
 	// Payload data
 	private long id;
 	private long nonce;

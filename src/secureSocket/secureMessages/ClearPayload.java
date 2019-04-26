@@ -19,13 +19,9 @@ import secureSocket.exceptions.InvalidMacException;
 import secureSocket.exceptions.ReplayedNonceException;
 import util.Utils;
 
-// TODO : find better name for the class
 public class ClearPayload implements Payload {
 
 	public static final byte TYPE = 0x02;
-
-	// Encryption support
-	// private static Cryptography2 criptoService;
 
 	// Payload data
 	private byte[] message;
@@ -37,8 +33,6 @@ public class ClearPayload implements Payload {
 			IllegalBlockSizeException, BadPaddingException, ShortBufferException {
 
 		this.message = message;
-	
-		// this.criptoService = criptoService;
 
 		this.outterMac = criptoManager.computeOuterMac(message);
 	}
@@ -60,9 +54,7 @@ public class ClearPayload implements Payload {
 		return (short) (message.length + outterMac.length);
 	}
 
-	// TODO handle bad macs
-	// TODO : retornar Payload ou DEfaultPayload?
-	public static Payload deserialize(byte[] rawPayload, Cryptography criptoManager)
+	public static ClearPayload deserialize(byte[] rawPayload, Cryptography criptoManager)
 			throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException,
 			InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException,
 			UnrecoverableEntryException, KeyStoreException, CertificateException, IOException, InvalidMacException, ReplayedNonceException {

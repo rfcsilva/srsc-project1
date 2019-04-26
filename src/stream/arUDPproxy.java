@@ -46,32 +46,31 @@ import secureSocket.exceptions.InvalidPayloadTypeException;
 class arUDPproxy {
 
 	private static final String LOCALDELIVERY = "localdelivery";
-	private static final String REMOTE = "remote";
-	private static final String ERROR_USER_INPUT = "Erro, usar: myReceive <ciphersuite.conf> <proxyProps.properties> <password>";
+	//private static final String REMOTE = "remote";
+	private static final String KDC = "kdc";
+	private static final String ERROR_USER_INPUT = "Error, use: myReceive <ciphersuite.conf> <proxyProps.properties> <client-id> <password> <server-id> <movie-name>";
 	private static final int ERROR_CODE = -1;
 
 	public static void main(String[] args) {
 
-		// TODO: Receber id como arg também
-		
-		if (args.length != 3) {
+		if (args.length != 6) {
 			System.err.println(ERROR_USER_INPUT);
 			System.exit(ERROR_CODE);
 		}
-		String remote = null, destinations = null;
+		String destinations = null, kdc = null;
 
 		try {
 			InputStream inputStream = new FileInputStream(args[1]);
 			Properties properties = new Properties();
 			properties.load(inputStream);
-			remote = properties.getProperty(REMOTE); // TODO: remover isto? ou merter o KDC Client para usar isto?
+			kdc = properties.getProperty(KDC); 
 			destinations = properties.getProperty(LOCALDELIVERY);
 		} catch(IOException e) {
 			System.err.println("Unable to read file " + args[1]  + " properly.");
 			System.exit(-1);	
 		}
 
-		InetSocketAddress inSocketAddress = parseSocketAddress(remote);
+		InetSocketAddress kdc_addr = parseSocketAddress(kdc);
 		Set<SocketAddress> outSocketAddressSet = Arrays.stream(destinations.split(",")).map(s -> parseSocketAddress(s)).collect(Collectors.toSet());
 
 		// Create inSocket 
@@ -79,19 +78,12 @@ class arUDPproxy {
 		SecureDatagramSocket inSocket;
 		DatagramSocket outSocket;
 		try {
-			//KDCServer kdc_server = new NeedhamSchroederServer(inSocketAddress);
-			//cryptoManager = kdc_server.getSessionParameters();
-			//InetSocketAddress b_addr = new InetSocketAddress( "localhost", 8889);
-			InetSocketAddress kdc_addr = new InetSocketAddress("localhost", 8888); // TODO: ler das configs
-			
-			Cryptography master_cryptoManager = CryptoFactory.getInstace(args[2], args[0]);
-			KeyEstablishmentProtocolClient kdc_client = new NeedhamSchroederClient(kdc_addr, "proxy", master_cryptoManager); // TODO: read a and b from some file
-			cryptoManager = kdc_client.getSessionParameters("movie-server2", new String[] {"monsters"}); // TODO: passar filme como arg
-			
-			//inSocket = new SecureDatagramSocket(inSocketAddress, cryptoManager);
-			
+			Cryptography master_cryptoManager = CryptoFactory.getInstace(args[3], args[0]);
+			KeyEstablishmentProtocolClient kdc_client = new NeedhamSchroederClient(kdc_addr, args[2], master_cryptoManager);
+			cryptoManager = kdc_client.getSessionParameters(args[4], new String[] {args[5]});
+
 			inSocket = new SecureDatagramSocket(kdc_client.getMyAddr(), cryptoManager);
-			
+
 			outSocket = new DatagramSocket();
 			byte[] buffer = new byte[4 * 1024];
 
@@ -134,9 +126,7 @@ class arUDPproxy {
 			e.printStackTrace();
 			System.exit(-1);		
 		}
-
 	}
-
 
 	private static InetSocketAddress parseSocketAddress(String socketAddress) {
 		String[] split = socketAddress.split(":");

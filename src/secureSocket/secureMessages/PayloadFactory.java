@@ -40,13 +40,13 @@ public class PayloadFactory {
 			return DefaultPayload.deserialize(rawPayload, cryptoManager, nonceManager);
 		case ClearPayload.TYPE:
 			return ClearPayload.deserialize(rawPayload, cryptoManager);
-		case NS1.TYPE: // TODO: isto não deveria estar aqui
+		case NS1.TYPE:
 			return NS1.deserialize(rawPayload, cryptoManager);
-		case NS2.TYPE: // TODO: isto não deveria estar aqui
+		case NS2.TYPE:
 			return NS2.deserialize(rawPayload, cryptoManager);
-		case NS3.TYPE: // TODO: isto não deveria estar aqui
+		case NS3.TYPE: 
 			return NS3.deserialize(rawPayload, cryptoManager);
-		case NS4.TYPE: // TODO: isto não deveria estar aqui
+		case NS4.TYPE:
 			return NS4.deserialize(rawPayload, cryptoManager);
 		default:
 			throw new InvalidPayloadTypeException("type: " + payloadType);

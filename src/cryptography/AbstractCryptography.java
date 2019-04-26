@@ -116,7 +116,6 @@ public abstract class AbstractCryptography implements Cryptography {
 		return mac.doFinal();
 	}
 
-
 }
 
 

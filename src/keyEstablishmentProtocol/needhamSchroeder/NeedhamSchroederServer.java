@@ -37,7 +37,6 @@ public class NeedhamSchroederServer implements KeyEstablishmentProtocolServer {
 	private InetSocketAddress b_addr;
 	private Cryptography master_cryptoManager;
 	private WindowNonceManager nonceManager;
-	private InetSocketAddress a_addr;
 
 	public NeedhamSchroederServer(InetSocketAddress b_addr, Cryptography master_cryptoManager)
 			throws InvalidKeyException, NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException,
