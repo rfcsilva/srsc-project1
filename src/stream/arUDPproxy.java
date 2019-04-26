@@ -85,7 +85,7 @@ class arUDPproxy {
 			
 			Cryptography master_cryptoManager = CryptoFactory.getInstace(args[2], args[0]);
 			KeyEstablishmentProtocolClient kdc_client = new NeedhamSchroederClient(kdc_addr, "proxy", master_cryptoManager); // TODO: read a and b from some file
-			cryptoManager = kdc_client.getSessionParameters("b", new String[] {"monsters"}); // TODO: passar filme como arg
+			cryptoManager = kdc_client.getSessionParameters("movie-server", new String[] {"monsters"}); // TODO: passar filme como arg
 			
 			//inSocket = new SecureDatagramSocket(inSocketAddress, cryptoManager);
 			
