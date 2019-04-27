@@ -182,7 +182,6 @@ public class NS1_Coins implements Payload {
 
 			return new NS1_Coins(tsn, messageParts[0], messageParts[1], cipherWithMac, criptoManagerA, criptoManagerB);
 		}
-
 	}	
 
 	public CryptographyDoubleMac getCryptoManagerA() {
