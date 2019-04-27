@@ -29,7 +29,7 @@ import secureSocket.exceptions.InvalidPayloadTypeException;
 import secureSocket.secureMessages.Payload;
 import secureSocket.secureMessages.SecureMessage;
 import secureSocket.secureMessages.SecureMessageImplementation;
-import util.FileWriter;
+import util.IO;
 
 public class NeedhamSchroederKDC implements KeyEstablishmentProtocolKDC {
 
@@ -90,7 +90,7 @@ public class NeedhamSchroederKDC implements KeyEstablishmentProtocolKDC {
 					// Generate Session Parameters for A and B
 					byte[] securityParams = CryptoFactory.buildSessionParameters(configPath);
 
-					if(!FileWriter.write(req.getTransation(), FILE_PATH, CHARSET))
+					if(!IO.write(req.getTransation(), FILE_PATH, CHARSET))
 						System.err.println(ERROR_WRTING_ON_FILE);
 					
 					// Send reply to A

@@ -9,7 +9,7 @@ import java.io.Writer;
 
 import keyEstablishmentProtocol.needhamSchroeder.Transation;
 
-public class FileWriter {
+public class IO {
 
 	private static final String DEFAULT_CHARSET = "utf-8";
 

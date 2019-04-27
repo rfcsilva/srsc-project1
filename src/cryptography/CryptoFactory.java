@@ -501,24 +501,6 @@ public class CryptoFactory {
 		Mac innerMac = initMac(macAlgorithm, keys[0], mac_provider);
 		
 		return new CryptographyDoubleMac(encryptCipher, decryptCipher, innerMac, outerMac, sr);
-
-		/*return new AbstractCryptography(encryptCipher, decryptCipher, outerMac, this.getSecureRandom()) {
-
-			@Override
-			public boolean validateIntegrityProof(byte[] message, byte[] expectedMac) throws InvalidKeyException {
-				throw new RuntimeException("Unimplemented Method");
-			}
-
-			@Override
-			public byte[][] splitIntegrityProof(byte[] plainText) {
-				throw new RuntimeException("Unimplemented Method");
-			}
-
-			@Override
-			public byte[] computeIntegrityProof(byte[] payload) throws InvalidKeyException {
-				throw new RuntimeException("Unimplemented Method");
-			}
-		};*/
 	}
 
 	public static SecretKey[] genKeysFromPassword(String password, Properties props)
@@ -531,10 +513,8 @@ public class CryptoFactory {
 		int ka_key_size = Integer.parseInt(props.getProperty(KA_KEY_SIZE, DEFAULT_KEY_SIZE));
 		int km_key_size = Integer.parseInt(props.getProperty(KM_KEY_SIZE, DEFAULT_KEY_SIZE));
 
-		SecretKey ka = CryptographyUtils.generateKey(password, SALT, kaIterations, keyGenAlgorithm, keySpecAlgorithm,
-				ka_key_size);
-		SecretKey km = CryptographyUtils.generateKey(password, SALT, kmIerations, keyGenAlgorithm, keySpecAlgorithm,
-				km_key_size);
+		SecretKey ka = CryptographyUtils.generateKey(password, SALT, kaIterations, keyGenAlgorithm, keySpecAlgorithm, ka_key_size);
+		SecretKey km = CryptographyUtils.generateKey(password, SALT, kmIerations, keyGenAlgorithm, keySpecAlgorithm, km_key_size);
 
 		return new SecretKey[] { ka, km };
 	}

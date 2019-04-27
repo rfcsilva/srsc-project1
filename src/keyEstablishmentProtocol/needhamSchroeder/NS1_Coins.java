@@ -33,11 +33,9 @@ public class NS1_Coins implements Payload {
 	private static final String MUST_USED_A_DOUBLE_MAC_CRYPTO_MANAGER = "Must used a Double MAC CryptoManager";
 	private static final String INVALID_OUTER_MAC = "Invalid Outer Mac";
 
-
 	public static final byte TYPE = 0x16;
 
 	//A || {A, B, Na, Args, InnerMac_Ka}ka || outerMac_Kma
-
 
 	// Payload data
 	private Transation tns;
@@ -60,14 +58,12 @@ public class NS1_Coins implements Payload {
 
 		this.cipherText = cryptoManager.encrypt(tns.serialize());
 		
-		
 		this.outerMac = cryptoManager.computeOuterMac(this.cipherText);
 
 		this.message = serializeFinnal(a, Utils.concat(cipherText, outerMac));
 	}
 
 	private NS1_Coins(Transation tns, byte[] cipherText, byte[] outerMac, byte[] message, CryptographyDoubleMac criptoManagerA, CryptographyDoubleMac criptoManagerB) {
-
 		this.tns = tns;
 		this.cipherText = cipherText;
 		this.outerMac = outerMac;
