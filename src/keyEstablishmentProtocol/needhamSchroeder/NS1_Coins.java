@@ -18,7 +18,6 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
-import cryptography.AbstractCryptography;
 import cryptography.Cryptography;
 import cryptography.CryptographyDoubleMac;
 import keyEstablishmentProtocol.needhamSchroeder.exceptions.UnkonwnIdException;
@@ -41,7 +40,7 @@ public class NS1_Coins implements Payload {
 	private String b;
 	private long na;
 	private String[] arguments;
-	private byte[] innerMac; // TODO: usar a mesma chave das cifras?
+	private byte[] innerMac;
 	private byte[] cipherText;
 	private byte[] outerMac;
 	private byte[] message;
@@ -217,7 +216,6 @@ public class NS1_Coins implements Payload {
 				dataIn.close();
 				byteIn.close();
 
-				//AbstractCryptography criptoManagerA = ((CryptographyNS) criptoManager).getCryptographyFromId(a);
 				CryptographyDoubleMac criptoManagerB = ((CryptographyNS) criptoManager).getCryptographyFromId(b);
 
 				String[] arguments = deserializeArgs(cipheredArgs);
