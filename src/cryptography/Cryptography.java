@@ -10,6 +10,11 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.Mac;
 import javax.crypto.ShortBufferException;
 
+/**
+ * Encapsulates several cryptography primitives: an encrypt cipher, a decrypt
+ * cipher (with the same parameters), an outer MAC and an additional integrity
+ * proof that can be either a MAC or an HASH
+ */
 public interface Cryptography {
 
 	/**
