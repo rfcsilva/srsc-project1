@@ -26,6 +26,7 @@ import keyEstablishmentProtocol.needhamSchroeder.exceptions.InvalidChallangeRepl
 import keyEstablishmentProtocol.needhamSchroeder.exceptions.TooManyTriesException;
 import keyEstablishmentProtocol.needhamSchroeder.exceptions.UnkonwnIdException;
 import keyEstablishmentProtocol.needhamSchroeder.exceptions.UnkonwnServerException;
+import keyEstablishmentProtocol.needhamSchroeder.exceptions.WrongCryptoManagerException;
 import keyEstablishmentProtocol.needhamSchroeder.exceptions.WrongMessageTypeException;
 import secureSocket.SecureDatagramSocket;
 import secureSocket.exceptions.InvalidPayloadTypeException;
@@ -61,7 +62,7 @@ public class NeedhamSchroederClient implements KeyEstablishmentProtocolClient {
 	}
 
 	@Override
-	public Cryptography getSessionParameters(String b, String[] args) throws NoSuchAlgorithmException, IOException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidChallangeReplyException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException, TooManyTriesException, UnkonwnIdException, UnkonwnServerException, IllegalBlockSizeException, BadPaddingException, ShortBufferException {
+	public Cryptography getSessionParameters(String b, String[] args) throws NoSuchAlgorithmException, IOException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidChallangeReplyException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException, TooManyTriesException, UnkonwnIdException, UnkonwnServerException, IllegalBlockSizeException, BadPaddingException, ShortBufferException, WrongCryptoManagerException {
 
 		NonceManager nonceManager = new WindowNonceManager(WINDOW_SIZE, master_cryptoManager.getSecureRandom());
 
@@ -98,11 +99,12 @@ public class NeedhamSchroederClient implements KeyEstablishmentProtocolClient {
 		throw new TooManyTriesException("" + max_tries);
 	}
 
-	private NS2 requestKeys(SecureDatagramSocket socket, InetSocketAddress kdc_addr, long Na, NonceManager nonceManager, String a, String b, String[] args) throws IOException, InvalidChallangeReplyException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException, ReplayedNonceException, UnkonwnIdException, WrongMessageTypeException, UnkonwnServerException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, ShortBufferException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException {
+	private NS2 requestKeys(SecureDatagramSocket socket, InetSocketAddress kdc_addr, long Na, NonceManager nonceManager, String a, String b, String[] args) throws IOException, InvalidChallangeReplyException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException, ReplayedNonceException, UnkonwnIdException, WrongMessageTypeException, UnkonwnServerException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, ShortBufferException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, WrongCryptoManagerException {
 			socket.setCryptoManager(master_cryptoManager);
 
 			System.out.println("Requesting keys... " + Na);
-			Payload ns1 = new NS1(a, b, Na, args, master_cryptoManager); 
+			//Payload ns1 = new NS1(a, b, Na, args, master_cryptoManager); 
+			Payload ns1 = new NS1_Coins(a, b, Na, args, master_cryptoManager);
 			SecureMessage sm = new SecureMessageImplementation(ns1);
 			socket.send(sm, kdc_addr);
 

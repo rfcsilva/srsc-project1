@@ -70,7 +70,8 @@ public class NeedhamSchroederKDC implements KeyEstablishmentProtocolKDC {
 
 		new Thread(() -> {
 			try {
-				NS1 req = (NS1)request.getPayload();
+				//NS1 req = (NS1)request.getPayload();
+				NS1_Coins req = (NS1_Coins)request.getPayload();
 				String a = req.getA();
 				String b = req.getB();
 				long Na = req.getNa();
@@ -117,7 +118,7 @@ public class NeedhamSchroederKDC implements KeyEstablishmentProtocolKDC {
 				addr = socket.receive(sm);
 
 				// Verify if is replay
-				long Na = ((NS1)sm.getPayload()).getNa();
+				long Na = ((NS1_Coins)sm.getPayload()).getNa();
 				replay = this.verifyReplay(Na);
 				if(replay)
 					System.err.println("Replayed request " + Na);

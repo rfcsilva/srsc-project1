@@ -497,24 +497,28 @@ public class CryptoFactory {
 		Cipher encryptCipher = buildCipher(cipherAlgorithm, Cipher.ENCRYPT_MODE, keys[0], iv, tagSize, cipher_provider);
 		Cipher decryptCipher = buildCipher(cipherAlgorithm, Cipher.DECRYPT_MODE, keys[0], iv, tagSize, cipher_provider);
 		Mac outerMac = initMac(macAlgorithm, keys[1], mac_provider);
+		
+		Mac innerMac = initMac(macAlgorithm, keys[0], mac_provider);
+		
+		return new CryptographyDoubleMac(encryptCipher, decryptCipher, innerMac, outerMac, sr);
 
-		return new AbstractCryptography(encryptCipher, decryptCipher, outerMac, sr) {
+		/*return new AbstractCryptography(encryptCipher, decryptCipher, outerMac, this.getSecureRandom()) {
 
 			@Override
 			public boolean validateIntegrityProof(byte[] message, byte[] expectedMac) throws InvalidKeyException {
-				return true;
+				throw new RuntimeException("Unimplemented Method");
 			}
 
 			@Override
 			public byte[][] splitIntegrityProof(byte[] plainText) {
-				return null;
+				throw new RuntimeException("Unimplemented Method");
 			}
 
 			@Override
 			public byte[] computeIntegrityProof(byte[] payload) throws InvalidKeyException {
-				return null;
+				throw new RuntimeException("Unimplemented Method");
 			}
-		};
+		};*/
 	}
 
 	public static SecretKey[] genKeysFromPassword(String password, Properties props)

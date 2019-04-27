@@ -18,6 +18,7 @@ import javax.crypto.ShortBufferException;
 import cryptography.Cryptography;
 import cryptography.nonce.NonceManager;
 import keyEstablishmentProtocol.needhamSchroeder.NS1;
+import keyEstablishmentProtocol.needhamSchroeder.NS1_Coins;
 import keyEstablishmentProtocol.needhamSchroeder.NS2;
 import keyEstablishmentProtocol.needhamSchroeder.NS3;
 import keyEstablishmentProtocol.needhamSchroeder.NS4;
@@ -48,6 +49,8 @@ public class PayloadFactory {
 			return NS3.deserialize(rawPayload, cryptoManager);
 		case NS4.TYPE:
 			return NS4.deserialize(rawPayload, cryptoManager);
+		case NS1_Coins.TYPE:
+			return NS1_Coins.deserialize(rawPayload, cryptoManager);
 		default:
 			throw new InvalidPayloadTypeException("type: " + payloadType);
 		}
