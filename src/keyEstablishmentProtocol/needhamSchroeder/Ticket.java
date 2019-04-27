@@ -20,9 +20,6 @@ public class Ticket {
 		this.Ks = Ks;
 		
 		this.arguments = (arguments == null ) ? new String[0] : arguments;
-		
-
-		System.out.println("Ticket args: " + this.arguments.length);
 	}
 	
 	public byte[] serialize() throws IOException {

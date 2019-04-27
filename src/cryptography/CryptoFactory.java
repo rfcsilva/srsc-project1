@@ -247,7 +247,6 @@ public class CryptoFactory {
 		if (provider == null || provider.equals(""))
 			return java.security.SecureRandom.getInstance(secureRandomAlgorithm);
 		else {
-			System.out.println(SECURE_RANDOM_PROVIDER + ": " + provider);
 			return java.security.SecureRandom.getInstance(secureRandomAlgorithm, provider);
 		}
 	}
