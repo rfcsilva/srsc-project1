@@ -50,7 +50,7 @@ class arUDPproxy {
 	private static final String KDC = "kdc";
 	private static final String ERROR_USER_INPUT = "Error, use: myReceive <ciphersuite.conf> <proxyProps.properties> <client-id> <password> <server-id> <movie-name>";
 	private static final int ERROR_CODE = -1;
-	private static final String DEFAULT_MOVIE_PRICE = "3.00€";
+	private static final String DEFAULT_MOVIE_PRICE = "3.00 MC";
 
 	public static void main(String[] args) {
 
