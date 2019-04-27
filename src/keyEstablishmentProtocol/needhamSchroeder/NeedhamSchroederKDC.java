@@ -29,10 +29,14 @@ import secureSocket.exceptions.InvalidPayloadTypeException;
 import secureSocket.secureMessages.Payload;
 import secureSocket.secureMessages.SecureMessage;
 import secureSocket.secureMessages.SecureMessageImplementation;
+import util.FileWriter;
 
 public class NeedhamSchroederKDC implements KeyEstablishmentProtocolKDC {
 
+	private static final String ERROR_WRTING_ON_FILE = "Error Wrting on file.";
 	private static final int WINDOW_SIZE = 100;
+	private static final String FILE_PATH = "./configs/kdc/log.txt";
+	private static final String CHARSET = "utf-8";
 	private SecureDatagramSocket socket;
 	private NonceManager nonceManager;
 	private String configPath;
@@ -86,8 +90,9 @@ public class NeedhamSchroederKDC implements KeyEstablishmentProtocolKDC {
 					// Generate Session Parameters for A and B
 					byte[] securityParams = CryptoFactory.buildSessionParameters(configPath);
 
-					// TODO: FALTA FAZER DINHEIRO
-
+					if(!FileWriter.write(req.getTransation(), FILE_PATH, CHARSET))
+						System.err.println(ERROR_WRTING_ON_FILE);
+					
 					// Send reply to A
 					long Na_1 = req.getNa() + 1;
 					long Nc = this.getNonce();
@@ -138,5 +143,4 @@ public class NeedhamSchroederKDC implements KeyEstablishmentProtocolKDC {
 	private synchronized boolean verifyReplay(long nonce) {
 		return nonceManager.verifyReplay(nonce);
 	}
-
 }

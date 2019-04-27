@@ -207,5 +207,8 @@ public class NS1_Coins implements Payload {
 	public String[] getArgs() {
 		return tns.getArgs();
 	}
-
+	
+	public Transation getTransation() {
+		return tns;
+	}
 }
