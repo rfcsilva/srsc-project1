@@ -100,7 +100,6 @@ public class CryptoFactory {
 	public static Cipher buildCipher(String cipherAlgorithm, int cipherMode, SecretKey key, byte[] iv, String provider) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, NoSuchProviderException {
 
 		if(provider != null) {
-			System.out.println(CIPHER_PROVIDER + ": " +provider);
 			Cipher cipher = Cipher.getInstance(cipherAlgorithm, provider);
 			if(iv != null) {
 				cipher.init(cipherMode, key, new IvParameterSpec(iv));
@@ -130,7 +129,6 @@ public class CryptoFactory {
 		if(provider== null) 
 			mac = Mac.getInstance(macAlgorithm);
 		else {
-			System.out.println("MAC PROVIDER: " + provider);
 			mac = Mac.getInstance(macAlgorithm, provider);
 		}
 		mac.init(key);
@@ -142,7 +140,6 @@ public class CryptoFactory {
 		if(provider==null)
 			return MessageDigest.getInstance(hashAlgorithm);
 		else {
-			System.out.println(HASH_PROVIDER + ": " + provider);
 			return MessageDigest.getInstance(hashAlgorithm, provider);
 		}
 	}
@@ -162,7 +159,6 @@ public class CryptoFactory {
 
 
 		//Generate IV
-
 		String ivString = ciphersuit_properties.getProperty(IV);
 		int ivSize = Integer.parseInt(ciphersuit_properties.getProperty(IV_SIZE));
 		byte[] iv = null;
@@ -246,7 +242,7 @@ public class CryptoFactory {
 		byte[] iv = generateIv(ciphersuit_properties.getProperty(SESSION_CIPHERSUITE), Integer.parseInt(ciphersuit_properties.getProperty(IV_SIZE)), sr);
 
 
-		//tag
+		// Tag -> GCM
 		String aux = ciphersuit_properties.getProperty(TAG_SIZE);
 		int tagSize = (aux == null) ? 0 : Integer.parseInt(aux);
 
@@ -297,16 +293,14 @@ public class CryptoFactory {
 		byteOut.close();
 
 		return data;
-
-
 	}
 
 
 	private static SecretKey[] generateKeys(String session_key_gen_alg, int session_key_size, String outer_key_gen_alg,int outer_mac_key_size, String inner_key_gen_alg, int inner_mac_key_size, boolean useHash ) throws NoSuchAlgorithmException {
 
 		SecretKey ks = CryptographyUtils.generateKey(session_key_gen_alg, session_key_size); // Session key
-		SecretKey kms = useHash ? null : CryptographyUtils.generateKey(inner_key_gen_alg, inner_mac_key_size); //inner mac key
-		SecretKey kms2 = CryptographyUtils.generateKey(outer_key_gen_alg, outer_mac_key_size); //outter mac key
+		SecretKey kms = useHash ? null : CryptographyUtils.generateKey(inner_key_gen_alg, inner_mac_key_size); // inner mac key
+		SecretKey kms2 = CryptographyUtils.generateKey(outer_key_gen_alg, outer_mac_key_size); // outer mac key
 
 		return new SecretKey[]{ks, kms, kms2};
 	}
