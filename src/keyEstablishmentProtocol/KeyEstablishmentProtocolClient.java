@@ -21,11 +21,12 @@ import keyEstablishmentProtocol.needhamSchroeder.exceptions.InvalidChallangeRepl
 import keyEstablishmentProtocol.needhamSchroeder.exceptions.TooManyTriesException;
 import keyEstablishmentProtocol.needhamSchroeder.exceptions.UnkonwnIdException;
 import keyEstablishmentProtocol.needhamSchroeder.exceptions.UnkonwnServerException;
+import keyEstablishmentProtocol.needhamSchroeder.exceptions.WrongCryptoManagerException;
 import secureSocket.exceptions.InvalidPayloadTypeException;
 
 public interface KeyEstablishmentProtocolClient {
 
-	public Cryptography getSessionParameters(String b, String[] arguments) throws NoSuchAlgorithmException, IOException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidChallangeReplyException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException, TooManyTriesException, UnkonwnIdException, UnkonwnServerException, IllegalBlockSizeException, BadPaddingException, ShortBufferException;
+	public Cryptography getSessionParameters(String b, String[] arguments) throws NoSuchAlgorithmException, IOException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidChallangeReplyException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException, TooManyTriesException, UnkonwnIdException, UnkonwnServerException, IllegalBlockSizeException, BadPaddingException, ShortBufferException, WrongCryptoManagerException;
 	
 	public InetSocketAddress getMyAddr() ;
 	

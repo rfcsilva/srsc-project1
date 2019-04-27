@@ -20,6 +20,7 @@ import javax.crypto.SecretKey;
 import cryptography.AbstractCryptography;
 import cryptography.CryptoFactory;
 import cryptography.Cryptography;
+import cryptography.CryptographyDoubleMac;
 import keyEstablishmentProtocol.needhamSchroeder.exceptions.UnkonwnIdException;
 import util.Utils;
 import util.arKeyStore;
@@ -60,7 +61,7 @@ public class CryptographyNS extends AbstractCryptography implements Cryptography
 		throw new RuntimeException("Unimplemented Method");
 	}
 	
-	public AbstractCryptography getCryptographyFromId(String id) throws NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, CertificateException, FileNotFoundException, IOException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException, NoSuchProviderException, UnkonwnIdException {
+	public CryptographyDoubleMac getCryptographyFromId(String id) throws NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, CertificateException, FileNotFoundException, IOException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException, NoSuchProviderException, UnkonwnIdException {
 		
 		if( !(key_store.contains(KM + id) || key_store.contains(K + id)) )
 			throw new UnkonwnIdException(id);
@@ -71,7 +72,11 @@ public class CryptographyNS extends AbstractCryptography implements Cryptography
 		Cipher encryptCipher = CryptoFactory.buildCipher(cipherAlgorithm, Cipher.ENCRYPT_MODE, k, iv, cipherProvider);
 		Cipher decryptCipher = CryptoFactory.buildCipher(cipherAlgorithm, Cipher.DECRYPT_MODE, k, iv, cipherProvider);
 		
-		return new AbstractCryptography(encryptCipher, decryptCipher, outerMac, this.getSecureRandom()) {
+		Mac innerMac = CryptoFactory.initMac(macAlgorithm, k, outMacProvider);
+		
+		return new CryptographyDoubleMac(encryptCipher, decryptCipher, innerMac, outerMac, this.getSecureRandom());
+		
+		/*return new AbstractCryptography(encryptCipher, decryptCipher, outerMac, this.getSecureRandom()) {
 			
 			@Override
 			public boolean validateIntegrityProof(byte[] message, byte[] expectedMac) throws InvalidKeyException {
@@ -87,7 +92,7 @@ public class CryptographyNS extends AbstractCryptography implements Cryptography
 			public byte[] computeIntegrityProof(byte[] payload) throws InvalidKeyException {
 				throw new RuntimeException("Unimplemented Method");
 			}
-		};
+		};*/
 	}
 	
 	public static CryptographyNS loadFromprops(Properties  props) throws NoSuchAlgorithmException, NoSuchProviderException, KeyStoreException, CertificateException, FileNotFoundException, IOException {
