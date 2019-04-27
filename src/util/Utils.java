@@ -1,6 +1,6 @@
 package util;
 
-public class ArrayUtils {
+public class Utils {
 	
 	/**
 	 * Concatenates two byte arrays

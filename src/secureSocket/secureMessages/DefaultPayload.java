@@ -22,7 +22,7 @@ import cryptography.Cryptography;
 import cryptography.nonce.NonceManager;
 import secureSocket.exceptions.InvalidMacException;
 import secureSocket.exceptions.ReplayedNonceException;
-import util.ArrayUtils;
+import util.Utils;
 
 public class DefaultPayload implements Payload {
 
@@ -51,7 +51,7 @@ public class DefaultPayload implements Payload {
 		byte[] Mp = buildMp(id, nonce, message);
 
 		this.innerIntegrityProof = criptoManager.computeIntegrityProof(Mp);
-		this.cipherText = criptoManager.encrypt(ArrayUtils.concat(Mp, this.innerIntegrityProof));
+		this.cipherText = criptoManager.encrypt(Utils.concat(Mp, this.innerIntegrityProof));
 		this.outterMac = criptoManager.computeOuterMac(this.cipherText);
 	
 	}
@@ -88,7 +88,7 @@ public class DefaultPayload implements Payload {
 	}
 
 	public byte[] serialize() {
-		return ArrayUtils.concat(this.cipherText, this.outterMac);
+		return Utils.concat(this.cipherText, this.outterMac);
 	}
 
 	public short size() {

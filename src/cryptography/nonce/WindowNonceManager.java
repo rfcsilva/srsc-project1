@@ -4,7 +4,7 @@ import java.security.SecureRandom;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 
-import cryptography.CryptographyUtils;
+import util.CryptographyUtils;
 
 public class WindowNonceManager implements NonceManager {
 
