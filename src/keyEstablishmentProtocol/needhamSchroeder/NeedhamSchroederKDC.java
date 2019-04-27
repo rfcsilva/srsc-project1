@@ -109,7 +109,7 @@ public class NeedhamSchroederKDC implements KeyEstablishmentProtocolKDC {
 				}
 
 			} catch(Exception e) {
-				e.printStackTrace(); // TODO: tratar as excepções
+				e.printStackTrace();
 			}
 		}).start();
 	}

@@ -15,7 +15,6 @@
  *       Both configurable in the file config.properties
  */
 
-//
 package stream;
 
 import java.io.FileInputStream;
