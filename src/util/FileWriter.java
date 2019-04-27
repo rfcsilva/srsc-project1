@@ -4,9 +4,10 @@ import java.io.BufferedWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.io.Writer;
 
-import keyEstablishmentProtocol.Transation;
+import keyEstablishmentProtocol.needhamSchroeder.Transation;
 
 public class FileWriter {
 
@@ -14,28 +15,32 @@ public class FileWriter {
 
 	public synchronized static boolean write(Transation tsn, String filename, String charSet){
 
-		Writer writer = null;
-
 		if(charSet == null |  charSet.equals("") )
 			charSet = DEFAULT_CHARSET;
 
 		FileOutputStream fileOutStream;
-
+		Writer writer = null;
+		PrintWriter p_Writer;
 		try {
+			
 			fileOutStream = new FileOutputStream(filename, true);
-			writer = new BufferedWriter(new OutputStreamWriter(fileOutStream, charSet));
-			writer.write(tsn.toString());
+		    writer = new BufferedWriter(new OutputStreamWriter(fileOutStream, charSet));
+		    p_Writer = new PrintWriter(writer, true);
+		    System.out.println(tsn.toString());
+			p_Writer.println(tsn.toString());
+			
 			return true;
-
+		
 		} catch (IOException e) {
 			return false;
 		} finally {
 			try {
 				writer.close();
-			} catch (IOException e) {
+			} catch (Exception e) {
 				return false;
 			}
-		}	
+		}
+		
 	}
 
 

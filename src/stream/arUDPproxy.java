@@ -50,6 +50,7 @@ class arUDPproxy {
 	private static final String KDC = "kdc";
 	private static final String ERROR_USER_INPUT = "Error, use: myReceive <ciphersuite.conf> <proxyProps.properties> <client-id> <password> <server-id> <movie-name>";
 	private static final int ERROR_CODE = -1;
+	private static final String DEFAULT_MOVIE_PRICE = "3.00€";
 
 	public static void main(String[] args) {
 
@@ -80,7 +81,8 @@ class arUDPproxy {
 		try {
 			Cryptography master_cryptoManager = CryptoFactory.getInstace(args[3], args[0]);
 			KeyEstablishmentProtocolClient kdc_client = new NeedhamSchroederClient(kdc_addr, args[2], master_cryptoManager);
-			cryptoManager = kdc_client.getSessionParameters(args[4], new String[] {args[5]});
+			System.out.println(DEFAULT_MOVIE_PRICE);
+			cryptoManager = kdc_client.getSessionParameters(args[4], new String[] {args[5], DEFAULT_MOVIE_PRICE});
 
 			inSocket = new SecureDatagramSocket(kdc_client.getMyAddr(), cryptoManager);
 

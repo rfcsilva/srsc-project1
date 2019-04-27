@@ -1,4 +1,4 @@
-package keyEstablishmentProtocol;
+package keyEstablishmentProtocol.needhamSchroeder;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -8,13 +8,13 @@ import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.util.Base64;
 
+import cryptography.Cryptography;
 import cryptography.CryptographyDoubleMac;
 import secureSocket.exceptions.InvalidMacException;
 import util.Utils;
 
 public class Transation {
-	private static final String SEPARATOR = ";";
-	// {A, B, Na, Args, InnerMac_Ka}
+	private static final String SEPARATOR = " | ";
 
 	private static final String INVALID_INNER_MAC = "Invalid Inner Mac";
 
@@ -23,15 +23,25 @@ public class Transation {
 	private long na;
 	private String[] args;
 	private byte[] innerMac;
-
-	public Transation(String a, String b, long na, String[] args, byte[] innerMac) {
+	private byte[] message;
+	
+	public Transation(String a, String b, long na, String[] args, Cryptography cryptoManager) throws IOException, InvalidKeyException {
 
 		this.a = a;
 		this.b = b;
 		this.na = na;
 		this.args = args;
-		this.innerMac = innerMac;
+		message = buildMessage(a, b, na, args);
+		this.innerMac = cryptoManager.computeIntegrityProof(message);
 
+	}
+
+	private Transation(String a, String b, long na, String[] args, byte[] innerMac, byte[] message) {
+		this.a = a;
+		this.b = b;
+		this.na = na;
+		this.args = args;
+		this.innerMac = innerMac;
 	}
 
 	public String toString() {
@@ -46,12 +56,12 @@ public class Transation {
 
 	}
 
-	public Transation fromString(String asString) {
+	public Transation fromString(String asString) throws IOException {
 
 		String[] parts = asString.split(SEPARATOR);
 		String a = parts[0];
 		String b = parts[1];
-		long nc = Long.parseLong(parts[2]);
+		long na = Long.parseLong(parts[2]);
 
 		String[] args = new String[ parts.length - 4];
 		for(int i = 3; i < parts.length -1; i++) {
@@ -60,41 +70,22 @@ public class Transation {
 
 		innerMac = Base64.getDecoder().decode(parts[parts.length-1]);
 
-		return new Transation(a, b, nc, args, innerMac);
+		return new Transation(a, b, na, args, innerMac, buildMessage(a, b, na, args));
 	}
 
 	public byte[] serialize() throws IOException {
-
-		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-		DataOutputStream dataOut = new DataOutputStream(byteOut);
-
-		dataOut.writeUTF(a);
-		dataOut.writeUTF(b);
-		dataOut.writeLong(na);
-
-		dataOut.writeInt(args.length);
-		for(String arg: args)
-			dataOut.writeUTF(arg);
-
-		dataOut.flush();
-		byteOut.flush();
-
-		byte[] data = byteOut.toByteArray();
-
-		dataOut.close();
-		byteOut.close();
-
-		return Utils.concat(data, innerMac);
+		return Utils.concat(message, innerMac);
 	}
 
 	public static Transation deserialize(CryptographyDoubleMac cryptoManager, byte[] rawData) throws IOException, InvalidMacException, InvalidKeyException {
 
-		byte[][] messageParts = cryptoManager.splitIntegrityProof(rawData);
-		if (!cryptoManager.validateIntegrityProof(messageParts[0], messageParts[1]))
+		byte[][] messageParts = cryptoManager.splitIntegrityProof(rawData);	
+				
+		if (!cryptoManager.validateIntegrityProof(messageParts[0], messageParts[1])) {
 			throw new InvalidMacException(INVALID_INNER_MAC);
-		else {
+		}else {
 
-			ByteArrayInputStream byteIn = new ByteArrayInputStream(rawData);
+			ByteArrayInputStream byteIn = new ByteArrayInputStream(messageParts[0]);
 			DataInputStream dataIn = new DataInputStream(byteIn);
 
 			String a = dataIn.readUTF();
@@ -106,18 +97,40 @@ public class Transation {
 			for(int i = 0; i < length; i++) {
 				arguments[i] = dataIn.readUTF();
 			}
-
-			length = dataIn.readInt();
-			byte[] innerMac = new byte[length];
-			dataIn.read(innerMac, 0, length);
-
+			
 			dataIn.close();
 			byteIn.close();
 
-			return new Transation(a, b, na, arguments, innerMac);
+			return new Transation(a, b, na, arguments, messageParts[1], messageParts[0] );
 
 		}
 	}
+
+	private static byte[] buildMessage(String a, String b, long Na, String[] args) throws IOException {
+		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+		DataOutputStream dataOut = new DataOutputStream(byteOut);
+
+		dataOut.writeUTF(a);
+		dataOut.writeUTF(b);
+
+		dataOut.writeLong(Na);
+
+		dataOut.writeInt(args.length);
+		for(int i = 0; i < args.length; i++) {
+			dataOut.writeUTF(args[i]);
+		}
+
+		dataOut.flush();
+		byteOut.flush();
+
+		byte[] msg = byteOut.toByteArray();
+
+		dataOut.close();
+		byteOut.close();
+
+		return msg;
+	}
+	
 
 	public String getA() {
 		return a;

@@ -20,7 +20,6 @@ import javax.crypto.ShortBufferException;
 
 import cryptography.Cryptography;
 import cryptography.CryptographyDoubleMac;
-import keyEstablishmentProtocol.Transation;
 import keyEstablishmentProtocol.needhamSchroeder.exceptions.UnkonwnIdException;
 import keyEstablishmentProtocol.needhamSchroeder.exceptions.WrongCryptoManagerException;
 import secureSocket.exceptions.BrokenIntegrityException;
@@ -57,13 +56,11 @@ public class NS1_Coins implements Payload {
 		if( !(cryptoManager instanceof CryptographyDoubleMac) ) 
 			throw new WrongCryptoManagerException(MUST_USED_A_DOUBLE_MAC_CRYPTO_MANAGER);
 
-		byte[] msg = buildMessage(a, b, Na, serializeArgs(arguments));
-		byte[] innerMac = cryptoManager.computeIntegrityProof(msg);
-
-		tns = new Transation(a, b, Na, arguments, innerMac);
+		tns = new Transation(a, b, Na, arguments, cryptoManager);
 
 		this.cipherText = cryptoManager.encrypt(tns.serialize());
-
+		
+		
 		this.outerMac = cryptoManager.computeOuterMac(this.cipherText);
 
 		this.message = serializeFinnal(a, Utils.concat(cipherText, outerMac));
@@ -96,49 +93,6 @@ public class NS1_Coins implements Payload {
 		byteOut.close();
 
 		return data;
-	}
-
-	private byte[] serializeArgs(String[] arguments) throws IOException {
-		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-		DataOutputStream dataOut = new DataOutputStream(byteOut);
-
-		dataOut.writeInt(arguments.length);
-		for(int i = 0; i < arguments.length; i++) {
-			dataOut.writeUTF(arguments[i]);
-		}
-
-		dataOut.flush();
-		byteOut.flush();
-
-		byte[] data = byteOut.toByteArray();
-
-		dataOut.close();
-		byteOut.close();
-
-		return data;
-	}
-
-	private static byte[] buildMessage(String a, String b, long Na, byte[] args) throws IOException {
-		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-		DataOutputStream dataOut = new DataOutputStream(byteOut);
-
-		dataOut.writeUTF(a);
-		dataOut.writeUTF(b);
-
-		dataOut.writeLong(Na);
-
-		dataOut.writeInt(args.length);
-		dataOut.write(args, 0, args.length);
-
-		dataOut.flush();
-		byteOut.flush();
-
-		byte[] msg = byteOut.toByteArray();
-
-		dataOut.close();
-		byteOut.close();
-
-		return msg;
 	}
 
 	public byte getPayloadType() {
