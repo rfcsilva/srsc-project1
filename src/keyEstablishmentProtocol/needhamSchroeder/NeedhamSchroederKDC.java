@@ -34,7 +34,6 @@ import util.IO;
 public class NeedhamSchroederKDC implements KeyEstablishmentProtocolKDC {
 
 	private static final String ERROR_WRTING_ON_FILE = "Error Wrting on file.";
-	private static final int WINDOW_SIZE = 100;
 	private static final String FILE_PATH = "./configs/kdc/log.txt";
 	private static final String CHARSET = "utf-8";
 	private SecureDatagramSocket socket;
@@ -46,7 +45,7 @@ public class NeedhamSchroederKDC implements KeyEstablishmentProtocolKDC {
 
 	public NeedhamSchroederKDC(InetSocketAddress addr, CryptographyNS cryptoManager, String configPath, String servicesPath, String moviePrice) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException {
 		socket = new SecureDatagramSocket(addr, cryptoManager);
-		this.nonceManager = new WindowNonceManager(WINDOW_SIZE, cryptoManager.getSecureRandom());
+		this.nonceManager = new WindowNonceManager(cryptoManager.getSecureRandom());
 		this.configPath = configPath;
 		this.moviePrice = Integer.parseInt(moviePrice);
 

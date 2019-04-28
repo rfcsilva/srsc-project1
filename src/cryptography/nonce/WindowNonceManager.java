@@ -12,6 +12,18 @@ public class WindowNonceManager implements NonceManager {
 	private int windowSize;
 	private Queue<Long> nonces;
 	
+	private static int default_window_size = 100;
+	
+	public static synchronized void setDefaultWindowSize(int size) {
+		default_window_size = size;
+	}
+	
+	public WindowNonceManager(SecureRandom sr) {
+		this.sr = sr;
+		this.windowSize = default_window_size;
+		this.nonces = new ArrayBlockingQueue<Long>(windowSize);
+	}
+	
 	public WindowNonceManager(int windowSize, SecureRandom sr) {
 		this.sr = sr;
 		this.windowSize = windowSize;

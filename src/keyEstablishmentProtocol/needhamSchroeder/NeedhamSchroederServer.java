@@ -32,8 +32,6 @@ public class NeedhamSchroederServer implements KeyEstablishmentProtocolServer {
 
 	private static final int DEFAULT_TIMEOUT = 30 * 1000;
 
-	private static final int WINDOW_SIZE = 100;
-
 	private InetSocketAddress b_addr;
 	private Cryptography master_cryptoManager;
 	private WindowNonceManager nonceManager;
@@ -45,7 +43,7 @@ public class NeedhamSchroederServer implements KeyEstablishmentProtocolServer {
 
 		this.b_addr = b_addr;
 		this.master_cryptoManager = master_cryptoManager;
-		this.nonceManager = new WindowNonceManager(WINDOW_SIZE, master_cryptoManager.getSecureRandom());
+		this.nonceManager = new WindowNonceManager(master_cryptoManager.getSecureRandom());
 	}
 
 	@Override

@@ -39,7 +39,6 @@ import util.Utils;
 public class NeedhamSchroederClient implements KeyEstablishmentProtocolClient {
 
 	private static final int TIMEOUT = 30*1000;
-	private static final int WINDOW_SIZE = 100;
 
 	private Cryptography master_cryptoManager;
 	private InetSocketAddress kdc_addr;
@@ -64,7 +63,7 @@ public class NeedhamSchroederClient implements KeyEstablishmentProtocolClient {
 	@Override
 	public Cryptography getSessionParameters(String b, String[] args) throws NoSuchAlgorithmException, IOException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException, InvalidChallangeReplyException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException, TooManyTriesException, UnkonwnIdException, UnkonwnServerException, IllegalBlockSizeException, BadPaddingException, ShortBufferException, WrongCryptoManagerException {
 
-		NonceManager nonceManager = new WindowNonceManager(WINDOW_SIZE, master_cryptoManager.getSecureRandom());
+		NonceManager nonceManager = new WindowNonceManager(master_cryptoManager.getSecureRandom());
 
 		SecureDatagramSocket socket = new SecureDatagramSocket(master_cryptoManager);
 		socket.setTimeout(TIMEOUT); 

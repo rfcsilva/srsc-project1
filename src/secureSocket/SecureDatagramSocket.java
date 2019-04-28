@@ -25,6 +25,9 @@ import javax.crypto.ShortBufferException;
 import cryptography.Cryptography;
 import cryptography.nonce.NonceManager;
 import cryptography.nonce.WindowNonceManager;
+import cryptography.time.MessageNotFreshException;
+import cryptography.time.Timestamp;
+import cryptography.time.UnsynchronizedClocksException;
 import keyEstablishmentProtocol.needhamSchroeder.exceptions.UnkonwnIdException;
 import secureSocket.exceptions.*;
 import secureSocket.secureMessages.ClearPayload;
@@ -36,7 +39,6 @@ import secureSocket.secureMessages.SecureMessageImplementation;
 public class SecureDatagramSocket {
 
 	private static final long INITIAL_ID  = 1L;
-	private static final int WINDOW_SIZE = 100;
 	
 	private DatagramSocket socket;
 	private Cryptography cryptoManager;
@@ -55,7 +57,7 @@ public class SecureDatagramSocket {
 	}
 	
 	public SecureDatagramSocket(int port, InetAddress inAddr, Cryptography cryptoManager) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException {
-		this(port, inAddr, cryptoManager, new WindowNonceManager(WINDOW_SIZE, cryptoManager.getSecureRandom()));
+		this(port, inAddr, cryptoManager, new WindowNonceManager(cryptoManager.getSecureRandom()));
 	}
 	
 	public SecureDatagramSocket(InetSocketAddress addr, Cryptography cryptoManager) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException {
@@ -67,7 +69,7 @@ public class SecureDatagramSocket {
 	}
 
 	public SecureDatagramSocket(Cryptography cryptoManager) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException {
-		this(cryptoManager, new WindowNonceManager(WINDOW_SIZE, cryptoManager.getSecureRandom()));
+		this(cryptoManager, new WindowNonceManager(cryptoManager.getSecureRandom()));
 	}
 	
 	public SecureDatagramSocket(Cryptography cryptoManager, NonceManager nonceManager) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException {
@@ -96,21 +98,23 @@ public class SecureDatagramSocket {
 				socket.receive(p);
 				byte[] secureMessageBytes = Arrays.copyOfRange(p.getData(), 0, p.getLength());
 				((SecureMessageImplementation)sm).deserialize(secureMessageBytes, cryptoManager, nonceManager);
+				
+				long t[] = sm.getPayload().getTimestamps();
+				Timestamp.validateFreshness(t[0], t[1]);
+				
 				break;
-			} catch (InvalidMacException | ReplayedNonceException | BrokenIntegrityException  e) {
+			} catch (InvalidMacException | ReplayedNonceException | BrokenIntegrityException | UnsynchronizedClocksException | MessageNotFreshException  e) {
 				System.err.println(e.getMessage());
 			}
 		} 
 
-		
-		
 		return new InetSocketAddress(p.getAddress(), p.getPort());
 	}
 
 	public void receive(DatagramPacket p) throws IOException, ShortBufferException, IllegalBlockSizeException,
 	BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException,
 	NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException, UnkonwnIdException {
-
+		
 		byte[] message = null;
 		while (true) {
 			try {
@@ -119,26 +123,31 @@ public class SecureDatagramSocket {
 				SecureMessage sm = new SecureMessageImplementation(secureMessageBytes, cryptoManager, nonceManager);
 
 				message = ((DefaultPayload) sm.getPayload()).getMessage();
+				
+				long t[] = sm.getPayload().getTimestamps();
+				Timestamp.validateFreshness(t[0], t[1]);
+				
 				break;
-			} catch (InvalidMacException | ReplayedNonceException | BrokenIntegrityException  e) {
+			} catch (InvalidMacException | ReplayedNonceException | BrokenIntegrityException | UnsynchronizedClocksException | MessageNotFreshException  e) {
 				System.err.println(e.getMessage());
 			}
 		}
+		
 		p.setData(message);
 		p.setLength(message.length);
 	}
 	
 	public void send(DatagramPacket p, byte type) throws InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, IllegalBlockSizeException, BadPaddingException, ShortBufferException, IOException {
-
+		long[] t = Timestamp.getTimeInterval();
 		
 		byte[] message = Arrays.copyOfRange(p.getData(), 0, p.getLength());
 		Payload payload = null;
 		switch(type) {
 		case ClearPayload.TYPE:
-			payload = new ClearPayload(message, cryptoManager, nonceManager, t1, t2);
+			payload = new ClearPayload(message, cryptoManager, nonceManager, t[0], t[1]);
 			break;
 		case DefaultPayload.TYPE:
-			payload = new DefaultPayload(INITIAL_ID, nonceManager.generateNonce(), message, cryptoManager, t1, t2);
+			payload = new DefaultPayload(INITIAL_ID, nonceManager.generateNonce(), message, cryptoManager, t[0], t[1]);
 			break;
 		default : System.err.println("Unknown Payload Type");
 		}
@@ -151,10 +160,6 @@ public class SecureDatagramSocket {
 	}
 
 	public void send(DatagramPacket p, Payload payload) throws IOException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, ShortBufferException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException {
-		long t1 = System.currentTimeMillis();
-		long t2 = t1 + EXPIRATION_TIME;
-		payload.setTimestamps(t1, t2);
-		
 		SecureMessage sm = new SecureMessageImplementation(payload);
 		byte[] secureMessageBytes = sm.serialize();
 		p.setData(secureMessageBytes);
