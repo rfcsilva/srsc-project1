@@ -47,13 +47,13 @@ class arUDPproxy {
 	private static final String LOCALDELIVERY = "localdelivery";
 	//private static final String REMOTE = "remote";
 	private static final String KDC = "kdc";
-	private static final String ERROR_USER_INPUT = "Error, use: myReceive <ciphersuite.conf> <proxyProps.properties> <client-id> <password> <server-id> <movie-name>";
+	private static final String ERROR_USER_INPUT = "Error, use: myReceive <ciphersuite.conf> <proxyProps.properties> <client-id> <password> <server-id> <movie-name> <price>";
 	private static final int ERROR_CODE = -1;
-	private static final String DEFAULT_MOVIE_PRICE = "3.00 MC";
+	private static final String DEFAULT_MOVIE_PRICE = "3.00";
 
 	public static void main(String[] args) {
 
-		if (args.length != 6) {
+		if (args.length != 7) {
 			System.err.println(ERROR_USER_INPUT);
 			System.exit(ERROR_CODE);
 		}
@@ -81,7 +81,7 @@ class arUDPproxy {
 			Cryptography master_cryptoManager = CryptoFactory.getInstace(args[3], args[0]);
 			KeyEstablishmentProtocolClient kdc_client = new NeedhamSchroederClient(kdc_addr, args[2], master_cryptoManager);
 			System.out.println(DEFAULT_MOVIE_PRICE);
-			cryptoManager = kdc_client.getSessionParameters(args[4], new String[] {args[5], DEFAULT_MOVIE_PRICE});
+			cryptoManager = kdc_client.getSessionParameters(args[4], new String[] {args[5], args[6]});
 
 			inSocket = new SecureDatagramSocket(kdc_client.getMyAddr(), cryptoManager);
 

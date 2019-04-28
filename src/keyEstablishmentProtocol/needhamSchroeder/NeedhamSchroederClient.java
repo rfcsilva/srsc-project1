@@ -126,7 +126,9 @@ public class NeedhamSchroederClient implements KeyEstablishmentProtocolClient {
 				NS0 reply = (NS0) sm.getPayload();
 				if(reply.getErrorCode() == ErrorCodes.UNKNOWN_SERVER.ordinal()) {
 					throw new UnkonwnServerException(reply.getErrorMessage());
-				} 
+				}else if(reply.getErrorCode() == ErrorCodes.NOT_ENOUGH_MONEY.ordinal()){
+					System.err.println(reply.getErrorMessage());					
+				}
 			} 				
 			
 			throw new WrongMessageTypeException("" + sm.getPayloadType());

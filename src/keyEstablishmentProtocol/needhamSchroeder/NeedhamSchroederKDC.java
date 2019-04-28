@@ -40,14 +40,16 @@ public class NeedhamSchroederKDC implements KeyEstablishmentProtocolKDC {
 	private SecureDatagramSocket socket;
 	private NonceManager nonceManager;
 	private String configPath;
-	
+	private int moviePrice;
+
 	private Map<String, String> services;
 
-	public NeedhamSchroederKDC(InetSocketAddress addr, CryptographyNS cryptoManager, String configPath, String servicesPath) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException {
+	public NeedhamSchroederKDC(InetSocketAddress addr, CryptographyNS cryptoManager, String configPath, String servicesPath, String moviePrice) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException {
 		socket = new SecureDatagramSocket(addr, cryptoManager);
 		this.nonceManager = new WindowNonceManager(WINDOW_SIZE, cryptoManager.getSecureRandom());
 		this.configPath = configPath;
-		
+		this.moviePrice = Integer.parseInt(moviePrice);
+
 		this.services = loadServices(servicesPath);
 	}
 
@@ -55,9 +57,9 @@ public class NeedhamSchroederKDC implements KeyEstablishmentProtocolKDC {
 		//Load file
 		Properties services_properties = CryptoFactory.loadFile(servicesPath);
 		Map<String, String> services = new HashMap<>(services_properties.size());
-		
+
 		services_properties.forEach( (k,v) -> services.put((String)k, (String)v));
-		
+
 		return services;
 	}
 
@@ -85,24 +87,27 @@ public class NeedhamSchroederKDC implements KeyEstablishmentProtocolKDC {
 				} else {
 					System.out.println("Received request from " + a + "(" + client_addr.toString() + ")" + " to " + b + " with nonce " + Na);
 
-					SecureDatagramSocket new_socket = new SecureDatagramSocket(req.getCryptoManagerA());
-
-					// Generate Session Parameters for A and B
-					byte[] securityParams = CryptoFactory.buildSessionParameters(configPath);
-
-					if(!IO.write(req.getTransation(), FILE_PATH, CHARSET))
-						System.err.println(ERROR_WRTING_ON_FILE);
-					
-					// Send reply to A
-					long Na_1 = req.getNa() + 1;
-					long Nc = this.getNonce();
-					
-					Payload payload = null;
 					String server_addr = services.get(b);
-					if(server_addr != null) {
-						payload = new NS2(Na_1, Nc, securityParams, a, b, server_addr, req.getArgs(), req.getCryptoManagerB(), req.getCryptoManagerA());
-					} else {
+					SecureDatagramSocket new_socket = new SecureDatagramSocket(req.getCryptoManagerA());
+					Payload payload = null;
+
+					if(!verifPrice(req.getArgs()[1]))
+						payload = new NS0(ErrorCodes.NOT_ENOUGH_MONEY.ordinal(), req.getArgs()[1] + " is not enough", req.getCryptoManagerA());
+					else if(server_addr == null) 
 						payload = new NS0(ErrorCodes.UNKNOWN_SERVER.ordinal(), "Unknown Server " + b, req.getCryptoManagerA());
+					else {
+						
+						// Generate Session Parameters for A and B
+						byte[] securityParams = CryptoFactory.buildSessionParameters(configPath);
+
+						if(!IO.write(req.getTransation(), FILE_PATH, CHARSET))
+							System.err.println(ERROR_WRTING_ON_FILE);
+
+						// Send reply to A
+						long Na_1 = req.getNa() + 1;
+						long Nc = this.getNonce();
+
+						payload = new NS2(Na_1, Nc, securityParams, a, b, server_addr, req.getArgs(), req.getCryptoManagerB(), req.getCryptoManagerA());
 					}
 					SecureMessage sm = new SecureMessageImplementation(payload);
 					new_socket.send(sm, client_addr);
@@ -112,6 +117,15 @@ public class NeedhamSchroederKDC implements KeyEstablishmentProtocolKDC {
 				e.printStackTrace();
 			}
 		}).start();
+	}
+
+	private boolean verifPrice(String value) {
+
+		int valueSent = Integer.parseInt(value);
+		if(valueSent < moviePrice )
+			return false;
+
+		return true;
 	}
 
 	public InetSocketAddress receiveRequest( SecureMessage sm ) throws InvalidKeyException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException {
