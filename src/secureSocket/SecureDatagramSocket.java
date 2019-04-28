@@ -37,7 +37,6 @@ public class SecureDatagramSocket {
 
 	private static final long INITIAL_ID  = 1L;
 	private static final int WINDOW_SIZE = 100;
-	private static final long EXPIRATION_TIME = 30*1000*1000*1000; // 30 segundos
 	
 	private DatagramSocket socket;
 	private Cryptography cryptoManager;
@@ -103,6 +102,8 @@ public class SecureDatagramSocket {
 			}
 		} 
 
+		
+		
 		return new InetSocketAddress(p.getAddress(), p.getPort());
 	}
 
@@ -128,14 +129,16 @@ public class SecureDatagramSocket {
 	}
 	
 	public void send(DatagramPacket p, byte type) throws InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, IllegalBlockSizeException, BadPaddingException, ShortBufferException, IOException {
+
+		
 		byte[] message = Arrays.copyOfRange(p.getData(), 0, p.getLength());
 		Payload payload = null;
 		switch(type) {
 		case ClearPayload.TYPE:
-			payload = new ClearPayload(message, cryptoManager, nonceManager, 0L, 0L);
+			payload = new ClearPayload(message, cryptoManager, nonceManager, t1, t2);
 			break;
 		case DefaultPayload.TYPE:
-			payload = new DefaultPayload(INITIAL_ID, nonceManager.generateNonce(), message, cryptoManager, 0L, 0L);
+			payload = new DefaultPayload(INITIAL_ID, nonceManager.generateNonce(), message, cryptoManager, t1, t2);
 			break;
 		default : System.err.println("Unknown Payload Type");
 		}
