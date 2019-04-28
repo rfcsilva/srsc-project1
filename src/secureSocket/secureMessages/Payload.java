@@ -7,4 +7,8 @@ public interface Payload {
 	
 	public short size();
 
+	public long[] getTimestamps();
+	
+	public void setTimestamps(long t1, long t2);
+	
 }

@@ -35,8 +35,9 @@ import secureSocket.secureMessages.SecureMessageImplementation;
 
 public class SecureDatagramSocket {
 
-	private static final int WINDOW_SIZE = 100;
 	private static final long INITIAL_ID  = 1L;
+	private static final int WINDOW_SIZE = 100;
+	private static final long EXPIRATION_TIME = 30*1000*1000*1000; // 30 segundos
 	
 	private DatagramSocket socket;
 	private Cryptography cryptoManager;
@@ -131,10 +132,10 @@ public class SecureDatagramSocket {
 		Payload payload = null;
 		switch(type) {
 		case ClearPayload.TYPE:
-			payload = new ClearPayload(message, cryptoManager, nonceManager);
+			payload = new ClearPayload(message, cryptoManager, nonceManager, 0L, 0L);
 			break;
 		case DefaultPayload.TYPE:
-			payload = new DefaultPayload(INITIAL_ID, nonceManager.generateNonce(), message, cryptoManager);
+			payload = new DefaultPayload(INITIAL_ID, nonceManager.generateNonce(), message, cryptoManager, 0L, 0L);
 			break;
 		default : System.err.println("Unknown Payload Type");
 		}
@@ -147,6 +148,10 @@ public class SecureDatagramSocket {
 	}
 
 	public void send(DatagramPacket p, Payload payload) throws IOException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, ShortBufferException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException {
+		long t1 = System.currentTimeMillis();
+		long t2 = t1 + EXPIRATION_TIME;
+		payload.setTimestamps(t1, t2);
+		
 		SecureMessage sm = new SecureMessageImplementation(payload);
 		byte[] secureMessageBytes = sm.serialize();
 		p.setData(secureMessageBytes);
