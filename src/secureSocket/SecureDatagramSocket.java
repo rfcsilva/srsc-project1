@@ -23,6 +23,9 @@ import javax.crypto.ShortBufferException;
 import cryptography.Cryptography;
 import cryptography.nonce.NonceManager;
 import cryptography.nonce.WindowNonceManager;
+import cryptography.time.MessageNotFreshException;
+import cryptography.time.Timestamp;
+import cryptography.time.UnsynchronizedClocksException;
 import secureSocket.exceptions.*;
 import secureSocket.secureMessages.DefaultPayload;
 import secureSocket.secureMessages.Payload;
@@ -88,8 +91,12 @@ public class SecureDatagramSocket {
 				byte[] secureMessageBytes = Arrays.copyOfRange(p.getData(), 0, p.getLength());
 				SecureMessage sm = new SecureMessageImplementation(secureMessageBytes, cryptoManager, nonceManager);
 				message = ((DefaultPayload) sm.getPayload()).getMessage();
+				
+				long t[] = sm.getPayload().getTimestamps();
+				Timestamp.validateFreshness(t[0], t[1]);
+				
 				break;
-			} catch (InvalidMacException | ReplayedNonceException | BrokenBarrierException e) {
+			} catch (InvalidMacException | ReplayedNonceException | BrokenBarrierException | MessageNotFreshException | UnsynchronizedClocksException e) {
 				System.err.println(e.getMessage());
 			}
 		}
@@ -99,7 +106,8 @@ public class SecureDatagramSocket {
 
 	public void send(DatagramPacket p) throws IOException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, ShortBufferException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException {
 		byte[] message = Arrays.copyOfRange(p.getData(), 0, p.getLength());
-		Payload payload = new DefaultPayload(INITIAL_ID, nonceManager.generateNonce(), message, cryptoManager);
+		long[] timeStamps = Timestamp.getTimeInterval();
+		Payload payload = new DefaultPayload(INITIAL_ID, nonceManager.generateNonce(), message, timeStamps[0], timeStamps[1], cryptoManager);
 		SecureMessage sm = new SecureMessageImplementation(payload);
 		byte[] secureMessageBytes = sm.serialize();
 		p.setData(secureMessageBytes);

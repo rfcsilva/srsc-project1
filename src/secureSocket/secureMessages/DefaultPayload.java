@@ -24,7 +24,7 @@ import secureSocket.exceptions.InvalidMacException;
 import secureSocket.exceptions.ReplayedNonceException;
 import util.Utils;
 
-public class DefaultPayload implements Payload {
+public class DefaultPayload extends AbstractPayload implements Payload {
 
 	private static final String INVALID_INNER_MAC = "Invalid Inner Mac";
 
@@ -40,15 +40,16 @@ public class DefaultPayload implements Payload {
 	private byte[] cipherText;
 	private byte[] outterMac;
 
-	public DefaultPayload(long id, long nonce, byte[] message, Cryptography criptoManager)
+	public DefaultPayload(long id, long nonce, byte[] message, long t1, long t2, Cryptography criptoManager)
 			throws IOException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException,
 			NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException,
 			IllegalBlockSizeException, BadPaddingException, ShortBufferException {
 
+		super(t1, t2);
 		this.message = message;
 		this.id = id;
 		this.nonce = nonce;
-		byte[] Mp = buildMp(id, nonce, message);
+		byte[] Mp = buildMp(id, nonce, message, t1, t2);
 
 		this.innerIntegrityProof = criptoManager.computeIntegrityProof(Mp);
 		this.cipherText = criptoManager.encrypt(Utils.concat(Mp, this.innerIntegrityProof));
@@ -56,7 +57,8 @@ public class DefaultPayload implements Payload {
 	
 	}
 
-	private DefaultPayload(long id, long nonce, byte[] message, byte[] ciphertext, byte[] innerMac, byte[] outterMac) {
+	private DefaultPayload(long id, long nonce, byte[] message, byte[] ciphertext, byte[] innerMac, byte[] outterMac, long t1, long t2) {
+		super(t1,t2);
 		this.id = id;
 		this.nonce = nonce;
 		this.message = message;
@@ -65,12 +67,14 @@ public class DefaultPayload implements Payload {
 		this.outterMac = outterMac;
 	}
 
-	private static byte[] buildMp(long id, long nonce, byte[] message) throws IOException {
+	private static byte[] buildMp(long id, long nonce, byte[] message, long t1, long t2) throws IOException {
 		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
 		DataOutputStream dataOut = new DataOutputStream(byteOut);
 
 		dataOut.writeLong(id);
 		dataOut.writeLong(nonce);
+		dataOut.writeLong(t1);
+		dataOut.writeLong(t2);
 		dataOut.write(message, 0, message.length);
 		dataOut.flush();
 		byteOut.flush();
@@ -116,11 +120,14 @@ public class DefaultPayload implements Payload {
 				long id = dataIn.readLong();
 				long nonce = dataIn.readLong();
 				
-				int messageSize = payloadParts[0].length - 2 * Long.BYTES;
+				long t1 = dataIn.readLong();
+				long t2 = dataIn.readLong();
+				
+				int messageSize = payloadParts[0].length - 4 * Long.BYTES;
 				byte[] message = new byte[messageSize];
 				dataIn.read(message, 0, messageSize);
 
-				DefaultPayload payload = new DefaultPayload(id, nonce, message, messageParts[0], payloadParts[1], messageParts[1]);
+				DefaultPayload payload = new DefaultPayload(id, nonce, message, messageParts[0], payloadParts[1], messageParts[1], t1, t2);
 
 				dataIn.close();
 				byteIn.close();
