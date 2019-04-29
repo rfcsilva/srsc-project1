@@ -30,11 +30,19 @@ import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
+import cryptography.nonce.WindowNonceManager;
+import cryptography.time.Timestamp;
 import util.Utils;
 import util.CryptographyUtils;
 
 public class CryptoFactory {
 
+	private static final String DEFAULT_TIME_PRECISION = "5";
+	private static final String TIME_PRECISION = "time-precision";
+	private static final String DEFAULT_MSG_EXPIRATON_TIME = "30000";
+	private static final String MSG_EXPIRATON_TIME = "msg-expiraton-time";
+	private static final String DEFAULT_NONCE_WINDOW_SIZE = "100";
+	private static final String NONCE_WINDOW_SIZE = "nonce-window-size";
 	private static final String GCM = "GCM";
 	private static final String PBKDF2_WITH_HMAC_SHA512 = "PBKDF2WithHmacSHA512";
 	public static final int INITIAL_MSG_NUMBER = 1;
@@ -180,6 +188,11 @@ public class CryptoFactory {
 
 		// Load file
 		Properties ciphersuit_properties = loadFile(path);
+		
+		// Sets the default nonce window size, expiration time and time precision
+		WindowNonceManager.setDefaultWindowSize(Integer.parseInt(ciphersuit_properties.getProperty(NONCE_WINDOW_SIZE, DEFAULT_NONCE_WINDOW_SIZE)));
+		Timestamp.setExpirationTime(Long.parseLong(ciphersuit_properties.getProperty(MSG_EXPIRATON_TIME, DEFAULT_MSG_EXPIRATON_TIME)));
+		Timestamp.setPrecison(Long.parseLong(ciphersuit_properties.getProperty(TIME_PRECISION, DEFAULT_TIME_PRECISION)));
 
 		// Create Secure Random
 		SecureRandom sr = generateRandom(ciphersuit_properties.getProperty(SECURE_RANDOM),
