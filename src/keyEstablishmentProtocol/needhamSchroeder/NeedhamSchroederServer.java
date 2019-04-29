@@ -17,9 +17,12 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
+import org.bouncycastle.asn1.cms.TimeStampAndCRL;
+
 import cryptography.CryptoFactory;
 import cryptography.Cryptography;
 import cryptography.nonce.WindowNonceManager;
+import cryptography.time.Timestamp;
 import keyEstablishmentProtocol.KeyEstablishmentProtocolServer;
 import keyEstablishmentProtocol.RequestHandler;
 import keyEstablishmentProtocol.needhamSchroeder.exceptions.UnkonwnIdException;
@@ -98,8 +101,9 @@ public class NeedhamSchroederServer implements KeyEstablishmentProtocolServer {
 				new_socket.setTimeout(DEFAULT_TIMEOUT);
 
 				long Nb = getNonce();
-
-				NS4 ns4 = new NS4(Nb, session_cryptoManager);
+				long[] timeStamps = Timestamp.getTimeInterval();
+				
+				NS4 ns4 = new NS4(Nb, timeStamps[0], timeStamps[1], session_cryptoManager);
 				SecureMessage sm = new SecureMessageImplementation(ns4);
 				new_socket.send(sm, addr);
 				System.out.println("Sending Challenge... " + Nb);

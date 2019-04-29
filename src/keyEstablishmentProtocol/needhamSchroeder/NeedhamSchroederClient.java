@@ -21,6 +21,7 @@ import cryptography.CryptoFactory;
 import cryptography.Cryptography;
 import cryptography.nonce.NonceManager;
 import cryptography.nonce.WindowNonceManager;
+import cryptography.time.Timestamp;
 import keyEstablishmentProtocol.KeyEstablishmentProtocolClient;
 import keyEstablishmentProtocol.needhamSchroeder.exceptions.InvalidChallangeReplyException;
 import keyEstablishmentProtocol.needhamSchroeder.exceptions.TooManyTriesException;
@@ -103,7 +104,8 @@ public class NeedhamSchroederClient implements KeyEstablishmentProtocolClient {
 
 			System.out.println("Requesting keys... " + Na);
 			//Payload ns1 = new NS1(a, b, Na, args, master_cryptoManager); 
-			Payload ns1 = new NS1_Coins(a, b, Na, args, master_cryptoManager);
+			long[] timeStamps = Timestamp.getTimeInterval();
+			Payload ns1 = new NS1_Coins(a, b, Na, args, master_cryptoManager, timeStamps[0], timeStamps[1]);
 			SecureMessage sm = new SecureMessageImplementation(ns1);
 			socket.send(sm, kdc_addr);
 
@@ -135,8 +137,9 @@ public class NeedhamSchroederClient implements KeyEstablishmentProtocolClient {
 
 	private void shareKeys(SecureDatagramSocket socket, Cryptography session_cryptoManager, InetSocketAddress b_addr, byte[] ticket, NonceManager nonceManager) throws IOException, NoSuchProviderException, InvalidPayloadTypeException, BrokenBarrierException, ReplayedNonceException, UnkonwnIdException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException, IllegalBlockSizeException, BadPaddingException, ShortBufferException {
 		socket.setCryptoManager(session_cryptoManager);
-
-		Payload ns3 = new NS3(ticket, session_cryptoManager);
+		
+		long[] timeStamps = Timestamp.getTimeInterval();
+		Payload ns3 = new NS3(ticket, timeStamps[0], timeStamps[1], session_cryptoManager);
 
 		System.out.println("Sending Ticket to B ...");
 		SecureMessage sm = new SecureMessageImplementation(ns3);
@@ -154,7 +157,8 @@ public class NeedhamSchroederClient implements KeyEstablishmentProtocolClient {
 			long Nb_1 = (Nb + 1);
 
 			System.out.println("Sending Challenge result ... " + Nb_1);
-			NS4 ns4 = new NS4(Nb_1, session_cryptoManager);
+			timeStamps = Timestamp.getTimeInterval();
+			NS4 ns4 = new NS4(Nb_1, timeStamps[0], timeStamps[1], session_cryptoManager);
 			sm = new SecureMessageImplementation(ns4);
 			socket.send(sm, reply_addr);
 		} else {

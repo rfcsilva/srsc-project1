@@ -22,6 +22,7 @@ import javax.crypto.ShortBufferException;
 import cryptography.CryptoFactory;
 import cryptography.nonce.NonceManager;
 import cryptography.nonce.WindowNonceManager;
+import cryptography.time.Timestamp;
 import keyEstablishmentProtocol.KeyEstablishmentProtocolKDC;
 import keyEstablishmentProtocol.needhamSchroeder.exceptions.UnkonwnIdException;
 import secureSocket.SecureDatagramSocket;
@@ -86,14 +87,15 @@ public class NeedhamSchroederKDC implements KeyEstablishmentProtocolKDC {
 				} else {
 					System.out.println("Received request from " + a + "(" + client_addr.toString() + ")" + " to " + b + " with nonce " + Na);
 
+					long[] timeStamps = Timestamp.getTimeInterval();
 					String server_addr = services.get(b);
 					SecureDatagramSocket new_socket = new SecureDatagramSocket(req.getCryptoManagerA());
 					Payload payload = null;
-
+					
 					if(!verifPrice(req.getArgs()[1]))
-						payload = new NS0(ErrorCodes.NOT_ENOUGH_MONEY.ordinal(), req.getArgs()[1] + " is not enough", req.getCryptoManagerA());
+						payload = new NS0(ErrorCodes.NOT_ENOUGH_MONEY.ordinal(), req.getArgs()[1] + " is not enough", timeStamps[0], timeStamps[1], req.getCryptoManagerA());
 					else if(server_addr == null) 
-						payload = new NS0(ErrorCodes.UNKNOWN_SERVER.ordinal(), "Unknown Server " + b, req.getCryptoManagerA());
+						payload = new NS0(ErrorCodes.UNKNOWN_SERVER.ordinal(), "Unknown Server " + b, timeStamps[0], timeStamps[1], req.getCryptoManagerA());
 					else {
 						
 						// Generate Session Parameters for A and B
@@ -106,7 +108,7 @@ public class NeedhamSchroederKDC implements KeyEstablishmentProtocolKDC {
 						long Na_1 = req.getNa() + 1;
 						long Nc = this.getNonce();
 
-						payload = new NS2(Na_1, Nc, securityParams, a, b, server_addr, req.getArgs(), req.getCryptoManagerB(), req.getCryptoManagerA());
+						payload = new NS2(Na_1, Nc, securityParams, a, b, server_addr, req.getArgs(), req.getCryptoManagerB(), req.getCryptoManagerA(), timeStamps[0], timeStamps[1]);
 					}
 					SecureMessage sm = new SecureMessageImplementation(payload);
 					new_socket.send(sm, client_addr);
