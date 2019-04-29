@@ -276,6 +276,11 @@ public class CryptoFactory {
 		// Load file
 		Properties ciphersuit_properties = loadFile(path);
 
+		// Sets the default nonce window size, expiration time and time precision
+		int window_size = Integer.parseInt(ciphersuit_properties.getProperty(NONCE_WINDOW_SIZE, DEFAULT_NONCE_WINDOW_SIZE));
+		long expiration_time = Long.parseLong(ciphersuit_properties.getProperty(MSG_EXPIRATON_TIME, DEFAULT_MSG_EXPIRATON_TIME));
+		long precision = Long.parseLong(ciphersuit_properties.getProperty(TIME_PRECISION, DEFAULT_TIME_PRECISION));
+		
 		// Create Secure Random
 		SecureRandom secureRandom = generateRandom(ciphersuit_properties.getProperty(SECURE_RANDOM),
 				ciphersuit_properties.getProperty(SECURE_RANDOM_PROVIDER));
@@ -303,6 +308,10 @@ public class CryptoFactory {
 		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
 		DataOutputStream dataOut = new DataOutputStream(byteOut);
 
+		dataOut.writeInt(window_size);
+		dataOut.writeLong(expiration_time);
+		dataOut.writeLong(precision);
+		
 		// writing random number provider and algorithm
 		String secureRandomProvider = ciphersuit_properties.getProperty(SECURE_RANDOM_PROVIDER);
 		if (secureRandomProvider == null)
@@ -387,6 +396,10 @@ public class CryptoFactory {
 		ByteArrayInputStream byteIn = new ByteArrayInputStream(rawParams);
 		DataInputStream dataIn = new DataInputStream(byteIn);
 
+		int window_size = dataIn.readInt();
+		long expiration_time = dataIn.readLong();
+		long precision = dataIn.readLong();
+		
 		String seecureRandomProvider = dataIn.readUTF();
 		String secureRandomAlgorithm = dataIn.readUTF();
 
@@ -414,6 +427,11 @@ public class CryptoFactory {
 
 		boolean useHash = dataIn.readBoolean();
 
+		// Sets the default nonce window size, expiration time and time precision
+		WindowNonceManager.setDefaultWindowSize(window_size);
+		Timestamp.setExpirationTime(expiration_time);
+		Timestamp.setPrecison(precision);
+		
 		Cryptography cryptoManager = null;
 		Cipher encryptCipher = CryptoFactory.buildCipher(cipherAlgorithm, Cipher.ENCRYPT_MODE, ks, iv, tagSize,
 				cipherProvider);
