@@ -12,12 +12,16 @@ public class Ticket {
 	private byte[] Ks;
 	private String a, b;
 	private String[] arguments;
+	private long t1;
+	private long t2;
 
-	public Ticket(long nc, String a, String b, byte[] Ks, String[] arguments) {
+	public Ticket(long nc, String a, String b, byte[] Ks, String[] arguments, long t1, long t2) {
 		this.nc = nc;
 		this.a = a;
 		this.b = b;
 		this.Ks = Ks;
+		this.t1 = t1;
+		this.t2 = t2;
 		
 		this.arguments = (arguments == null ) ? new String[0] : arguments;
 	}
@@ -31,6 +35,9 @@ public class Ticket {
 		
 		dataOut.writeUTF(a);
 		dataOut.writeUTF(b);
+		
+		dataOut.writeLong(t1);
+		dataOut.writeLong(t2);;
 		
 		dataOut.writeInt(Ks.length);
 		dataOut.write(Ks, 0, Ks.length);
@@ -61,6 +68,9 @@ public class Ticket {
 		
 		String a = dataIn.readUTF();
 		String b = dataIn.readUTF();
+		
+		long t1 = dataIn.readLong();
+		long t2 = dataIn.readLong();
 
 		int length = dataIn.readInt();
 		byte[] ks = new byte[length];
@@ -72,7 +82,7 @@ public class Ticket {
 			arguments[i] = dataIn.readUTF();
 		}
 		
-		return new Ticket(nc, a, b, ks, arguments);
+		return new Ticket(nc, a, b, ks, arguments, t1, t2);
 	}
 
 	public long getNc() {
@@ -93,6 +103,14 @@ public class Ticket {
 
 	public String[] getArgs() {
 		return arguments;
+	}
+	
+	public long t1() {
+		return t1;
+	}
+	
+	public long t2() {
+		return t2;
 	}
 
 }

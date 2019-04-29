@@ -25,10 +25,11 @@ import keyEstablishmentProtocol.needhamSchroeder.exceptions.WrongCryptoManagerEx
 import secureSocket.exceptions.BrokenIntegrityException;
 import secureSocket.exceptions.InvalidMacException;
 import secureSocket.exceptions.ReplayedNonceException;
+import secureSocket.secureMessages.AbstractPayload;
 import secureSocket.secureMessages.Payload;
 import util.Utils;
 
-public class NS1_Coins implements Payload {
+public class NS1_Coins extends AbstractPayload implements Payload {
 
 	private static final String MUST_USED_A_DOUBLE_MAC_CRYPTO_MANAGER = "Must used a Double MAC CryptoManager";
 	private static final String INVALID_OUTER_MAC = "Invalid Outer Mac";
@@ -46,15 +47,17 @@ public class NS1_Coins implements Payload {
 	private CryptographyDoubleMac criptoManagerA;
 	private CryptographyDoubleMac criptoManagerB;
 
-	public NS1_Coins(String a, String b, long Na, String[] arguments, Cryptography cryptoManager)
+	public NS1_Coins(String a, String b, long Na, String[] arguments, Cryptography cryptoManager, long t1, long t2)
 			throws IOException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException,
 			NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException,
 			IllegalBlockSizeException, BadPaddingException, ShortBufferException, WrongCryptoManagerException {
 
+		super(t1,t2);
+		
 		if( !(cryptoManager instanceof CryptographyDoubleMac) ) 
 			throw new WrongCryptoManagerException(MUST_USED_A_DOUBLE_MAC_CRYPTO_MANAGER);
 
-		tns = new Transation(a, b, Na, arguments, cryptoManager);
+		tns = new Transation(a, b, Na, arguments, cryptoManager, t1, t2);
 
 		this.cipherText = cryptoManager.encrypt(tns.serialize());
 		
@@ -64,6 +67,7 @@ public class NS1_Coins implements Payload {
 	}
 
 	private NS1_Coins(Transation tns, byte[] cipherText, byte[] outerMac, byte[] message, CryptographyDoubleMac criptoManagerA, CryptographyDoubleMac criptoManagerB) {
+		super(tns.getT1(),tns.getT2());
 		this.tns = tns;
 		this.cipherText = cipherText;
 		this.outerMac = outerMac;

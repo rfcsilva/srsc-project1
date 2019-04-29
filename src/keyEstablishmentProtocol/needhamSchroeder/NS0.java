@@ -23,10 +23,11 @@ import keyEstablishmentProtocol.needhamSchroeder.exceptions.UnkonwnIdException;
 import secureSocket.exceptions.BrokenIntegrityException;
 import secureSocket.exceptions.InvalidMacException;
 import secureSocket.exceptions.ReplayedNonceException;
+import secureSocket.secureMessages.AbstractPayload;
 import secureSocket.secureMessages.Payload;
 import util.Utils;
 
-public class NS0 implements Payload {
+public class NS0 extends AbstractPayload implements Payload {
 
 	private static final String INVALID_OUTER_MAC = "Invalid Outer Mac";
 
@@ -38,32 +39,38 @@ public class NS0 implements Payload {
 	private byte[] cipherText;
 	private byte[] outerMac;
 
-	public NS0(int error_code, String error_msg, Cryptography cryptoManager)
+	public NS0(int error_code, String error_msg, long t1, long t2, Cryptography cryptoManager)
 			throws IOException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException,
 			NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException,
 			IllegalBlockSizeException, BadPaddingException, ShortBufferException {
 
+		super(t1,t2);
+		
 		this.error_code = error_code;
 		this.error_msg = error_msg;
 
-		this.cipherText = cryptoManager.encrypt(buildMessage(error_code, error_msg));
+		this.cipherText = cryptoManager.encrypt(buildMessage(error_code, error_msg, t1, t2));
 
 		this.outerMac = cryptoManager.computeOuterMac(this.cipherText);
 	}
 	
-	private NS0(int error_code, String error_msg, byte[] cipherText, byte[] outerMac) {
+	private NS0(int error_code, String error_msg, byte[] cipherText, byte[] outerMac, long t1, long t2) {
+		super(t1,t2);
 		this.error_code = error_code;
 		this.error_msg = error_msg;
 		this.cipherText = cipherText;
 		this.outerMac = outerMac;
 	}
 
-	private static byte[] buildMessage(int error_code, String error_msg) throws IOException {
+	private static byte[] buildMessage(int error_code, String error_msg, long t1, long t2) throws IOException {
 		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
 		DataOutputStream dataOut = new DataOutputStream(byteOut);
 		
 		dataOut.writeInt(error_code);
 		dataOut.writeUTF(error_msg);
+		
+		dataOut.writeLong(t1);
+		dataOut.writeLong(t2);
 		
 		dataOut.flush();
 		byteOut.flush();
@@ -103,11 +110,14 @@ public class NS0 implements Payload {
 
 		int error_code = dataIn.readInt();
 		String error_msg = dataIn.readUTF();
+		
+		long t1 = dataIn.readLong();
+		long t2 = dataIn.readLong();
 
 		dataIn.close();
 		byteIn.close();
 
-		return new NS0(error_code, error_msg, messageParts[0], messageParts[1]);
+		return new NS0(error_code, error_msg, messageParts[0], messageParts[1], t1, t2);
 		}
 	}	
 	

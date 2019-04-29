@@ -24,19 +24,25 @@ public class Transation {
 	private String[] args;
 	private byte[] innerMac;
 	private byte[] message;
+	private long t1;
+	private long t2;
 	
-	public Transation(String a, String b, long na, String[] args, Cryptography cryptoManager) throws IOException, InvalidKeyException {
+	public Transation(String a, String b, long na, String[] args, Cryptography cryptoManager, long t1, long t2) throws IOException, InvalidKeyException {
 
 		this.a = a;
 		this.b = b;
 		this.na = na;
 		this.args = args;
-		message = buildMessage(a, b, na, args);
+		message = buildMessage(a, b, na, args, t1, t2);
 		this.innerMac = cryptoManager.computeIntegrityProof(message);
+		this.t1 = t1;
+		this.t2 = t2;
 
 	}
 
-	private Transation(String a, String b, long na, String[] args, byte[] innerMac, byte[] message) {
+	private Transation(String a, String b, long na, String[] args, byte[] innerMac, byte[] message, long t1, long t2) {
+		this.t1 = t1;
+		this.t2 = t2;
 		this.a = a;
 		this.b = b;
 		this.na = na;
@@ -48,9 +54,12 @@ public class Transation {
 
 		String asString = a.concat(SEPARATOR).concat(b).concat(SEPARATOR);
 		asString =  asString.concat(String.valueOf(na)).concat(SEPARATOR);
+		asString = asString.concat(String.valueOf(t1)).concat(SEPARATOR);
+		asString = asString.concat(String.valueOf(t2)).concat(SEPARATOR);
 		for(String arg : args) {
 			asString = asString.concat(arg).concat(SEPARATOR);
 		}
+		
 
 		return asString.concat(Base64.getEncoder().encodeToString(innerMac));
 
@@ -62,15 +71,17 @@ public class Transation {
 		String a = parts[0];
 		String b = parts[1];
 		long na = Long.parseLong(parts[2]);
-
-		String[] args = new String[ parts.length - 4];
-		for(int i = 3; i < parts.length -1; i++) {
-			args[i-3] = parts[i];
+		long t1 = Long.parseLong(parts[3]);
+		long t2 = Long.parseLong(parts[3]);
+		
+		String[] args = new String[ parts.length - 6];
+		for(int i = 4; i < parts.length -1; i++) {
+			args[i-4] = parts[i];
 		}
 
 		innerMac = Base64.getDecoder().decode(parts[parts.length-1]);
 
-		return new Transation(a, b, na, args, innerMac, buildMessage(a, b, na, args));
+		return new Transation(a, b, na, args, innerMac, buildMessage(a, b, na, args, t1, t2), t1, t2);
 	}
 
 	public byte[] serialize() throws IOException {
@@ -92,6 +103,9 @@ public class Transation {
 			String b = dataIn.readUTF();
 			long na = dataIn.readLong();
 
+			long t1 = dataIn.readLong();
+			long t2 = dataIn.readLong();
+			
 			int length = dataIn.readInt();
 			String[] arguments = new String[length];
 			for(int i = 0; i < length; i++) {
@@ -101,12 +115,12 @@ public class Transation {
 			dataIn.close();
 			byteIn.close();
 
-			return new Transation(a, b, na, arguments, messageParts[1], messageParts[0] );
+			return new Transation(a, b, na, arguments, messageParts[1], messageParts[0], t1, t2 );
 
 		}
 	}
 
-	private static byte[] buildMessage(String a, String b, long Na, String[] args) throws IOException {
+	private static byte[] buildMessage(String a, String b, long Na, String[] args, long t1, long t2) throws IOException {
 		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
 		DataOutputStream dataOut = new DataOutputStream(byteOut);
 
@@ -114,6 +128,9 @@ public class Transation {
 		dataOut.writeUTF(b);
 
 		dataOut.writeLong(Na);
+		
+		dataOut.writeLong(t1);
+		dataOut.writeLong(t2);
 
 		dataOut.writeInt(args.length);
 		for(int i = 0; i < args.length; i++) {
@@ -150,5 +167,13 @@ public class Transation {
 
 	public byte[] getInnerMac() {
 		return innerMac;
+	}
+	
+	public long getT1() {
+		return t1;
+	}
+	
+	public long getT2() {
+		return t2;
 	}
 }

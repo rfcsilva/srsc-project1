@@ -99,7 +99,10 @@ remote:238.24.24.10:9999
 
 
 
-
+Dred, falta isto:
+- Meter os timestamps nos NS
+Meter essa cena do alg da password a ser lido das confusões
+- meter no serialize e deserialize a janela, tempo e precisao (é só escrever e ler as strings e no deserialize fazer o set dessas coisas)
 
 
 

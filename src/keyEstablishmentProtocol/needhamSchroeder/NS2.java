@@ -14,10 +14,11 @@ import javax.crypto.ShortBufferException;
 
 import cryptography.Cryptography;
 import secureSocket.exceptions.InvalidMacException;
+import secureSocket.secureMessages.AbstractPayload;
 import secureSocket.secureMessages.Payload;
 import util.Utils;
 
-public class NS2 implements Payload { 
+public class NS2 extends AbstractPayload implements Payload { 
 
 	private static final String INVALID_OUTTER_MAC = "Invalid Outter Mac";
 
@@ -32,20 +33,22 @@ public class NS2 implements Payload {
 	private byte[] cipherText;
 	private byte[] outerMac;
 	
-	public NS2(long Na_1, long Nc, byte[] Ks, String a, String b, String b_addr, String[] args, Cryptography cryptoManagerB, Cryptography cryptoManagerA) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, ShortBufferException, IOException { 
+	public NS2(long Na_1, long Nc, byte[] Ks, String a, String b, String b_addr, String[] args, Cryptography cryptoManagerB, Cryptography cryptoManagerA, long t1, long t2) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, ShortBufferException, IOException { 
+		super(t1,t2);
 		this.Na_1 = Na_1;
 		this.Nc = Nc;
 		this.Ks = Ks;
 		this.b = b;
 		this.b_addr = b_addr;
-		this.ticket =  cryptoManagerB.encrypt((new Ticket(Nc, a, b, Ks, args)).serialize());
+		this.ticket =  cryptoManagerB.encrypt((new Ticket(Nc, a, b, Ks, args, t1,t2)).serialize());
 
 		this.cipherText = buildPayload(Na_1, Nc, Ks, b, b_addr, ticket, cryptoManagerA);
 		
 		this.outerMac = cryptoManagerA.computeOuterMac(cipherText);
 	}
 	
-	private NS2(long Na_1, long Nc, byte[] Ks, String b, String b_addr, byte[] ticket, byte[] cipherText, byte[] outerMac) {
+	private NS2(long Na_1, long Nc, byte[] Ks, String b, String b_addr, byte[] ticket, byte[] cipherText, byte[] outerMac, long t1, long t2) {
+		super(t1, t2);
 		this.Na_1 = Na_1;
 		this.Nc = Nc;
 		this.Ks = Ks;
@@ -106,7 +109,7 @@ public class NS2 implements Payload {
 			length = dataIn.readInt();
 			byte[] ticket = new byte[length];
 			dataIn.read(ticket, 0, length);
-
+			
 			dataIn.close();
 			byteIn.close();
 
