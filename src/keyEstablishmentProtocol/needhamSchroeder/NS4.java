@@ -14,43 +14,52 @@ import javax.crypto.ShortBufferException;
 
 import cryptography.Cryptography;
 import secureSocket.exceptions.InvalidMacException;
+import secureSocket.secureMessages.AbstractPayload;
 import secureSocket.secureMessages.Payload;
 import util.Utils;
 
-public class NS4 implements Payload {
+public class NS4 extends AbstractPayload implements Payload {
 
 	private static final String INVALID_OUTTER_MAC = "Invalid Outter Mac";
 
 	public static final byte TYPE = 0x14;
 	
 	private long nb;
-	private byte[] nb_bytes;
+	private byte[] message;
 	private byte[] cipherText;
 	private byte[] outermac;
 	
-	public NS4(long nb, Cryptography cryptoManager) throws IOException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, ShortBufferException {
+	public NS4(long nb, long t1, long t2, Cryptography cryptoManager) throws IOException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, ShortBufferException {
+		super(t1, t2);
 		this.nb = nb;
-		nb_bytes = computeNbBytes(nb);
-		cipherText = cryptoManager.encrypt(nb_bytes);
+		message = serialize(nb, t1, t2);
+		cipherText = cryptoManager.encrypt(message);
 		outermac = cryptoManager.computeOuterMac(cipherText);
 	}	
 	
-	private NS4(long nb, byte[] cipherText, byte[] outermac) throws IOException {
+	private NS4(long nb, byte[] cipherText, long t1, long t2, byte[] outermac) throws IOException {
+		super(t1,t2);
 		this.nb = nb;
-		this.nb_bytes = computeNbBytes(nb);
+		this.message = serialize(nb, t1 ,t2);
 		this.cipherText = cipherText;
 		this.outermac = outermac;
 	}
 
-	private byte[] computeNbBytes(long nb) throws IOException {
+	private byte[] serialize(long nb, long t1, long t2) throws IOException {
 		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
 		DataOutputStream dataOut = new DataOutputStream(byteOut);
+		
 		dataOut.writeLong(nb);
+		
+		dataOut.writeLong(t1);
+		dataOut.writeLong(t2);
+		
 		dataOut.flush();
 		byteOut.flush();
 
 		byte[] data = byteOut.toByteArray();
-
+		
+		
 		dataOut.close();
 		byteOut.close();
 		
@@ -84,10 +93,13 @@ public class NS4 implements Payload {
 
 			long nb = dataIn.readLong();
 			
+			long t1 = dataIn.readLong();
+			long t2 = dataIn.readLong();
+			
 			dataIn.close();
 			byteIn.close();
 
-			return new NS4(nb, messageParts[0], messageParts[1]);
+			return new NS4(nb, messageParts[0], t1, t2, messageParts[1]);
 		}
 	}
 
@@ -96,7 +108,7 @@ public class NS4 implements Payload {
 	}
 
 	public byte[] getNb_bytes() {
-		return nb_bytes;
+		return message;
 	}
 
 	public byte[] getCipherText() {

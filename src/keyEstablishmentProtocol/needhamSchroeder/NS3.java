@@ -21,10 +21,11 @@ import cryptography.Cryptography;
 import secureSocket.exceptions.BrokenIntegrityException;
 import secureSocket.exceptions.InvalidMacException;
 import secureSocket.exceptions.ReplayedNonceException;
+import secureSocket.secureMessages.AbstractPayload;
 import secureSocket.secureMessages.Payload;
 import util.Utils;
 
-public class NS3 implements Payload {
+public class NS3 extends AbstractPayload implements Payload {
 
 	private static final String INVALID_OUTTER_MAC = "Invalid Outter Mac";
 
@@ -41,17 +42,19 @@ public class NS3 implements Payload {
 	
 	private Cryptography session_criptoManager;
 
-	public NS3(byte[] ticket, Cryptography cryptoManager)
+	public NS3(byte[] ticket, long t1, long t2, Cryptography cryptoManager)
 			throws IOException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException,
 			NoSuchPaddingException, UnrecoverableEntryException, KeyStoreException, CertificateException,
 			IllegalBlockSizeException, BadPaddingException, ShortBufferException {
 
+		super(t1, t2);
 		this.ticket = ticket;
 
 		this.outerMac = cryptoManager.computeOuterMac(ticket);
 	}
 
-	private NS3(long Nc, String a, String b, byte[] Ks, String[] args, byte[] ticket, byte[] outerMac, Cryptography session_criptoManager) {
+	private NS3(long Nc, String a, String b, byte[] Ks, String[] args, byte[] ticket, byte[] outerMac, long t1, long t2, Cryptography session_criptoManager) {
+		super(t1,t2);
 		this.Nc = Nc;
 		this.a = a;
 		this.b = b;
@@ -101,9 +104,8 @@ public class NS3 implements Payload {
 		if (!session_cryptoManager.validateOuterMac(ticket, outerMac))
 			throw new InvalidMacException(INVALID_OUTTER_MAC);
 
-		return new NS3(t.getNc(), t.getA(), t.getB(), t.getKs(), t.getArgs(), ticket, outerMac, session_cryptoManager); // Falta a msg
-	}	
-	
+		return new NS3(t.getNc(), t.getA(), t.getB(), t.getKs(), t.getArgs(), ticket, outerMac, t.t1(), t.t2(), session_cryptoManager); // Falta a msg
+	}		
 	public Cryptography getSessionCryptoManager() {
 		return this.session_criptoManager;
 	}
