@@ -42,7 +42,7 @@ public class NS2 extends AbstractPayload implements Payload {
 		this.b_addr = b_addr;
 		this.ticket =  cryptoManagerB.encrypt((new Ticket(Nc, a, b, Ks, args, t1,t2)).serialize());
 
-		this.cipherText = buildPayload(Na_1, Nc, Ks, b, b_addr, ticket, cryptoManagerA);
+		this.cipherText = buildPayload(Na_1, Nc, Ks, b, b_addr, ticket, t1, t2,cryptoManagerA);
 		
 		this.outerMac = cryptoManagerA.computeOuterMac(cipherText);
 	}
@@ -59,7 +59,7 @@ public class NS2 extends AbstractPayload implements Payload {
 		this.outerMac = outerMac;
 	}
 	
-	private byte[] buildPayload(long Na_1, long Nc, byte[] Ks, String b, String b_addr, byte[] ticket, Cryptography cryptoManagerA) throws IOException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, ShortBufferException {
+	private byte[] buildPayload(long Na_1, long Nc, byte[] Ks, String b, String b_addr, byte[] ticket, long t1, long t2, Cryptography cryptoManagerA) throws IOException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, ShortBufferException {
 		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
 		DataOutputStream dataOut = new DataOutputStream(byteOut);
 
@@ -70,6 +70,9 @@ public class NS2 extends AbstractPayload implements Payload {
 		
 		dataOut.writeUTF(b);
 		dataOut.writeUTF(b_addr);
+		
+		dataOut.writeLong(t1);
+		dataOut.writeLong(t2);
 		
 		dataOut.writeInt(ticket.length);
 		dataOut.write(ticket, 0, ticket.length);
@@ -106,6 +109,9 @@ public class NS2 extends AbstractPayload implements Payload {
 			String b = dataIn.readUTF();
 			String b_addr = dataIn.readUTF();
 			
+			long t1 = dataIn.readLong();
+			long t2 = dataIn.readLong();
+			
 			length = dataIn.readInt();
 			byte[] ticket = new byte[length];
 			dataIn.read(ticket, 0, length);
@@ -113,7 +119,7 @@ public class NS2 extends AbstractPayload implements Payload {
 			dataIn.close();
 			byteIn.close();
 
-			return new NS2(Na_1, Nc, Ks, b, b_addr, ticket, messageParts[0], messageParts[1]);
+			return new NS2(Na_1, Nc, Ks, b, b_addr, ticket, messageParts[0], messageParts[1], t1, t2);
 		}
 	}
 	
