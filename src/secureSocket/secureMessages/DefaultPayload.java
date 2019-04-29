@@ -124,7 +124,7 @@ public class DefaultPayload extends AbstractPayload {
 				long t1 = dataIn.readLong();
 				long t2 = dataIn.readLong();
 				
-				int messageSize = payloadParts[0].length - 2 * Long.BYTES;
+				int messageSize = payloadParts[0].length - 4 * Long.BYTES;
 				byte[] message = new byte[messageSize];
 				dataIn.read(message, 0, messageSize);
 
