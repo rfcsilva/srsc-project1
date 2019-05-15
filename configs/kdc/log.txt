@@ -1,3 +1,0 @@
-proxy | movie-server | 5416669231061553294 | monsters | 3.00 MC | 2ScCVyjMBiO4xkSt5Wp59qh9eEJooY+UiNg4hB5ZkG0=
-proxy | movie-server | 1590821255244280350 | monsters | 3.00 MC | ah/BHqjh40oJE6s4m+4JnHttQGm2TwUnYwwW5/APspg=
-proxy | movie-server | 7177747588497341585 | monsters | 3.00 MC | KD5HfC9uKuJ+ZSJZw8ZPSClIGSqnv+d0tRF+zOe64q8=
